@@ -1,13 +1,12 @@
 package com.philips.btclient
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt.CONNECTION_PRIORITY_HIGH
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanResult
 import android.content.Context
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
 import com.welie.blessed.*
 import timber.log.Timber
 import timber.log.Timber.DebugTree
@@ -18,28 +17,60 @@ class BluetoothHandler private constructor(context: Context) {
     lateinit var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
     private val serviceHandlers = HashMap<UUID, ServiceHandler>()
-    private val peripheralCallback: BluetoothPeripheralCallback = object : BluetoothPeripheralCallback() {
+    private val peripheralCallback: BluetoothPeripheralCallback =
+        object : BluetoothPeripheralCallback() {
 
-        override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
-            //peripheral.requestConnectionPriority(CONNECTION_PRIORITY_HIGH)
-            val services = peripheral.services
-            for (service in services) {
-                serviceHandlers[service.uuid]?.onCharacteristicsDiscovered(peripheral, service.characteristics)
+            override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
+                //peripheral.requestConnectionPriority(CONNECTION_PRIORITY_HIGH)
+                val services = peripheral.services
+                for (service in services) {
+                    serviceHandlers[service.uuid]?.onCharacteristicsDiscovered(
+                        peripheral,
+                        service.characteristics
+                    )
+                }
+            }
+
+            override fun onNotificationStateUpdate(
+                peripheral: BluetoothPeripheral,
+                characteristic: BluetoothGattCharacteristic,
+                status: GattStatus
+            ) {
+                serviceHandlers[characteristic.service.uuid]?.onNotificationStateUpdate(
+                    peripheral,
+                    characteristic,
+                    status
+                )
+            }
+
+            override fun onCharacteristicWrite(
+                peripheral: BluetoothPeripheral,
+                value: ByteArray,
+                characteristic: BluetoothGattCharacteristic,
+                status: GattStatus
+            ) {
+                serviceHandlers[characteristic.service.uuid]?.onCharacteristicUpdate(
+                    peripheral,
+                    value,
+                    characteristic,
+                    status
+                )
+            }
+
+            override fun onCharacteristicUpdate(
+                peripheral: BluetoothPeripheral,
+                value: ByteArray,
+                characteristic: BluetoothGattCharacteristic,
+                status: GattStatus
+            ) {
+                serviceHandlers[characteristic.service.uuid]?.onCharacteristicUpdate(
+                    peripheral,
+                    value,
+                    characteristic,
+                    status
+                )
             }
         }
-
-        override fun onNotificationStateUpdate(peripheral: BluetoothPeripheral, characteristic: BluetoothGattCharacteristic, status: GattStatus) {
-            serviceHandlers[characteristic.service.uuid]?.onNotificationStateUpdate(peripheral, characteristic, status)
-        }
-
-        override fun onCharacteristicWrite(peripheral: BluetoothPeripheral, value: ByteArray, characteristic: BluetoothGattCharacteristic, status: GattStatus) {
-            serviceHandlers[characteristic.service.uuid]?.onCharacteristicUpdate(peripheral, value, characteristic, status)
-        }
-
-        override fun onCharacteristicUpdate(peripheral: BluetoothPeripheral, value: ByteArray, characteristic: BluetoothGattCharacteristic, status: GattStatus) {
-            serviceHandlers[characteristic.service.uuid]?.onCharacteristicUpdate(peripheral, value, characteristic, status)
-        }
-    }
 
     // Callback for central
     private val bluetoothCentralManagerCallback: BluetoothCentralManagerCallback =
@@ -52,7 +83,10 @@ class BluetoothHandler private constructor(context: Context) {
                 Timber.e("connection '%s' failed with status %s", peripheral.name, status)
             }
 
-            override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral, status: HciStatus) {
+            override fun onDisconnectedPeripheral(
+                peripheral: BluetoothPeripheral,
+                status: HciStatus
+            ) {
                 Timber.i("disconnected '%s' with status %s", peripheral.name, status)
 
                 // Reconnect to this device when it becomes available again
@@ -61,7 +95,10 @@ class BluetoothHandler private constructor(context: Context) {
                 }, 5000)
             }
 
-            override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+            override fun onDiscoveredPeripheral(
+                peripheral: BluetoothPeripheral,
+                scanResult: ScanResult
+            ) {
                 Timber.i("Found peripheral '%s'", peripheral.name)
                 central.stopScan()
                 central.connectPeripheral(peripheral, peripheralCallback)
@@ -96,9 +133,13 @@ class BluetoothHandler private constructor(context: Context) {
     init {
         Timber.plant(DebugTree())
 
-        central = BluetoothCentralManager(context, bluetoothCentralManagerCallback, Handler(Looper.getMainLooper()))
+        central = BluetoothCentralManager(
+            context,
+            bluetoothCentralManagerCallback,
+            Handler(Looper.getMainLooper())
+        )
 
-        val ghsServiceHandler = GHSserviceHandler()
+        val ghsServiceHandler = GenericHealthSensorServiceHandler()
         serviceHandlers[ghsServiceHandler.serviceUUID] = ghsServiceHandler
         startScanning()
     }
@@ -107,7 +148,7 @@ class BluetoothHandler private constructor(context: Context) {
         // Scan for peripherals with a certain service UUIDs
         central.startPairingPopupHack()
         handler.postDelayed(
-            { central.scanForPeripheralsWithServices(arrayOf(GHSserviceHandler.SERVICE_UUID)) },
+            { central.scanForPeripheralsWithServices(arrayOf(GenericHealthSensorServiceHandler.SERVICE_UUID)) },
             1000
         )
     }
