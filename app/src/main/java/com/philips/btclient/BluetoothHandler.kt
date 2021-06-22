@@ -13,10 +13,17 @@ import timber.log.Timber.DebugTree
 import java.util.*
 import kotlin.collections.HashMap
 
+interface BluetoothHandlerListener {
+    fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral)
+    fun onConnectedPeripheral(peripheral: BluetoothPeripheral)
+}
+
 class BluetoothHandler private constructor(context: Context) {
     lateinit var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
+    private val discoveredPeripherals = mutableSetOf<BluetoothPeripheral>()
     private val serviceHandlers = HashMap<UUID, ServiceHandler>()
+    private val listeners = mutableSetOf<BluetoothHandlerListener>()
     private val peripheralCallback: BluetoothPeripheralCallback =
         object : BluetoothPeripheralCallback() {
 
@@ -76,6 +83,7 @@ class BluetoothHandler private constructor(context: Context) {
     private val bluetoothCentralManagerCallback: BluetoothCentralManagerCallback =
         object : BluetoothCentralManagerCallback() {
             override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+                listeners.forEach { it.onConnectedPeripheral(peripheral) }
                 Timber.i("connected to '%s'", peripheral.name)
             }
 
@@ -99,9 +107,13 @@ class BluetoothHandler private constructor(context: Context) {
                 peripheral: BluetoothPeripheral,
                 scanResult: ScanResult
             ) {
-                Timber.i("Found peripheral '%s'", peripheral.name)
-                central.stopScan()
-                central.connectPeripheral(peripheral, peripheralCallback)
+
+                if (discoveredPeripherals.add(peripheral)) {
+                    Timber.i("Found peripheral '%s'", peripheral.name)
+                    listeners.forEach { it.onDiscoveredPeripheral(peripheral) }
+                }
+//                central.stopScan()
+//                central.connectPeripheral(peripheral, peripheralCallback)
             }
 
             override fun onBluetoothAdapterStateChanged(state: Int) {
@@ -117,8 +129,40 @@ class BluetoothHandler private constructor(context: Context) {
             }
         }
 
-    companion object {
+    fun connect(peripheral: BluetoothPeripheral) {
+        central.connectPeripheral(peripheral, peripheralCallback)
+    }
 
+    fun addListener(listener: BluetoothHandlerListener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: BluetoothHandlerListener) {
+        listeners.remove(listener)
+    }
+
+    fun startScanning() {
+        // Scan for peripherals with a certain service UUIDs
+        central.startPairingPopupHack()
+        handler.postDelayed(
+            { central.scanForPeripheralsWithServices(getConnectServiceUUIDs()) },
+            1000
+        )
+    }
+
+    fun stopScanning() {
+        central.stopScan()
+    }
+
+    fun getConnectServiceUUIDs(): Array<UUID> {
+        return serviceHandlers.values.map { it.serviceUUID }.toTypedArray()
+    }
+
+    fun addServiceHander(serviceHandler: ServiceHandler) {
+        serviceHandlers[serviceHandler.serviceUUID] = serviceHandler
+    }
+
+    companion object {
         private var instance: BluetoothHandler? = null
 
         @Synchronized
@@ -131,25 +175,11 @@ class BluetoothHandler private constructor(context: Context) {
     }
 
     init {
-        Timber.plant(DebugTree())
-
         central = BluetoothCentralManager(
             context,
             bluetoothCentralManagerCallback,
             Handler(Looper.getMainLooper())
         )
-
-        val ghsServiceHandler = GenericHealthSensorServiceHandler()
-        serviceHandlers[ghsServiceHandler.serviceUUID] = ghsServiceHandler
-        startScanning()
     }
 
-    fun startScanning() {
-        // Scan for peripherals with a certain service UUIDs
-        central.startPairingPopupHack()
-        handler.postDelayed(
-            { central.scanForPeripheralsWithServices(arrayOf(GenericHealthSensorServiceHandler.SERVICE_UUID)) },
-            1000
-        )
-    }
 }

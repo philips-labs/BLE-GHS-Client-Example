@@ -112,6 +112,7 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
 
     init {
         serviceUUID = SERVICE_UUID
+        supportedCharacteristics.add(OBSERVATION_CHARACTERISTIC_UUID)
     }
 
     companion object {

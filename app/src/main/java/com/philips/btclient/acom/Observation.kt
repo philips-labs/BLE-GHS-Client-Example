@@ -8,6 +8,8 @@ import com.philips.btclient.extensions.atEnd
 import com.philips.btclient.extensions.getAcomDateTime
 import com.philips.btclient.extensions.getMderFloatValue
 import com.philips.btclient.extensions.isNextAttributeType
+import com.philips.btserver.generichealthservice.ObservationType
+import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 
@@ -28,7 +30,7 @@ class Observation {
     }
 
     override fun toString(): String {
-        return "Observation type: ${ type?.let { MdcConstants.MdcMeasurements.valueOf(it) } ?: "<$type>" } handle: $handle timestamp: $timestamp value: $value}"
+        return "Observation type: ${ ObservationType.fromValue(type) } handle: $handle timestamp: $timestamp value: $value}"
     }
 
     private fun getNextAttribute(bytesParser: BluetoothBytesParser) {

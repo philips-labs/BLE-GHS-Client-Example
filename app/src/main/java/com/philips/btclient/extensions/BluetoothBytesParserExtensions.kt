@@ -5,8 +5,8 @@
 package com.philips.btclient.extensions
 
 import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
-import com.philips.btclient.acom.MdcConstants
 import com.philips.btclient.acom.Observation
+import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.FORMAT_FLOAT
 import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT32
