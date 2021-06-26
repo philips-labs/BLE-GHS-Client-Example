@@ -30,7 +30,7 @@ class Observation {
     }
 
     override fun toString(): String {
-        return "Observation type: ${ ObservationType.fromValue(type) } handle: $handle timestamp: $timestamp value: $value}"
+        return "Obs: ${ ObservationType.fromValue(type) } $timestamp\n$value"
     }
 
     private fun getNextAttribute(bytesParser: BluetoothBytesParser) {

@@ -83,30 +83,23 @@ const val MDER_NEGATIVE_INFINITY = 0x00800002
 val MDER_RESERVED_FLOAT_VALUES = floatArrayOf( Float.POSITIVE_INFINITY, Float.NaN, Float.NaN, Float.NaN, Float.NEGATIVE_INFINITY)
 
 /**
+ * Returns the size of a give value type.
+ * This is copied from BluetoothBytesParser in Blessed because it's private there
+ * and it is used in BluetoothBytesParser.getMderFloatValue
+ */
+private fun BluetoothBytesParser.getTypeLen(formatType: Int): Int {
+    return formatType and 0xF
+}
+
+/**
  * Return a 11073-20601 (MDER) float value of the specified format, offset and byte order. This operation will advance the internal offset to the next position.
  *
  * @return The float value at the position of the internal offset
  */
-fun BluetoothBytesParser.getMderFloatValue(offset: Int): Float? {
-    return  getFloatValue(FORMAT_FLOAT, offset, this.byteOrder)
-//    if (offset + 4 > bytes.size) return null
-//
-//    val intData = getIntValue(FORMAT_UINT32) ?: return null
-//
-//    var mantissa = intData and 0xFFFFFF
-//    val exponent = intData shr 24
-//    val output: Float
-//
-//    if (mantissa >= MDER_FIRST_RESERVED_VALUE && mantissa <= MDER_NEGATIVE_INFINITY) {
-//        output = MDER_RESERVED_FLOAT_VALUES[mantissa - MDER_FIRST_RESERVED_VALUE]
-//    } else {
-//        if (mantissa >= 0x800000) {
-//            mantissa = -((0xFFFFFF + 1) - mantissa)
-//        }
-//        output = mantissa * 10.toFloat().pow(exponent)
-//    }
-//
-//    return output
+fun BluetoothBytesParser.getMderFloatValue(index: Int): Float? {
+    val result = getFloatValue(FORMAT_FLOAT, index, this.byteOrder)
+    offset += getTypeLen(FORMAT_FLOAT)
+    return result
 }
 
 /*

@@ -4,9 +4,11 @@
  */
 package com.philips.btclient.acom
 
+import com.philips.btserver.generichealthservice.UnitCode
+
 class SimpleNumericObservationValue(val value: Float): NumericObservationValue() {
 
     override fun toString(): String {
-        return "SimpleNumericObservationValue value: $value"
+        return "value: $value unitCode: ${UnitCode.fromValue(unitCode)}"
     }
 }

@@ -154,6 +154,10 @@ class BluetoothHandler private constructor(context: Context) {
         central.stopScan()
     }
 
+    fun isScanning(): Boolean {
+        return central.isScanning
+    }
+
     fun getConnectServiceUUIDs(): Array<UUID> {
         return serviceHandlers.values.map { it.serviceUUID }.toTypedArray()
     }

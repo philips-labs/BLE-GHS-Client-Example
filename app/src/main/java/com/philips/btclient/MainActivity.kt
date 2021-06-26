@@ -3,30 +3,27 @@ package com.philips.btclient
 import android.Manifest
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.text.method.ScrollingMovementMethod
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.Observable.OnPropertyChangedCallback
 import com.philips.btclient.acom.Observation
 import com.philips.btclient.ghs.GenericHealthSensorHandlerListener
 import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
-import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
 import java.util.*
 
+
 class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealthSensorHandlerListener {
 
-    private lateinit var measurementValue: TextView
     private val REQUEST_ENABLE_BT = 1
     private val ACCESS_LOCATION_REQUEST = 2
 
@@ -36,11 +33,32 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     var connectedPeripheralsList: ListView? = null
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
+    var bluetoothHandler: BluetoothHandler? = null
+
+    val logCallback = object : OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: androidx.databinding.Observable?, propertyId: Int) {
+            if (propertyId == BR.log) updateLogView()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.plant(Timber.DebugTree())
         setContentView(R.layout.activity_main)
 
+        setupFoundPeripheralsList()
+        setupConnectedPeripheralsList()
+
+        // Make the observation log scrollable
+        findViewById<TextView>(R.id.observationsLog).setMovementMethod(ScrollingMovementMethod())
+
+        registerReceiver(
+            locationServiceStateReceiver,
+            IntentFilter(LocationManager.MODE_CHANGED_ACTION)
+        )
+    }
+
+    private fun setupFoundPeripheralsList() {
         foundPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
             android.R.layout.simple_list_item_1)
@@ -52,11 +70,15 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
                 val peripheral = foundPeripheralArrayAdapter!!.getItem(position)
                 peripheral?.let {
                     BluetoothHandler.getInstance(applicationContext).connect(it)
+                    // Stop scanning on connect as assume we're going to use the just connected peripheral
+                    setScanning(false)
                     Toast.makeText(applicationContext, "Connecting ${it.name}...", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
 
+    private fun setupConnectedPeripheralsList() {
         connectedPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
             android.R.layout.simple_list_item_1)
@@ -71,16 +93,13 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
                 }
             }
         }
-
-        registerReceiver(
-            locationServiceStateReceiver,
-            IntentFilter(LocationManager.MODE_CHANGED_ACTION)
-        )
     }
 
     override fun onResume() {
         super.onResume()
         checkPermissions()
+        ObservationLog.addOnPropertyChangedCallback(logCallback)
+
         if (!isBluetoothEnabled()) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
@@ -91,6 +110,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     override fun onDestroy() {
         super.onDestroy()
+        ObservationLog.removeOnPropertyChangedCallback(logCallback)
         unregisterReceiver(locationServiceStateReceiver)
     }
 
@@ -113,9 +133,12 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     private fun initBluetoothHandler() {
         val ghsServiceHandler = GenericHealthSensorServiceHandler()
         ghsServiceHandler.addListener(this)
-        BluetoothHandler.getInstance(applicationContext).addServiceHander(ghsServiceHandler)
-        BluetoothHandler.getInstance(applicationContext).addListener(this)
-        BluetoothHandler.getInstance(applicationContext).startScanning()
+        bluetoothHandler = BluetoothHandler.getInstance(applicationContext)
+        bluetoothHandler?.let {
+            it.addServiceHander(ghsServiceHandler)
+            it.addListener(this)
+            setScanning(false)
+        }
     }
 
     private fun checkPermissions() {
@@ -217,29 +240,14 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
      */
 
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {
-        connectedPeripheralArrayAdapter?.let {
-            for (i in 0 until it.getCount()) {
-                if (it.getItem(i) == peripheral) {
-                    return
-                }
-            }
-        }
-        foundPeripheralArrayAdapter?.let {
-            for (i in 0 until it.getCount()) {
-                if (it.getItem(i) == peripheral) return
-            }
+        if (!(connectedPeripheralArrayAdapter?.includes(peripheral) ?: true)) {
             foundPeripheralArrayAdapter?.add(peripheral)
         }
     }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         foundPeripheralArrayAdapter?.remove(peripheral)
-        connectedPeripheralArrayAdapter?.let {
-            for (i in 0 until it.getCount()) {
-                if (it.getItem(i) == peripheral) return
-            }
-            it.add(peripheral)
-        }
+        connectedPeripheralArrayAdapter?.add(peripheral)
     }
 
     // GenericHealthSensorHandlerListener interface methods
@@ -247,7 +255,28 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         observations.forEach {
             Timber.i(it.toString())
+            ObservationLog.log(it)
         }
     }
 
+    // Button handling and support
+
+    fun toggleScanning(view: View) {
+        bluetoothHandler?.let { setScanning(!it.isScanning()) }
+    }
+
+    private fun setScanning(enabled: Boolean) {
+        foundPeripheralArrayAdapter?.clear()
+        if (enabled) bluetoothHandler?.startScanning() else bluetoothHandler?.stopScanning()
+        findViewById<TextView>(R.id.foundPeripheralLabel).setText(if (enabled) R.string.found_devices_scanning else R.string.found_devices_not_scanning)
+        findViewById<Button>(R.id.scanButton).setText(if (enabled) R.string.stop_scanning else R.string.start_scanning)
+    }
+
+    fun showObservationLog(view: View) {
+        startActivity(Intent(this, ObservationLogActivity::class.java))
+    }
+
+    private fun updateLogView() {
+        findViewById<TextView>(R.id.observationsLog).setText(ObservationLog.log)
+    }
 }

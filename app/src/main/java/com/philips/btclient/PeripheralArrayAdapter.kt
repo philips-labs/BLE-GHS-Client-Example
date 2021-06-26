@@ -17,4 +17,15 @@ class PeripheralArrayAdapter(context: Context, resource: Int) :
         view.findViewById<TextView>(R.id.text1).text = getItem(position)?.name
         return view
     }
+
+    fun add(peripheral: BluetoothPeripheral) {
+        if (!includes(peripheral)) super.add(peripheral)
+    }
+
+    fun includes(peripheral: BluetoothPeripheral): Boolean {
+        for (i in 0 until count) {
+            if (getItem(i) == peripheral) return true
+        }
+        return false
+    }
 }

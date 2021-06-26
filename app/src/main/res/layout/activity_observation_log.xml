@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_primary"
-    tools:context=".MainActivity">
+    tools:context=".ObservationLogActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,39 +17,6 @@
         android:layout_marginEnd="16dp"
         android:weightSum="1"
         android:orientation="vertical">
-        <Button
-            android:id="@+id/scanButton"
-            android:layout_width="wrap_content"
-            android:layout_height="64dp"
-            android:text="@string/start_scanning"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="toggleScanning" />
-        <TextView
-            android:id="@+id/foundPeripheralLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/found_devices_not_scanning"
-            android:layout_marginBottom="16dp" />
-        <ListView
-            android:id="@+id/foundPeripheralList"
-            android:layout_width="match_parent"
-            android:layout_weight="0.2"
-            android:layout_marginBottom="16dp"
-            android:layout_height="0dp"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/connected_devices"
-            android:layout_marginBottom="16dp" />
-        <ListView
-            android:id="@+id/connectedPeripheralList"
-            android:layout_width="match_parent"
-            android:layout_weight="0.2"
-            android:layout_height="0dp"
-            android:layout_marginBottom="16dp" />
         <TextView
             android:id="@+id/observationsTitle"
             android:layout_width="match_parent"
@@ -68,14 +34,14 @@
             android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
         <Button
-            android:id="@+id/showLogButton"
+            android:id="@+id/clearLogButton"
             android:layout_width="wrap_content"
             android:layout_height="64dp"
-            android:text="@string/show_log"
+            android:text="@string/clear_log"
             android:layout_gravity="center"
             android:layout_marginBottom="16dp"
             android:textAllCaps="false"
-            android:onClick="showObservationLog" />
-    </LinearLayout>
+            android:onClick="clearObservationLog" />
 
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

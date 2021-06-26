@@ -6,6 +6,7 @@ package com.philips.btserver.generichealthservice
 
 import java.lang.IllegalArgumentException
 
+@Suppress("unused")
 enum class ObservationType(val value: Int) {
     MDC_ACCELERATION_INDEX(150612),
     MDC_ACOUSTIC_RESP_RATE(151650),
