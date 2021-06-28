@@ -5,7 +5,6 @@
 package com.philips.btclient.acom
 
 open class NumericObservationValue: ObservationValue() {
-    var unitCode: Int? = null
     var accuracy: Int? = null
 
     companion object {

@@ -1,9 +1,8 @@
 package com.philips.btclient
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.transition.Slide
+import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
@@ -11,7 +10,7 @@ import androidx.databinding.Observable
 class ObservationLogActivity : AppCompatActivity() {
 
     val logCallback = object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: androidx.databinding.Observable?, propertyId: Int) {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             if (propertyId == BR.log) updateLogView()
         }
     }
@@ -48,6 +47,7 @@ class ObservationLogActivity : AppCompatActivity() {
         when (item.getItemId()) {
             android.R.id.home -> {
                 finish()
+                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
                 return true
             }
         }

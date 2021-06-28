@@ -9,17 +9,19 @@ import com.philips.btclient.extensions.getAcomDateTime
 import com.philips.btclient.extensions.getMderFloatValue
 import com.philips.btclient.extensions.isNextAttributeType
 import com.philips.btserver.generichealthservice.ObservationType
+import com.philips.btserver.generichealthservice.UnitCode
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 
 class Observation {
     var handle: Int? = null
-    var type: Int? = null
+    var type: ObservationType = ObservationType.UNKNOWN_STATUS_CODE
     var timestamp: LocalDateTime? = null
     var measurementDuration: Int? = null
     var pateintId: Int? = null
     var value: ObservationValue? = null
+    var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
 
     constructor(bytesParser: BluetoothBytesParser) {
         var firstTime = true
@@ -30,7 +32,7 @@ class Observation {
     }
 
     override fun toString(): String {
-        return "Obs: ${ ObservationType.fromValue(type) } $timestamp\n$value"
+        return "Obs: ${type.name} $timestamp\n$value"
     }
 
     private fun getNextAttribute(bytesParser: BluetoothBytesParser) {
@@ -58,7 +60,7 @@ class Observation {
 
     private fun getObservationTypeAttribute(bytesParser: BluetoothBytesParser, length: Int) {
         if (length != ATTRIBUTE_OBSERVATION_TYPE_LENGTH) return
-        type = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
+        type = ObservationType.fromValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
     }
 
 
@@ -77,12 +79,12 @@ class Observation {
 
     private fun getSimpleNumericValueAttribute(bytesParser: BluetoothBytesParser) {
         val numValue = bytesParser.getMderFloatValue() ?: Float.NaN
-        value = SimpleNumericObservationValue( numValue )
+        value = SimpleNumericObservationValue( numValue, unitCode)
     }
 
     private fun getSampleArrayValueAttribute(bytesParser: BluetoothBytesParser, length: Int) {
         val byteArray = bytesParser.getByteArray(length)
-        value = SampleArrayObservationValue( byteArray )
+        value = SampleArrayObservationValue( byteArray, unitCode)
     }
 
     private fun getCompoundNumericValueAttribute(bytesParser: BluetoothBytesParser, length: Int) {
@@ -91,11 +93,9 @@ class Observation {
 
     private fun getUnitCodeAttribute(bytesParser: BluetoothBytesParser, length: Int) {
         if (length != ATTRIBUTE_UNIT_CODE_LENGTH) return
-        val unitCode = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
-        // TODO This assumes the observation value was before the unit code... what if it isn't (store in property?)
-        if (value is NumericObservationValue) {
-            (value as NumericObservationValue).unitCode = unitCode
-        }
+        // In case observation value isn't before the unit code... store it in the observation
+        unitCode = UnitCode.fromValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+        value?.unitCode = unitCode
     }
 
     private fun getAbsoluteTimestampAttribute(bytesParser: BluetoothBytesParser, length: Int) {
@@ -112,6 +112,9 @@ class Observation {
         const val ATTRIBUTE_OBSERVATION_TYPE_LENGTH = 0x04
         const val ATTRIBUTE_UNIT_CODE_LENGTH = 0x04
         const val ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH = 0x08
+
+        const val MDC_SYSTEM_URN_STRING = "urn:iso:std:iso:11073:10101"
+        const val CODE_SYSTEM_OBSERVATRION_CATEGORY_URL = "http://terminology.hl7.org/CodeSystems/observation_category"
     }
 
 }

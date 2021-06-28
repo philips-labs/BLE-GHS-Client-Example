@@ -3,8 +3,13 @@ package com.philips.btclient
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
 import com.philips.btclient.acom.Observation
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 
 object ObservationLog: BaseObservable() {
+    private val MAX_LOG_CHARACTERS = 4000
+
     @get:Bindable
     var log: String = ""
         set(value) {
@@ -12,8 +17,12 @@ object ObservationLog: BaseObservable() {
             notifyPropertyChanged(BR.log)
         }
 
+    fun log(message: String) {
+        log = (log + "$message\n").last(MAX_LOG_CHARACTERS)
+    }
+
     fun log(observation: Observation) {
-        log = (log + "$observation\n").last(400)
+        log("$observation")
     }
 
     fun clear() {

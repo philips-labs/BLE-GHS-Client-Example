@@ -15,9 +15,13 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import com.philips.btclient.acom.Observation
+import com.philips.btclient.fhir.FhirActivity
 import com.philips.btclient.ghs.GenericHealthSensorHandlerListener
 import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
 import com.welie.blessed.BluetoothPeripheral
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.util.*
 
@@ -72,7 +76,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
                     BluetoothHandler.getInstance(applicationContext).connect(it)
                     // Stop scanning on connect as assume we're going to use the just connected peripheral
                     setScanning(false)
-                    Toast.makeText(applicationContext, "Connecting ${it.name}...", Toast.LENGTH_SHORT).show()
+                    toast("Connecting ${it.name}...")
                 }
             }
         }
@@ -87,10 +91,8 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         connectedPeripheralsList?.let {
             it.adapter = connectedPeripheralArrayAdapter
             it.setOnItemClickListener { adapterView, view, position, l ->
-                val peripheral = connectedPeripheralArrayAdapter!!.getItem(position)
-                peripheral?.let {
-                    Toast.makeText(applicationContext, "Clicked ${it.name}", Toast.LENGTH_SHORT).show()
-                }
+                val peripheral = connectedPeripheralArrayAdapter?.getItem(position)
+                peripheral?.let { toast("Clicked ${it.name}") }
             }
         }
     }
@@ -256,6 +258,16 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         observations.forEach {
             Timber.i(it.toString())
             ObservationLog.log(it)
+            postObservation(it)
+        }
+    }
+
+    private fun postObservation(observation: Observation) {
+        doAsync {
+            val result = FhirUploader.postObservation(observation)
+            uiThread {
+                ObservationLog.log(if (result.isSuccessful) "(Posted ${observation.type})" else "(POST error: ${result.code})")
+            }
         }
     }
 
@@ -274,6 +286,12 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     fun showObservationLog(view: View) {
         startActivity(Intent(this, ObservationLogActivity::class.java))
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+    }
+
+    fun openFhirSettings(view: View) {
+        startActivity(Intent(this, FhirActivity::class.java))
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
 
     private fun updateLogView() {
