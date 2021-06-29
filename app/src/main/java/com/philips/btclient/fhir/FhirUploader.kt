@@ -1,4 +1,4 @@
-package com.philips.btclient
+package com.philips.btclient.fhir
 
 import com.philips.btclient.acom.Observation
 import com.philips.btclient.util.asFhir
@@ -14,7 +14,8 @@ object FhirUploader {
     val localHapiServer = "http://192.168.1.47:8080/fhir/Observation"
     val publicHapiServer = "http://hapi.fhir.org/baseR4/Observation"
 
-    val urlString: String get() {return if (usePublicHapiServer) publicHapiServer else localHapiServer}
+    val urlString: String get() {return if (usePublicHapiServer) publicHapiServer else localHapiServer
+    }
 
     private val client = OkHttpClient()
 
@@ -32,7 +33,7 @@ object FhirUploader {
             .build()
 
         client.newCall(request).execute().use { response ->
-            println("FHIR post to ${urlString} ${if (response.isSuccessful) "SUCCESS" else "FAILED ${response.code}"}")
+            println("FHIR post to $urlString ${if (response.isSuccessful) "SUCCESS" else "FAILED ${response.code}"}")
             println(response.body?.string())
             return response
         }

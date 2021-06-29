@@ -9,15 +9,18 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable.OnPropertyChangedCallback
 import com.philips.btclient.acom.Observation
+import com.philips.btclient.acom.SimpleNumericObservationValue
 import com.philips.btclient.fhir.FhirActivity
+import com.philips.btclient.fhir.FhirUploader
 import com.philips.btclient.ghs.GenericHealthSensorHandlerListener
 import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
+import com.philips.btclient.util.timestampAsDate
+import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -54,7 +57,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         setupConnectedPeripheralsList()
 
         // Make the observation log scrollable
-        findViewById<TextView>(R.id.observationsLog).setMovementMethod(ScrollingMovementMethod())
+//        findViewById<TextView>(R.id.observationsLog).setMovementMethod(ScrollingMovementMethod())
 
         registerReceiver(
             locationServiceStateReceiver,
@@ -257,8 +260,27 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         observations.forEach {
             Timber.i(it.toString())
+            updateObservationText(it)
             ObservationLog.log(it)
             postObservation(it)
+        }
+    }
+
+    private fun updateObservationText(observation: Observation) {
+        when (observation.type) {
+            ObservationType.MDC_TEMP_BODY -> {
+                val floatValue = (observation.value as SimpleNumericObservationValue).value
+                findViewById<TextView>(R.id.tempObservation).text = "Temp: ${floatValue} deg ${observation.timestamp}"
+            }
+            ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
+                val floatValue = (observation.value as SimpleNumericObservationValue).value
+                findViewById<TextView>(R.id.hrObservation).text = "HR: ${floatValue} bpm ${observation.timestamp}"
+            }
+            ObservationType.MDC_SPO2_OXYGENATION_RATIO -> {
+                val floatValue = (observation.value as SimpleNumericObservationValue).value
+                findViewById<TextView>(R.id.spo2Observation).text = "HR: ${floatValue}% ${observation.timestamp}"
+            }
+            else -> findViewById<TextView>(R.id.ppgObservation).text = "${observation.type} ${observation.timestampAsDate()}"
         }
     }
 
@@ -295,6 +317,6 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     }
 
     private fun updateLogView() {
-        findViewById<TextView>(R.id.observationsLog).setText(ObservationLog.log)
+//        findViewById<TextView>(R.id.observationsLog).setText(ObservationLog.log)
     }
 }

@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Switch
-import com.philips.btclient.FhirUploader
 import com.philips.btclient.R
 
 class FhirActivity : AppCompatActivity() {

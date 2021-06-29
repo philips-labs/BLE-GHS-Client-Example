@@ -55,46 +55,65 @@
             android:divider="@null"
             android:dividerHeight="0dp"
             android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/observationsTitle"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/observations"
+            android:layout_height="1dp"
+            android:background="@color/white"
             android:layout_marginBottom="16dp" />
         <TextView
-            android:id="@+id/observationsLog"
+            android:id="@+id/tempObservation"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.6"
-            android:scrollbars="vertical"
-            android:gravity="bottom"
-            android:background="@color/black"
-            android:textColor="@color/white"
-            android:layout_marginBottom="16dp" />
-        <LinearLayout
-            android:id="@+id/LinearLayout02"
             android:layout_height="wrap_content"
+            android:text="@string/no_temp_observation"
+            android:layout_marginBottom="16dp" />
+        <TextView
+            android:id="@+id/hrObservation"
             android:layout_width="match_parent"
-            android:layout_marginBottom="16dp">
-            <Button
-                android:id="@+id/showLogButton"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginEnd="8dp"
-                android:text="@string/show_log"
-                android:layout_weight="1"
-                android:textAllCaps="false"
-                android:onClick="showObservationLog" />
-            <Button
-                android:id="@+id/fhirServerButton"
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-                android:layout_height="64dp"
-                android:layout_marginStart="8dp"
-                android:text="@string/fhir_server"
-                android:textAllCaps="false"
-                android:onClick="openFhirSettings" />
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:text="@string/no_hr_observation"
+            android:layout_marginBottom="16dp" />
+        <TextView
+            android:id="@+id/spo2Observation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_spo2_observation"
+            android:layout_marginBottom="16dp" />
+        <TextView
+            android:id="@+id/ppgObservation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_ppg_observation"
+            android:layout_marginBottom="16dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/LinearLayout02"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp">
+        <Button
+            android:id="@+id/showLogButton"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/show_log"
+            android:layout_weight="1"
+            android:textAllCaps="false"
+            android:onClick="showObservationLog" />
+        <Button
+            android:id="@+id/fhirServerButton"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="64dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/fhir_server"
+            android:textAllCaps="false"
+            android:onClick="openFhirSettings" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

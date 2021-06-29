@@ -11,4 +11,8 @@
     <string name="fhir_server">FHIR Server</string>
     <string name="use_public_hapi_fhir_server">Use public HAPI FHIR server</string>
     <string name="title_activity_fhir">FHIR server settings</string>
+    <string name="no_temp_observation">No temperature received</string>
+    <string name="no_hr_observation">No heart rate received</string>
+    <string name="no_spo2_observation">No SpO2 received</string>
+    <string name="no_ppg_observation">No PPG received</string>
 </resources>
