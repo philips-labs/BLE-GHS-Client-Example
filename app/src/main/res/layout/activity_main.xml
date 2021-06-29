@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_primary"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -79,11 +78,17 @@
             android:text="@string/no_spo2_observation"
             android:layout_marginBottom="16dp" />
         <TextView
-            android:id="@+id/ppgObservation"
+            android:id="@+id/ppgObservationTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/no_ppg_observation"
             android:layout_marginBottom="16dp"/>
+        <com.philips.btclient.WaveformView
+            android:id="@+id/ppgObservation"
+            style="@style/Widget.Theme.Btclient.WaveformView"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            app:lineWidth="1.5dp"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/LinearLayout02"

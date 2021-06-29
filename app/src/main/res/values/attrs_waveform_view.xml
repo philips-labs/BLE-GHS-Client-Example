@@ -1,0 +1,6 @@
+<resources>
+    <declare-styleable name="WaveformView">
+        <attr name="lineWidth" format="dimension" />
+        <attr name="lineColor" format="color" />
+    </declare-styleable>
+</resources>

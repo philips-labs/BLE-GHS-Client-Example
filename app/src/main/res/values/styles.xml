@@ -1,0 +1,7 @@
+<resources>
+
+    <style name="Widget.Theme.Btclient.WaveformView" parent="">
+        <item name="android:background">@color/white</item>
+        <item name="lineColor">@color/black</item>
+    </style>
+</resources>

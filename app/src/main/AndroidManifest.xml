@@ -16,7 +16,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Btclient"
         android:usesCleartextTraffic="true">
-        <activity android:name=".fhir.FhirActivity"></activity>
+        <activity android:name=".PeripheralInfoActivity"></activity>
+        <activity android:name=".fhir.FhirActivity" />
         <activity android:name=".ObservationLogActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

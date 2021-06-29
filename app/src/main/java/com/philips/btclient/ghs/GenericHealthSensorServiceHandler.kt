@@ -31,13 +31,6 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
         enableAllNotificationsAndRead(peripheral, characteristics)
     }
 
-    override fun onNotificationStateUpdate(peripheral: BluetoothPeripheral, characteristic: BluetoothGattCharacteristic, status: GattStatus) {
-        super.onNotificationStateUpdate(peripheral, characteristic, status)
-//        if (status.value == GATT_SUCCESS) {
-//            updatePeripheralPairedState(peripheral, characteristic)
-//        }
-    }
-
     @ExperimentalStdlibApi
     override fun onCharacteristicUpdate(peripheral: BluetoothPeripheral, value: ByteArray, characteristic: BluetoothGattCharacteristic, status: GattStatus) {
         super.onCharacteristicUpdate(peripheral, value, characteristic, status)

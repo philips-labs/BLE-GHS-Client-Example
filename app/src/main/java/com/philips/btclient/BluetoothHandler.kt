@@ -16,6 +16,8 @@ import kotlin.collections.HashMap
 interface BluetoothHandlerListener {
     fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral)
     fun onConnectedPeripheral(peripheral: BluetoothPeripheral)
+    fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
+    }
 }
 
 class BluetoothHandler private constructor(context: Context) {
@@ -96,11 +98,12 @@ class BluetoothHandler private constructor(context: Context) {
                 status: HciStatus
             ) {
                 Timber.i("disconnected '%s' with status %s", peripheral.name, status)
+                listeners.forEach { it.onDisconnectedPeripheral(peripheral) }
 
-                // Reconnect to this device when it becomes available again
-                handler.postDelayed({
-                    central.autoConnectPeripheral(peripheral, peripheralCallback)
-                }, 5000)
+//                // Reconnect to this device when it becomes available again
+//                handler.postDelayed({
+//                    central.autoConnectPeripheral(peripheral, peripheralCallback)
+//                }, 5000)
             }
 
             override fun onDiscoveredPeripheral(
@@ -158,6 +161,18 @@ class BluetoothHandler private constructor(context: Context) {
         return central.isScanning
     }
 
+    fun getPeripheral(peripheralAddress: String): BluetoothPeripheral? {
+        return central.getPeripheral(peripheralAddress)
+    }
+
+    fun getConnectedPeripherals(): List<BluetoothPeripheral> {
+        return central.connectedPeripherals
+    }
+
+    fun getConnectedPeripheral(peripheralAddress: String): BluetoothPeripheral? {
+        return central.connectedPeripherals.firstOrNull { it.address.equals(peripheralAddress, true) }
+    }
+
     fun getConnectServiceUUIDs(): Array<UUID> {
         return serviceHandlers.values.map { it.serviceUUID }.toTypedArray()
     }
@@ -167,14 +182,12 @@ class BluetoothHandler private constructor(context: Context) {
     }
 
     companion object {
-        private var instance: BluetoothHandler? = null
+        @Volatile private var instance: BluetoothHandler? = null
 
-        @Synchronized
         fun getInstance(context: Context): BluetoothHandler {
-            if (instance == null) {
-                instance = BluetoothHandler(context.applicationContext)
+            return instance ?: synchronized(this) {
+                BluetoothHandler(context.applicationContext).also { instance = it }
             }
-            return requireNotNull(instance)
         }
     }
 
