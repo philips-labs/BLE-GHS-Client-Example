@@ -13,6 +13,7 @@ import com.philips.btserver.generichealthservice.UnitCode
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
+import java.util.*
 
 class Observation {
     var handle: Int? = null
@@ -22,6 +23,27 @@ class Observation {
     var pateintId: Int? = null
     var value: ObservationValue? = null
     var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
+
+    constructor(id: Int, type: ObservationType, value: Float, valuePrecision: Int, unitCode: UnitCode, timestamp: LocalDateTime){
+        this.handle = id
+        this.type = type
+        val obsVal = SimpleNumericObservationValue(value, unitCode)
+        obsVal.accuracy = valuePrecision
+        this.value = obsVal
+        this.unitCode = unitCode
+        this.timestamp = timestamp
+    }
+
+    constructor(id: Int, type: ObservationType, value: ByteArray, unitCode: UnitCode, timestamp: LocalDateTime) :
+        this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp)
+
+    constructor(id: Int, type: ObservationType, value: ObservationValue, unitCode: UnitCode, timestamp: LocalDateTime) {
+        this.handle = id
+        this.type = type
+        this.value = value
+        this.unitCode = unitCode
+        this.timestamp = timestamp
+    }
 
     constructor(bytesParser: BluetoothBytesParser) {
         var firstTime = true
