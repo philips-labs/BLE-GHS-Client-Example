@@ -1,19 +1,20 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2021.
+ * All rights reserved.
+ */
 package com.philips.btclient
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Build
-import android.os.Bundle
+import android.os.*
 import android.provider.Settings
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.Observable.OnPropertyChangedCallback
 import com.philips.btclient.acom.Observation
 import com.philips.btclient.acom.SampleArrayObservationValue
 import com.philips.btclient.acom.SimpleNumericObservationValue
@@ -24,17 +25,12 @@ import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
 import com.philips.btclient.util.timestampAsDate
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.Executors
 
 
 class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealthSensorHandlerListener {
-
-    private val REQUEST_ENABLE_BT = 1
-    private val ACCESS_LOCATION_REQUEST = 2
 
     var foundPeripheralsList: ListView? = null
     var foundPeripheralArrayAdapter: PeripheralArrayAdapter? = null
@@ -44,11 +40,11 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     var bluetoothHandler: BluetoothHandler? = null
 
-    val logCallback = object : OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: androidx.databinding.Observable?, propertyId: Int) {
-            if (propertyId == BR.log) updateLogView()
-        }
-    }
+    private val REQUEST_ENABLE_BT = 1
+    private val ACCESS_LOCATION_REQUEST = 2
+
+    private val executor = Executors.newSingleThreadExecutor()
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,9 +53,6 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
         setupFoundPeripheralsList()
         setupConnectedPeripheralsList()
-
-        // Make the observation log scrollable
-//        findViewById<TextView>(R.id.observationsLog).setMovementMethod(ScrollingMovementMethod())
 
         registerReceiver(
             locationServiceStateReceiver,
@@ -81,7 +74,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
                     BluetoothHandler.getInstance(applicationContext).connect(it)
                     // Stop scanning on connect as assume we're going to use the just connected peripheral
                     setScanning(false)
-                    toast("Connecting ${it.name}...")
+                    Toast.makeText(applicationContext, "Connecting ${it.name}...", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -105,7 +98,6 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     override fun onResume() {
         super.onResume()
         checkPermissions()
-        ObservationLog.addOnPropertyChangedCallback(logCallback)
         refreshPerpheralList()
         if (!isBluetoothEnabled()) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -117,7 +109,6 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     override fun onDestroy() {
         super.onDestroy()
-        ObservationLog.removeOnPropertyChangedCallback(logCallback)
         unregisterReceiver(locationServiceStateReceiver)
         bluetoothHandler?.removeListener(this)
     }
@@ -268,6 +259,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     }
 
     // GenericHealthSensorHandlerListener interface methods
+
     override fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         observations.forEach {
@@ -302,9 +294,9 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     }
 
     private fun postObservation(observation: Observation) {
-        doAsync {
+        executor.execute {
             val result = FhirUploader.postObservation(observation)
-            uiThread {
+            handler.post {
                 ObservationLog.log(if (result.isSuccessful) "(Posted ${observation.type})" else "(POST error: ${result.code})")
             }
         }
@@ -312,9 +304,24 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     // Button handling and support
 
+    @Suppress("UNUSED_PARAMETER")
     fun toggleScanning(view: View) {
         bluetoothHandler?.let { setScanning(!it.isScanning()) }
     }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun showObservationLog(view: View) {
+        startActivity(Intent(this, ObservationLogActivity::class.java))
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun openFhirSettings(view: View) {
+        startActivity(Intent(this, FhirActivity::class.java))
+        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
+    }
+
+    // Private methods
 
     private fun setScanning(enabled: Boolean) {
         foundPeripheralArrayAdapter?.clear()
@@ -323,8 +330,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         findViewById<Button>(R.id.scanButton).setText(if (enabled) R.string.stop_scanning else R.string.start_scanning)
     }
 
-    fun showPeripheralInfo(peripheral: BluetoothPeripheral) {
-
+    private fun showPeripheralInfo(peripheral: BluetoothPeripheral) {
         val intent = Intent(this, PeripheralInfoActivity::class.java).apply {
             putExtra("DEVICE_ADDRESS", peripheral.address)
         }
@@ -332,17 +338,4 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
     }
 
-    fun showObservationLog(view: View) {
-        startActivity(Intent(this, ObservationLogActivity::class.java))
-        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
-    }
-
-    fun openFhirSettings(view: View) {
-        startActivity(Intent(this, FhirActivity::class.java))
-        overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
-    }
-
-    private fun updateLogView() {
-//        findViewById<TextView>(R.id.observationsLog).setText(ObservationLog.log)
-    }
 }

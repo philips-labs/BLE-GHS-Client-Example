@@ -1,22 +1,27 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2021.
+ * All rights reserved.
+ */
 package com.philips.btclient
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
-
 
 /**
  * TODO: document the WaveformView
  */
 class WaveformView : View {
 
-    private var _lineColor: Int = Color.BLUE // TODO: use a default from R.color...
-    private var _lineWidth: Float = 2f // TODO: use a default from R.dimen...
+    private var _lineColor: Int = resources.getColor(R.color.design_default_color_on_primary, null)
+    private var _lineWidth: Float = 1.5f
 
     private var _waveform: IntArray? = null
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var lines: FloatArray = FloatArray(0)
 
     var lineColor: Int
         get() = _lineColor
@@ -30,6 +35,7 @@ class WaveformView : View {
         get() = _waveform
         set(value) {
             _waveform = value
+            lines = FloatArray((value?.size ?: 0) * 4)
             postInvalidate()
         }
 
@@ -84,33 +90,26 @@ class WaveformView : View {
         a.recycle()
     }
 
-    var lines: FloatArray = FloatArray(0)
 
+    // Because waveforms being drawn may have different sizes
+    @SuppressLint("DrawAllocation")
     @ExperimentalUnsignedTypes
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        // TODO: consider storing these as member variables to reduce
-        // allocations per draw cycle.
-        val paddingLeft = paddingLeft
-        val paddingTop = paddingTop
-        val paddingRight = paddingRight
-        val paddingBottom = paddingBottom
-
         val contentWidth = width - paddingLeft - paddingRight
         val contentHeight = height - paddingTop - paddingBottom
 
-        val signedArray = _waveform
+        val verticalOffset = (contentHeight - 255f) / 2f
+
         _waveform?.let {
             var lineIndex = 0
-            val arraySize = it.size * 4
-            if (lines.size != arraySize) lines = FloatArray(arraySize)
             for ( i in 0..(it.size - 4)) {
-                lines[lineIndex++] = i / it.size.toFloat() * width
-                lines[lineIndex++] = it[i].toUByte().toFloat() + ((height - 255f) / 2f)
-                lines[lineIndex++] = (i + 1) / it.size.toFloat() * width;
-                lines[lineIndex++] = it[i + 1].toUByte().toFloat() + ((height - 255) / 2f)
+                lines[lineIndex++] = (i / it.size.toFloat() * contentWidth) + paddingLeft
+                lines[lineIndex++] = (it[i].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
+                lines[lineIndex++] = ((i + 1) / it.size.toFloat() * contentWidth) + paddingLeft
+                lines[lineIndex++] = (it[i + 1].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
             }
-            canvas.drawLines(lines, paint);
+            canvas.drawLines(lines, paint)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.philips.btclient
 
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.transition.Slide
 import android.view.*
 import android.widget.TextView
@@ -22,6 +23,8 @@ class ObservationLogActivity : AppCompatActivity() {
             it.setTitle(R.string.observations)
             it.setDisplayHomeAsUpEnabled(true)
         }
+        // Make the observation log scrollable
+        findViewById<TextView>(R.id.observationsLog).setMovementMethod(ScrollingMovementMethod())
         updateLogView()
     }
 

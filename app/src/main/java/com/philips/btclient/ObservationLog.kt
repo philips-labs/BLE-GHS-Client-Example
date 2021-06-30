@@ -3,9 +3,6 @@ package com.philips.btclient
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
 import com.philips.btclient.acom.Observation
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.uiThread
 
 object ObservationLog: BaseObservable() {
     private val MAX_LOG_CHARACTERS = 4000
