@@ -6,8 +6,8 @@
         <item name="colorPrimaryVariant">@color/philips_blue_base</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/philips_blue_tint</item>
-        <item name="colorSecondaryVariant">@color/philips_blue_tint</item>
+        <item name="colorSecondary">@color/philips_blue_deep</item>
+        <item name="colorSecondaryVariant">@color/philips_blue_deep</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
