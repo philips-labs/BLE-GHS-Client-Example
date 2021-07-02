@@ -28,9 +28,12 @@ import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.Executors
+import android.os.Handler
+import android.os.Looper
+import androidx.annotation.RequiresApi
 
-
-class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealthSensorHandlerListener {
+class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
+    GenericHealthSensorHandlerListener {
 
     var foundPeripheralsList: ListView? = null
     var foundPeripheralArrayAdapter: PeripheralArrayAdapter? = null
@@ -38,7 +41,8 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     var connectedPeripheralsList: ListView? = null
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
-    var bluetoothHandler: BluetoothHandler? = null
+    private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
+    private var bluetoothHandler: BluetoothHandler? = null
 
     private val REQUEST_ENABLE_BT = 1
     private val ACCESS_LOCATION_REQUEST = 2
@@ -63,7 +67,8 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     private fun setupFoundPeripheralsList() {
         foundPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
-            android.R.layout.simple_list_item_1)
+            android.R.layout.simple_list_item_1
+        )
 
         foundPeripheralsList = findViewById(R.id.foundPeripheralList) as ListView
         foundPeripheralsList?.let {
@@ -74,7 +79,11 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
                     BluetoothHandler.getInstance(applicationContext).connect(it)
                     // Stop scanning on connect as assume we're going to use the just connected peripheral
                     setScanning(false)
-                    Toast.makeText(applicationContext, "Connecting ${it.name}...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        applicationContext,
+                        "Connecting ${it.name}...",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -83,7 +92,8 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     private fun setupConnectedPeripheralsList() {
         connectedPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
-            android.R.layout.simple_list_item_1)
+            android.R.layout.simple_list_item_1
+        )
 
         connectedPeripheralsList = findViewById(R.id.connectedPeripheralList) as ListView
         connectedPeripheralsList?.let {
@@ -111,11 +121,14 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         super.onDestroy()
         unregisterReceiver(locationServiceStateReceiver)
         bluetoothHandler?.removeListener(this)
+        ghsServiceHandler?.removeListener(this)
     }
 
     private fun refreshPerpheralList() {
         connectedPeripheralArrayAdapter?.clear()
-        connectedPeripheralArrayAdapter?.addAll(BluetoothHandler.getInstance(this).getConnectedPeripherals())
+        connectedPeripheralArrayAdapter?.addAll(
+            BluetoothHandler.getInstance(this).getConnectedPeripherals()
+        )
     }
 
     private val locationServiceStateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -135,11 +148,11 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
     }
 
     private fun initBluetoothHandler() {
-        val ghsServiceHandler = GenericHealthSensorServiceHandler()
-        ghsServiceHandler.addListener(this)
+        ghsServiceHandler = GenericHealthSensorServiceHandler()
+        ghsServiceHandler!!.addListener(this)
         bluetoothHandler = BluetoothHandler.getInstance(applicationContext)
         bluetoothHandler?.let {
-            it.addServiceHander(ghsServiceHandler)
+            it.addServiceHander(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
         }
@@ -260,13 +273,16 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
 
     // GenericHealthSensorHandlerListener interface methods
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
-        observations.forEach {
-            Timber.i(it.toString())
-            updateObservationText(it)
-            ObservationLog.log(it)
-            postObservation(it)
+        Handler.createAsync(Looper.myLooper()!!).post {
+            observations.forEach {
+                Timber.i(it.toString())
+                updateObservationText(it)
+                ObservationLog.log(it)
+                postObservation(it)
+            }
         }
     }
 
@@ -274,22 +290,27 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener, GenericHealt
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.tempObservation).text = "Temp: ${floatValue} deg ${observation.timestamp}"
+                findViewById<TextView>(R.id.tempObservation).text =
+                    "Temp: ${floatValue} deg ${observation.timestamp}"
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.hrObservation).text = "HR: ${floatValue} bpm ${observation.timestamp}"
+                findViewById<TextView>(R.id.hrObservation).text =
+                    "HR: ${floatValue} bpm ${observation.timestamp}"
             }
             ObservationType.MDC_SPO2_OXYGENATION_RATIO -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.spo2Observation).text = "HR: ${floatValue}% ${observation.timestamp}"
+                findViewById<TextView>(R.id.spo2Observation).text =
+                    "HR: ${floatValue}% ${observation.timestamp}"
             }
             ObservationType.MDC_PPG_TIME_PD_PP -> {
                 val sampleArray = (observation.value as SampleArrayObservationValue).samples
-                findViewById<TextView>(R.id.ppgObservationTitle).text = "PPG Waveform ${observation.timestamp}"
+                findViewById<TextView>(R.id.ppgObservationTitle).text =
+                    "PPG Waveform ${observation.timestamp}"
                 findViewById<WaveformView>(R.id.ppgObservation).setWaveform(sampleArray)
             }
-            else -> findViewById<TextView>(R.id.ppgObservation).text = "${observation.type} ${observation.timestampAsDate()}"
+            else -> findViewById<TextView>(R.id.ppgObservation).text =
+                "${observation.type} ${observation.timestampAsDate()}"
         }
     }
 

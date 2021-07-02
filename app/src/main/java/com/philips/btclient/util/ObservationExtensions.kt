@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2021.
+ * All rights reserved.
+ */
 package com.philips.btclient.util
 
 import android.os.Build
@@ -19,7 +23,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun Observation.toPPGSampleArray():  ByteArray {
+fun Observation.toPPGSampleArray(): ByteArray {
     return this.value?.let {
         val ppgData = this.value as SampleArrayObservationValue
         ppgData.samples
@@ -31,15 +35,18 @@ fun Observation.timestampAsDate(): Date {
 }
 
 fun LocalDateTime.toJavaDate(): Date {
-    return Date.from(this.toJavaLocalDateTime()
-        .atZone(ZoneId.systemDefault())
-        .toInstant())
+    return Date.from(
+        this.toJavaLocalDateTime()
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun Observation.asFhir(): String {
     val unitCodeEnum = unitCode ?: UnitCode.UNKNOWN_CODE
-    val zonedDateTime = ZonedDateTime.ofInstant(timestampAsDate().toInstant(), ZoneId.systemDefault())
+    val zonedDateTime =
+        ZonedDateTime.ofInstant(timestampAsDate().toInstant(), ZoneId.systemDefault())
     val dateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(zonedDateTime)
     val observationType = type ?: ObservationType.UNKNOWN_STATUS_CODE
     val fhir = buildJsonObject {

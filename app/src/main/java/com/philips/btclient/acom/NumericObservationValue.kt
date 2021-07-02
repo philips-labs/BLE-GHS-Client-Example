@@ -4,6 +4,7 @@
  */
 package com.philips.btclient.acom
 
+@Suppress("unused")
 open class NumericObservationValue: ObservationValue() {
     var accuracy: Int? = null
 

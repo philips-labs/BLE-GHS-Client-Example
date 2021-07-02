@@ -26,9 +26,12 @@ class ObservationTest {
         val isSimple = obsVal is SimpleNumericObservationValue
         assertTrue(isSimple)
 
-        assertEquals(randomValue, (obs.value as SimpleNumericObservationValue).value )
+        assertEquals(randomValue, (obs.value as SimpleNumericObservationValue).value)
         assertEquals(UnitCode.MDC_DIM_BEAT_PER_MIN, obs.unitCode)
-        assertEquals(UnitCode.MDC_DIM_BEAT_PER_MIN, (obs.value as SimpleNumericObservationValue).unitCode)
+        assertEquals(
+            UnitCode.MDC_DIM_BEAT_PER_MIN,
+            (obs.value as SimpleNumericObservationValue).unitCode
+        )
         assertEquals(now, obs.timestamp)
     }
 
@@ -54,7 +57,8 @@ class ObservationTest {
             value = randomValue,
             valuePrecision = observationType.numericPrecision(),
             unitCode = UnitCode.MDC_DIM_BEAT_PER_MIN,
-            timestamp = now)
+            timestamp = now
+        )
     }
 
     private fun create_sample_array_observation(): Observation {
@@ -63,15 +67,17 @@ class ObservationTest {
             type = observationType,
             value = randomSampleArray,
             unitCode = UnitCode.MDC_DIM_BEAT_PER_MIN,
-            timestamp = now)
+            timestamp = now
+        )
     }
 }
 
 fun ObservationType.randomNumericValue(): Float {
-    return when(this) {
-        ObservationType.MDC_ECG_HEART_RATE ->  kotlin.random.Random.nextInt(60, 70).toFloat()
-        ObservationType.MDC_TEMP_BODY ->  kotlin.random.Random.nextInt(358, 370).toFloat() / 10f
-        ObservationType.MDC_SPO2_OXYGENATION_RATIO ->  kotlin.random.Random.nextInt(970, 990).toFloat() / 10f
+    return when (this) {
+        ObservationType.MDC_ECG_HEART_RATE -> kotlin.random.Random.nextInt(60, 70).toFloat()
+        ObservationType.MDC_TEMP_BODY -> kotlin.random.Random.nextInt(358, 370).toFloat() / 10f
+        ObservationType.MDC_SPO2_OXYGENATION_RATIO -> kotlin.random.Random.nextInt(970, 990)
+            .toFloat() / 10f
         else -> Float.NaN
     }
 }
@@ -82,39 +88,43 @@ fun ObservationType.randomSampleArray(): ByteArray {
     val samplesPerSecond = kotlin.random.Random.nextInt(40, 70)
     val sampleSeconds = 5
     val buffer = ByteArray(samplesPerSecond * sampleSeconds)
-    buffer.fillWith { i -> (Math.sin(numberOfCycles * (2 * Math.PI) * i / samplesPerSecond) * 200).toInt().toByte() }
+    buffer.fillWith { i ->
+        (Math.sin(numberOfCycles * (2 * Math.PI) * i / samplesPerSecond) * 200).toInt().toByte()
+    }
     return buffer
 }
 
 fun ObservationType.numericPrecision(): Int {
-    return when(this) {
-        ObservationType.MDC_ECG_HEART_RATE ->  0
+    return when (this) {
+        ObservationType.MDC_ECG_HEART_RATE -> 0
         ObservationType.MDC_TEMP_BODY,
-        ObservationType.MDC_SPO2_OXYGENATION_RATIO->  1
+        ObservationType.MDC_SPO2_OXYGENATION_RATIO -> 1
         else -> 0
     }
 }
 
 fun ObservationType.unitCode(): UnitCode {
-    return when(this) {
-        ObservationType.MDC_ECG_HEART_RATE ->  UnitCode.MDC_DIM_BEAT_PER_MIN
-        ObservationType.MDC_TEMP_BODY ->  UnitCode.MDC_DIM_DEGC
+    return when (this) {
+        ObservationType.MDC_ECG_HEART_RATE -> UnitCode.MDC_DIM_BEAT_PER_MIN
+        ObservationType.MDC_TEMP_BODY -> UnitCode.MDC_DIM_DEGC
         ObservationType.MDC_SPO2_OXYGENATION_RATIO -> UnitCode.MDC_DIM_PERCENT
-        ObservationType.MDC_PPG_TIME_PD_PP ->  UnitCode.MDC_DIM_INTL_UNIT
+        ObservationType.MDC_PPG_TIME_PD_PP -> UnitCode.MDC_DIM_INTL_UNIT
         else -> UnitCode.MDC_DIM_INTL_UNIT
     }
 }
 
 fun ObservationType.shortUnitCode(): UnitCode {
-    return when(this) {
-        ObservationType.MDC_ECG_HEART_RATE ->  UnitCode.MDC_DIM_BEAT_PER_MIN
-        ObservationType.MDC_TEMP_BODY ->  UnitCode.MDC_DIM_DEGC
+    return when (this) {
+        ObservationType.MDC_ECG_HEART_RATE -> UnitCode.MDC_DIM_BEAT_PER_MIN
+        ObservationType.MDC_TEMP_BODY -> UnitCode.MDC_DIM_DEGC
         ObservationType.MDC_SPO2_OXYGENATION_RATIO -> UnitCode.MDC_DIM_PERCENT
-        ObservationType.MDC_PPG_TIME_PD_PP ->  UnitCode.MDC_DIM_INTL_UNIT
+        ObservationType.MDC_PPG_TIME_PD_PP -> UnitCode.MDC_DIM_INTL_UNIT
         else -> unitCode()
     }
 }
 
 fun ByteArray.fillWith(action: (Int) -> Byte) {
-    for (i in 0 until size) { this[i] = action(i) }
+    for (i in 0 until size) {
+        this[i] = action(i)
+    }
 }

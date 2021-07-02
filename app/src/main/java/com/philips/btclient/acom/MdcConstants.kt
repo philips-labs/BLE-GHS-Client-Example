@@ -2,6 +2,8 @@
  * Copyright (c) Koninklijke Philips N.V. 2020.
  * All rights reserved.
  */
+@file:Suppress("unused")
+
 package com.philips.mjolnir.services.handlers.generichealthsensor.acom
 
 /*

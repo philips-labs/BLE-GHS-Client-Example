@@ -24,6 +24,7 @@ import java.nio.ByteOrder
  * supported: a simple observation and one with multiple components. There are three generalizations of the
  * discrete observation class.
  */
+@Suppress("unused")
 class AcomObject {
 
     /*

@@ -2,6 +2,8 @@
  * Copyright (c) Koninklijke Philips N.V. 2020.
  * All rights reserved.
  */
+@file:Suppress("unused")
+
 package com.philips.btclient.extensions
 
 import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
@@ -27,13 +29,14 @@ fun BluetoothBytesParser.peekIntValue(formatType: Int): Int? {
 }
 
 /**
- * Return an Integer value of the specified type. This operation will NOT advance the internal offset to the next position.
+ * Test if the next attribute (32-bit int) is a ACOM object type attribute (used in receiving bytes
+ * to indicate that the last object has completed as attributes can be in any order)
+ * This will not change the offset into the bytes being parsed
  *
- * @param formatType The format type used to interpret the byte(s) value
- * @return An Integer object or null in case the byte array was not valid
+ * @return True is the next attribute is a object type attribtue
  */
 fun BluetoothBytesParser.isNextAttributeType(): Boolean {
-    val nextAttribte = peekIntValue(BluetoothBytesParser.FORMAT_UINT32)
+    val nextAttribte = peekIntValue(FORMAT_UINT32)
     return nextAttribte?.let { MdcConstants.isTypeAttribute(nextAttribte) } ?: false
 }
 
@@ -45,8 +48,7 @@ fun BluetoothBytesParser.atEnd(): Boolean {
  * Return the next ACOM Observation. This operation will automatically advance the internal offset to the next position after the
  * observation bytes. Note it is assumed that the offset is at the start of the observation bytes.
  *
- * @param formatType the format type used to interpret the byte(s) value
- * @return an Integer object or null in case the observation was not valid
+ * @return the next observation from the bytes received. Return null if the next bytes are not an observation
  */
 fun BluetoothBytesParser.getObservation(): Observation? {
     if (atEnd() || !isNextAttributeType() ) {
@@ -55,6 +57,11 @@ fun BluetoothBytesParser.getObservation(): Observation? {
     return Observation(this)
 }
 
+/**
+ * Return all the next ACOM Observations. This operation will read observations until no more can be read from the bytes.
+ *
+ * @return the a list observations from the bytes received (could be empty if no observations)
+ */
 fun BluetoothBytesParser.getObservations(): List<Observation> {
     val observations = mutableListOf<Observation>()
     var obs: Observation? = getObservation()

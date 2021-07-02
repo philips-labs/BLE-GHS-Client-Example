@@ -64,7 +64,14 @@ class WaveformView : View {
     }
 
     fun setWaveform(ppgArray: ByteArray) {
-        this.waveform = ppgArray.foldIndexed(IntArray(ppgArray.size)) { i, a, v -> a.apply { set(i, v.toInt()) } }
+        this.waveform = ppgArray.foldIndexed(IntArray(ppgArray.size)) { i, a, v ->
+            a.apply {
+                set(
+                    i,
+                    v.toInt()
+                )
+            }
+        }
     }
 
     private fun init(attrs: AttributeSet?, defStyle: Int) {
@@ -103,11 +110,13 @@ class WaveformView : View {
 
         _waveform?.let {
             var lineIndex = 0
-            for ( i in 0..(it.size - 4)) {
+            for (i in 0..(it.size - 4)) {
                 lines[lineIndex++] = (i / it.size.toFloat() * contentWidth) + paddingLeft
-                lines[lineIndex++] = (it[i].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
+                lines[lineIndex++] =
+                    (it[i].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
                 lines[lineIndex++] = ((i + 1) / it.size.toFloat() * contentWidth) + paddingLeft
-                lines[lineIndex++] = (it[i + 1].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
+                lines[lineIndex++] =
+                    (it[i + 1].toUByte().toFloat() + verticalOffset) + paddingTop + paddingBottom
             }
             canvas.drawLines(lines, paint)
         }

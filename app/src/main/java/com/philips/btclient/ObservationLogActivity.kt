@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2021.
+ * All rights reserved.
+ */
 package com.philips.btclient
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.transition.Slide
 import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity

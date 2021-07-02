@@ -8,6 +8,7 @@ import com.philips.btclient.acom.AcomObject
 
 interface GenericHealthSensorAcomBytesListener {
 
+    @Suppress("unused")
     enum class ObservationError {
         InvalidObservationType,
         InvalidValueType,

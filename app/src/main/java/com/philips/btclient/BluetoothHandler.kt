@@ -10,10 +10,8 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import com.philips.btclient.ghs.GenericHealthSensorServiceHandler
 import com.welie.blessed.*
 import timber.log.Timber
-import timber.log.Timber.DebugTree
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -25,7 +23,7 @@ interface BluetoothHandlerListener {
 }
 
 class BluetoothHandler private constructor(context: Context) {
-    lateinit var central: BluetoothCentralManager
+    var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
     private val discoveredPeripherals = mutableSetOf<BluetoothPeripheral>()
     private val serviceHandlers = HashMap<UUID, ServiceHandler>()
@@ -174,7 +172,12 @@ class BluetoothHandler private constructor(context: Context) {
     }
 
     fun getConnectedPeripheral(peripheralAddress: String): BluetoothPeripheral? {
-        return central.connectedPeripherals.firstOrNull { it.address.equals(peripheralAddress, true) }
+        return central.connectedPeripherals.firstOrNull {
+            it.address.equals(
+                peripheralAddress,
+                true
+            )
+        }
     }
 
     fun getConnectServiceUUIDs(): Array<UUID> {
@@ -186,7 +189,8 @@ class BluetoothHandler private constructor(context: Context) {
     }
 
     companion object {
-        @Volatile private var instance: BluetoothHandler? = null
+        @Volatile
+        private var instance: BluetoothHandler? = null
 
         fun getInstance(context: Context): BluetoothHandler {
             return instance ?: synchronized(this) {

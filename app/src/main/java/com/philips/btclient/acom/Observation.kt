@@ -13,7 +13,6 @@ import com.philips.btserver.generichealthservice.UnitCode
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
-import java.util.*
 
 class Observation {
     var handle: Int? = null

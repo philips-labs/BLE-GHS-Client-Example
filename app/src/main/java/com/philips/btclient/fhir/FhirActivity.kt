@@ -4,7 +4,6 @@
  */
 package com.philips.btclient.fhir
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,7 +17,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.philips.btclient.R
-
 
 class FhirActivity : AppCompatActivity() {
 
@@ -38,10 +36,10 @@ class FhirActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                if (isValidUrl(hapiUrl.getText().toString())) {
-                    hapiUrl.setError(null)
+                if (isValidUrl(hapiUrl.text.toString())) {
+                    hapiUrl.error = null
                 } else {
-                    hapiUrl.setError("Invalid URL")
+                    hapiUrl.error = "Invalid URL"
                 }
             }
 
@@ -56,7 +54,7 @@ class FhirActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.getItemId()) {
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
                 overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
@@ -74,14 +72,18 @@ class FhirActivity : AppCompatActivity() {
         FhirUploader.usePublicHapiServer = (view as Switch).isChecked
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun saveUrl(view: View) {
         val hapiUrl = findViewById<EditText>(R.id.hapiServerUrl)
-        if (isValidUrl(hapiUrl.getText().toString())) {
+        if (isValidUrl(hapiUrl.text.toString())) {
+            FhirUploader.localHapiServer = hapiUrl.text.toString()
             Toast.makeText(this@FhirActivity, "Saved HAPI URL", Toast.LENGTH_SHORT).show()
         } else {
-            hapiUrl.setError("Not saved invalid URL")
+            hapiUrl.error = "Not saved invalid URL"
         }
     }
+
+    @Suppress("UNUSED_PARAMETER")
     fun revertUrl(view: View) { initHapiEditText() }
 
     private fun isValidUrl(url: String): Boolean {
@@ -91,6 +93,6 @@ class FhirActivity : AppCompatActivity() {
     private fun initHapiEditText() {
         val hapiUrl = findViewById<EditText>(R.id.hapiServerUrl)
         hapiUrl.setText(FhirUploader.localHapiServer, TextView.BufferType.EDITABLE)
-        hapiUrl.setError(null)
+        hapiUrl.error = null
     }
 }

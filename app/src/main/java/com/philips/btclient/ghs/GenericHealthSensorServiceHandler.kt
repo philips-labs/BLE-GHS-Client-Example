@@ -1,11 +1,10 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2021.
+ * All rights reserved.
+ */
 package com.philips.btclient.ghs
 
-import android.bluetooth.BluetoothGatt.*
 import android.bluetooth.BluetoothGattCharacteristic
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import androidx.annotation.RequiresApi
 import com.philips.btclient.ServiceHandler
 import com.philips.btclient.acom.AcomObject
 import com.philips.btclient.asHexString
@@ -18,10 +17,9 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
 
     private val segmentHandler = GenericHealthSensorSegmentHandler(this)
     private val acomBytesHandler = GenericHealthSensorAcomBytesHandler(this)
-    @RequiresApi(Build.VERSION_CODES.P)
-    private val handler = Handler.createAsync(Looper.myLooper() ?: Looper.getMainLooper())
 
     var listeners: MutableList<GenericHealthSensorHandlerListener> = ArrayList()
+
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
 
@@ -47,6 +45,7 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
     }
 
     // Listener methods
+
     fun addListener(listener: GenericHealthSensorHandlerListener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener)
@@ -74,14 +73,10 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
     }
 
     // GenericHealthSensorAcomBytesListener
-    @RequiresApi(Build.VERSION_CODES.P)
+
     override fun onReceivedAcomObject(deviceAddress: String, acomObject: AcomObject) {
         if (acomObject.observations.isNotEmpty()) {
-            listeners.forEach { listener ->
-                Handler.createAsync(Looper.myLooper()!!).post {
-                    listener.onReceivedObservations(deviceAddress, acomObject.observations)
-                }
-            }
+            listeners.forEach { it.onReceivedObservations(deviceAddress, acomObject.observations) }
         }
     }
 
@@ -90,7 +85,7 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
         byteArray: ByteArray,
         error: GenericHealthSensorAcomBytesListener.ObservationError
     ) {
-        TODO("Not yet implemented")
+        Timber.i(name, "onAcomError for device <$deviceAddress> error: $error")
     }
 
     @ExperimentalStdlibApi

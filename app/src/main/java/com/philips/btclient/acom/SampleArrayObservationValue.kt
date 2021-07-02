@@ -11,5 +11,4 @@ class SampleArrayObservationValue(val samples: ByteArray, override var unitCode:
     override fun toString(): String {
         return "SampleArrayObservationValue length: ${samples.size}  bytes: ${samples.asHexString()}"
     }
-
 }
