@@ -1,17 +1,17 @@
 [![Android CI](https://github.com/philips-internal/bluetooth-server-example/actions/workflows/android.yml/badge.svg)](https://github.com/philips-internal/bluetooth-server-example/actions/workflows/android.yml)
 
-# BLE Generic Health Sensor Server Simulator
+# BLE Generic Health Sensor Client Example
 
 *Note: It is assumed the reader is familiar with Bluetooth Low Energy GATT Servers and Android development*
 
 
 **Key concepts**:
 
-This codebase is used as a demonstrator of the GHS specification features and will also be used for Bluetooth SIG Interoperability Testing of the GHS specification. As such it will be contiously modified and extended as the GHS specification evolves.
+This codebase is used as a demonstrator of the client to receive and parse data from a peripheral using the GHS specification features and will also be used for Bluetooth SIG Interoperability Testing of the GHS specification. As such it will be contiously modified and extended as the GHS specification evolves.
 
 **Description**:  
 
-An implementation of the proposed Generic Health Sensor standard server for Android that is easily modified or extended to emit various types of health observations.
+An implementation of a client that receives and parses data from a peripheral using the proposed Generic Health Sensor standard server for Android that is easily modified or extended to emit various types of health observations.
 
 This BLE Server simulator supports the Generic Health Sensor (GHS) GATT service that is currently under development in the Bluetooth SIG. As it is an evolving specification it can also be used as a "playground" for various BLE properties and data representation.
 
@@ -49,7 +49,7 @@ The packages in the project are as follows:
 * ```com.philips.btserver.generichealthservice``` - Classes that handle and suppor the Generic Health Sensor Service, including data models and emitting sample observations.
 * ```com.philips.btserverapp``` - Activity, Fragments and Adapter to support the UI.
 
-## Simulator Usage
+## Example Usage
 
 The Simulator UX consists of a main screen with 3 tabbed pages.
 
