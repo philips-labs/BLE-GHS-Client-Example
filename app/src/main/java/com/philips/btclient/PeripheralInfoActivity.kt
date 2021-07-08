@@ -21,7 +21,7 @@ class PeripheralInfoActivity : AppCompatActivity() {
         val deviceAddress = intent.getStringExtra("DEVICE_ADDRESS")
         var title = "No peripheral '$deviceAddress' found"
         deviceAddress?.let { addr ->
-            peripheral = BluetoothHandler.getInstance(this).getConnectedPeripheral(addr)
+            peripheral = ServiceHandlerManager.getInstance(this).getConnectedPeripheral(addr)
             peripheral?.let {
                 setupPeripheral(it)
                 title = "${it.name} information"

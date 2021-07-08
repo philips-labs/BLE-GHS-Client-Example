@@ -15,19 +15,19 @@ import timber.log.Timber
 import java.util.*
 import kotlin.collections.HashMap
 
-interface BluetoothHandlerListener {
+interface ServiceHandlerManagerListener {
     fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral)
     fun onConnectedPeripheral(peripheral: BluetoothPeripheral)
     fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
     }
 }
 
-class BluetoothHandler private constructor(context: Context) {
+class ServiceHandlerManager private constructor(context: Context) {
     var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
     private val discoveredPeripherals = mutableSetOf<BluetoothPeripheral>()
     private val serviceHandlers = HashMap<UUID, ServiceHandler>()
-    private val listeners = mutableSetOf<BluetoothHandlerListener>()
+    private val listeners = mutableSetOf<ServiceHandlerManagerListener>()
     private val peripheralCallback: BluetoothPeripheralCallback =
         object : BluetoothPeripheralCallback() {
 
@@ -138,11 +138,11 @@ class BluetoothHandler private constructor(context: Context) {
         central.connectPeripheral(peripheral, peripheralCallback)
     }
 
-    fun addListener(listener: BluetoothHandlerListener) {
+    fun addListener(listener: ServiceHandlerManagerListener) {
         listeners.add(listener)
     }
 
-    fun removeListener(listener: BluetoothHandlerListener) {
+    fun removeListener(listener: ServiceHandlerManagerListener) {
         listeners.remove(listener)
     }
 
@@ -190,11 +190,11 @@ class BluetoothHandler private constructor(context: Context) {
 
     companion object {
         @Volatile
-        private var instance: BluetoothHandler? = null
+        private var instance: ServiceHandlerManager? = null
 
-        fun getInstance(context: Context): BluetoothHandler {
+        fun getInstance(context: Context): ServiceHandlerManager {
             return instance ?: synchronized(this) {
-                BluetoothHandler(context.applicationContext).also { instance = it }
+                ServiceHandlerManager(context.applicationContext).also { instance = it }
             }
         }
     }

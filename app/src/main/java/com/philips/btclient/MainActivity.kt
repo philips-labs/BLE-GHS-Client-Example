@@ -32,7 +32,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
 
-class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
+class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     GenericHealthSensorHandlerListener {
 
     var foundPeripheralsList: ListView? = null
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
-    private var bluetoothHandler: BluetoothHandler? = null
+    private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val REQUEST_ENABLE_BT = 1
     private val ACCESS_LOCATION_REQUEST = 2
@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
             it.setOnItemClickListener { adapterView, view, position, l ->
                 val peripheral = foundPeripheralArrayAdapter!!.getItem(position)
                 peripheral?.let {
-                    BluetoothHandler.getInstance(applicationContext).connect(it)
+                    ServiceHandlerManager.getInstance(applicationContext).connect(it)
                     // Stop scanning on connect as assume we're going to use the just connected peripheral
                     setScanning(false)
                     Toast.makeText(
@@ -120,14 +120,14 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(locationServiceStateReceiver)
-        bluetoothHandler?.removeListener(this)
+        serviceHandlerManager?.removeListener(this)
         ghsServiceHandler?.removeListener(this)
     }
 
     private fun refreshPerpheralList() {
         connectedPeripheralArrayAdapter?.clear()
         connectedPeripheralArrayAdapter?.addAll(
-            BluetoothHandler.getInstance(this).getConnectedPeripherals()
+            ServiceHandlerManager.getInstance(this).getConnectedPeripherals()
         )
     }
 
@@ -150,8 +150,8 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
     private fun initBluetoothHandler() {
         ghsServiceHandler = GenericHealthSensorServiceHandler()
         ghsServiceHandler!!.addListener(this)
-        bluetoothHandler = BluetoothHandler.getInstance(applicationContext)
-        bluetoothHandler?.let {
+        serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
+        serviceHandlerManager?.let {
             it.addServiceHander(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
     }
 
     /*
-     * BluetoothHandlerListener interface methods
+     * ServiceHandlerManagerListener interface methods
      */
 
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {
@@ -327,7 +327,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
 
     @Suppress("UNUSED_PARAMETER")
     fun toggleScanning(view: View) {
-        bluetoothHandler?.let { setScanning(!it.isScanning()) }
+        serviceHandlerManager?.let { setScanning(!it.isScanning()) }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -346,7 +346,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
 
     private fun setScanning(enabled: Boolean) {
         foundPeripheralArrayAdapter?.clear()
-        if (enabled) bluetoothHandler?.startScanning() else bluetoothHandler?.stopScanning()
+        if (enabled) serviceHandlerManager?.startScanning() else serviceHandlerManager?.stopScanning()
         findViewById<TextView>(R.id.foundPeripheralLabel).setText(if (enabled) R.string.found_devices_scanning else R.string.found_devices_not_scanning)
         findViewById<Button>(R.id.scanButton).setText(if (enabled) R.string.stop_scanning else R.string.start_scanning)
     }
