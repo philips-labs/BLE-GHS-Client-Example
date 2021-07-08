@@ -23,7 +23,7 @@ interface BluetoothHandlerListener {
 }
 
 class BluetoothHandler private constructor(context: Context) {
-    var central: BluetoothCentralManager
+    private var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
     private val discoveredPeripherals = mutableSetOf<BluetoothPeripheral>()
     private val serviceHandlers = HashMap<UUID, ServiceHandler>()
@@ -32,9 +32,7 @@ class BluetoothHandler private constructor(context: Context) {
         object : BluetoothPeripheralCallback() {
 
             override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
-                //peripheral.requestConnectionPriority(CONNECTION_PRIORITY_HIGH)
-                val services = peripheral.services
-                for (service in services) {
+                peripheral.services.forEach { service ->
                     serviceHandlers[service.uuid]?.onCharacteristicsDiscovered(
                         peripheral,
                         service.characteristics
@@ -83,7 +81,6 @@ class BluetoothHandler private constructor(context: Context) {
             }
         }
 
-    // Callback for central
     private val bluetoothCentralManagerCallback: BluetoothCentralManagerCallback =
         object : BluetoothCentralManagerCallback() {
             override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
@@ -101,11 +98,6 @@ class BluetoothHandler private constructor(context: Context) {
             ) {
                 Timber.i("disconnected '%s' with status %s", peripheral.name, status)
                 listeners.forEach { it.onDisconnectedPeripheral(peripheral) }
-
-//                // Reconnect to this device when it becomes available again
-//                handler.postDelayed({
-//                    central.autoConnectPeripheral(peripheral, peripheralCallback)
-//                }, 5000)
             }
 
             override fun onDiscoveredPeripheral(
@@ -117,14 +109,11 @@ class BluetoothHandler private constructor(context: Context) {
                     Timber.i("Found peripheral '%s'", peripheral.name)
                     listeners.forEach { it.onDiscoveredPeripheral(peripheral) }
                 }
-//                central.stopScan()
-//                central.connectPeripheral(peripheral, peripheralCallback)
             }
 
             override fun onBluetoothAdapterStateChanged(state: Int) {
                 Timber.i("bluetooth adapter changed state to %d", state)
                 if (state == BluetoothAdapter.STATE_ON) {
-                    // Bluetooth is on now, start scanning again
                     startScanning()
                 }
             }
@@ -147,7 +136,6 @@ class BluetoothHandler private constructor(context: Context) {
     }
 
     fun startScanning() {
-        // Scan for peripherals with a certain service UUIDs
         central.startPairingPopupHack()
         handler.postDelayed(
             { central.scanForPeripheralsWithServices(getConnectServiceUUIDs()) },
@@ -163,10 +151,6 @@ class BluetoothHandler private constructor(context: Context) {
         return central.isScanning
     }
 
-    fun getPeripheral(peripheralAddress: String): BluetoothPeripheral? {
-        return central.getPeripheral(peripheralAddress)
-    }
-
     fun getConnectedPeripherals(): List<BluetoothPeripheral> {
         return central.connectedPeripherals
     }
@@ -180,11 +164,11 @@ class BluetoothHandler private constructor(context: Context) {
         }
     }
 
-    fun getConnectServiceUUIDs(): Array<UUID> {
+    private fun getConnectServiceUUIDs(): Array<UUID> {
         return serviceHandlers.values.map { it.serviceUUID }.toTypedArray()
     }
 
-    fun addServiceHander(serviceHandler: ServiceHandler) {
+    fun addServiceHandler(serviceHandler: ServiceHandler) {
         serviceHandlers[serviceHandler.serviceUUID] = serviceHandler
     }
 
@@ -206,5 +190,4 @@ class BluetoothHandler private constructor(context: Context) {
             Handler(Looper.getMainLooper())
         )
     }
-
 }

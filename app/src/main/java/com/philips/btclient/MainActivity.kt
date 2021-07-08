@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(), BluetoothHandlerListener,
         ghsServiceHandler!!.addListener(this)
         bluetoothHandler = BluetoothHandler.getInstance(applicationContext)
         bluetoothHandler?.let {
-            it.addServiceHander(ghsServiceHandler!!)
+            it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
         }
