@@ -4,23 +4,21 @@
 
 **Key concepts**:
 
-This codebase is used as a demonstrator of the client to receive and parse data from a peripheral using the GHS specification features and will also be used for Bluetooth SIG Interoperability Testing of the GHS specification. As such it will be contiously modified and extended as the GHS specification evolves.
+This codebase is used as a demonstrator of the BLE Generic Health Sensor client to receive, parse and display data from a peripheral using the GHS specification features. A project with a GHS peripheral simulator Android application has been made open source and is available [here](https://github.com/philips-labs/BLE-GHS-Server-Simulator) and will also be used for Bluetooth SIG Interoperability Testing of the GHS specification. As such it will be contiously modified and extended as the GHS specification evolves.
 
 **Description**:  
 
-An implementation of a client that receives and parses data from a peripheral using the proposed Generic Health Sensor standard server for Android that is easily modified or extended to emit various types of health observations.
+An example implementation of an Android BLE client app that receives, parses and displays data from a peripheral using the proposed Generic Health Sensor standard that is easily modified. It is built on top of the [Blessed for Android](https://github.com/weliem/blessed-android) open source project which provides a library to simplify BLE communications. A layer to make handling BLE services/characteristics is built on top of Blessed and used to create a GHS service handler.
 
-This BLE Server simulator supports the Generic Health Sensor (GHS) GATT service that is currently under development in the Bluetooth SIG. As it is an evolving specification it can also be used as a "playground" for various BLE properties and data representation.
+This BLE client application supports peripherals using the Generic Health Sensor (GHS) GATT service that is currently under development in the Bluetooth SIG. As it is an evolving specification it can also be used as a "playground" for various BLE properties and data representation.
 
 This service in turn is based on the IEEE 11073-10206 specification that specifies an Abstract Content Model (ACOM) for personal health device data - covering any type of health observation that can be modeled using the IEEE 11073-10101 nomenclature system.
 
 These standards provide a long-sought solution for interoperable personal health devices using Bluetooth Low Energy. When adopted, the GHS GATT service will create both a common BLE and data model, reducing the integration and development efforts of using personal health devices in a broad set of healthcare solutions.
 
-This project implements an example Bluetooth server/peripheral via an Android application that is capable of transmitting any type of specfic health observation to connected clients. In the example heart rate (a simple numeric value), SpO2 (another simple numeric value) and a PPG (array of values). The supported types can be easily extended by the developer.
+This project implements an example Bluetooth cleint via an Android application that is capable of receiving health observations to connected clients. In the example temperature (a simple numeric value), heart rate (a simple numeric value), SpO2 (another simple numeric value) and a PPG (array of values) observations are supported. The supported types can be easily extended by the developer.
 
-In addition the application supports "Experimental" modifications to the data format to experiment during the development of the GHS specification.  The expermental features can be easily extended or modified by the developer.
-
-The server works in conjunction with a client that can connect to a GHS service and manage the types of observation data specified. A standard BLE client application (e.g. LightBlue) can be used to connect and view/log the behavior and data from the GHS peripheral.
+The client works in conjunction with a GHS peripheral that can connected to a GHS service and manage the types of observation data specified. An open source project with a [GHS peripheral simulator Android application](https://github.com/philips-labs/BLE-GHS-Server-Simulator) is available  and will also be used for Bluetooth SIG Interoperability Testing of the GHS specification. As such it will be contiously modified and extended as the GHS specification evolves.
 
 **Technology stack**: 
 
