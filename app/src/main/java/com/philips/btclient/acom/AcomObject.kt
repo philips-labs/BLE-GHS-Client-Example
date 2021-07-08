@@ -25,7 +25,7 @@ import java.nio.ByteOrder
  * discrete observation class.
  */
 @Suppress("unused")
-class AcomObject {
+class AcomObject(bytes: ByteArray) {
 
     /*
      * id: used to reference the object. The id is of type referenceType, the structure of which is not further specified.
@@ -49,12 +49,12 @@ class AcomObject {
 
     var observations: List<Observation> = emptyList()
 
-    constructor(bytes: ByteArray) {
+    init {
         readObservations(BluetoothBytesParser(bytes, 0, ByteOrder.BIG_ENDIAN))
     }
 
     private fun readObservations(bytesParser: BluetoothBytesParser) {
-        observations = bytesParser.getObservations();
+        observations = bytesParser.getObservations()
     }
 
 }
