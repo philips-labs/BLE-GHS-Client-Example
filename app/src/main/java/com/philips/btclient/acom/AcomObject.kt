@@ -49,6 +49,11 @@ class AcomObject(bytes: ByteArray) {
 
     var observations: List<Observation> = emptyList()
 
+    /*
+     * Any errors in the bytes causes the observation to be skipped... and potentially an issue parsing
+     * from that point forward in which case the observations could end up empty. An optional improvment
+     * would be to throw and catch exceptions with the details of where in the bytes an error occured
+     */
     init {
         readObservations(BluetoothBytesParser(bytes, 0, ByteOrder.BIG_ENDIAN))
     }

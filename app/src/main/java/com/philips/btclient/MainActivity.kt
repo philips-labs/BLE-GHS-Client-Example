@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         ghsServiceHandler!!.addListener(this)
         serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
         serviceHandlerManager?.let {
-            it.addServiceHander(ghsServiceHandler!!)
+            it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
         }
@@ -271,7 +271,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         connectedPeripheralArrayAdapter?.remove(peripheral)
     }
 
-    // GenericHealthSensorHandlerListener interface methods
+    /*
+     * GenericHealthSensorHandlerListener interface methods
+     */
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {
@@ -323,7 +325,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         }
     }
 
-    // Button handling and support
+    /*
+     * Button handling and support
+     */
 
     @Suppress("UNUSED_PARAMETER")
     fun toggleScanning(view: View) {
