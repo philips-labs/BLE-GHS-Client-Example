@@ -9,6 +9,7 @@ import com.philips.btclient.util.asFhir
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 
 object FhirUploader {
     var usePublicHapiServer = true
@@ -32,12 +33,12 @@ object FhirUploader {
             .build()
         try {
             client.newCall(request).execute().use { response ->
-                println("FHIR post to $urlString ${if (response.isSuccessful) "SUCCESS" else "FAILED ${response.code}"}")
-                println(response.body?.string())
+                Timber.i("FHIR post to $urlString ${if (response.isSuccessful) "SUCCESS" else "FAILED ${response.code}"}")
+                Timber.i(response.body?.string())
                 return response
             }
         } catch (e: Exception) {
-            println("Exception in FHIR post to $urlString: ${e.message}")
+            Timber.e("Exception in FHIR post to $urlString: ${e.message}")
             // 420 Method Failure (Spring Framework) - deprecated response used by the Spring Framework when a method has failed
             return Response.Builder().request(request).message(e.message ?: "Excepetion occurred").code(420).build()
         }

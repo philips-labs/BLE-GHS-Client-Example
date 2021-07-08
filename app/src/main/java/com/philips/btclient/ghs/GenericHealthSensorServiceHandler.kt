@@ -96,6 +96,8 @@ class GenericHealthSensorServiceHandler: ServiceHandler(), GenericHealthSensorSe
 
     private fun handleControlPoint(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i(name, "ControlPoint update <${value.asHexString()}> for peripheral: $peripheral")
+
+        // Not implemented yet since this is still under discussion
     }
 
     init {

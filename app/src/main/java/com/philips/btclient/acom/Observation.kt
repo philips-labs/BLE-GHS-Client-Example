@@ -19,7 +19,7 @@ class Observation {
     var type: ObservationType = ObservationType.UNKNOWN_STATUS_CODE
     var timestamp: LocalDateTime? = null
     var measurementDuration: Int? = null
-    var pateintId: Int? = null
+    var patientId: Int? = null
     var value: ObservationValue? = null
     var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
 
@@ -74,7 +74,7 @@ class Observation {
 //            MdcConstants.MDC_ATTR_TIME_PD_MSMT_ACTIVE_ACOM -> getMeasurementDurationAttribute(bytesParser, length)
             // TODO: 11/26/20  MDC_ATTR_SUPPLEMENTAL_INFO is not defined in the latest 10101R document, however MDC_ATTR_SUPPLEMENTAL_TYPES is
             // Using that as a placeholder until defined or perhaps info recast to types
-            MdcConstants.MDC_ATTR_SUPPLEMENTAL_TYPES -> getSupplimentalInformationAttribute(bytesParser, length)
+            MdcConstants.MDC_ATTR_SUPPLEMENTAL_TYPES -> getSupplementalInformationAttribute(bytesParser, length)
             else -> return
         }
     }
@@ -124,7 +124,7 @@ class Observation {
         timestamp = bytesParser.getAcomDateTime(length)
     }
 
-    private fun getSupplimentalInformationAttribute(bytesParser: BluetoothBytesParser, length: Int) {
+    private fun getSupplementalInformationAttribute(bytesParser: BluetoothBytesParser, length: Int) {
         TODO("not implemented")
     }
 
