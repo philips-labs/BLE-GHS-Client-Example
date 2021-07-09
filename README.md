@@ -30,25 +30,32 @@ The client works in conjunction with a GHS peripheral that can connected to a GH
 
 Alpha - work in progress, in parallel with the specificaion work done in IEEE and the Bluetooth SIG.
 
-Latest updates: link to the [CHANGELOG](CHANGELOG.md).
+Latest updates can be found in the [CHANGELOG](CHANGELOG.md).
 
 ## Project Usage
 
 The project should build and run. Note, the current versions used and tested are:
-* Android Studio 4.1.3
-* Kotlin 1.4.31
+* Android Studio 4.2.1
+* Kotlin 1.5.20
 
 The packages in the project are as follows:
-* ```com.philips.btclient``` - Base project package with Android activities, custom view to display a waveform byte array, observation logging support, a BluetoothHandler class to interface to the Blessed library and manage service handlers (based on the ServiceHandler class in the package), scanning, providing a interface to listen to peripheral state changes (discovered/connect/disconnect)
-* ```com.philips.btclient.acom``` - Classes for the ACOM data model and constants for observations
-* ```com.philips.btclient.fhir``` - Classes that handle and support uploading observations to FHIR (an Android activity for UI and an uploader class that uses okhttp to POST observations, which can be transformed into FHIR JSON strings.
-* ```com.philips.btclient.ghs``` - 
-* ```com.philips.btclient.util``` - Activity, Fragments and Adapter to support the UI.
-* ```com.philips.btclient.extensions``` - BluetoothBytesParser, BluetoothGattCharacteristic, Byte, ByteArray and List extensions that are used in the project (and generally useful)
+* ```com.philips.bleclient.ui``` - UI package with Android activities, custom view to display a waveform byte array, observation logging support, a BluetoothHandler class to interface to the Blessed library and manage service handlers (based on the ServiceHandler class in the package), scanning, providing a interface to listen to peripheral state changes (discovered/connect/disconnect)
+* ```com.philips.bleclient.services``` - A ServiceHandlerManager class to interface to the Blessed library and manage service handlers (based on the ServiceHandler class in the package), scanning, providing a interface to listen to peripheral state changes (discovered/connect/disconnect). More info in the section "Service Handlers"
+* ```com.philips.bleclient.services.ghs``` - Service handler for GHS BLE services/characteristics and parsing, data model support to receives bytes, create observations and send them to listeners (in this example application the main activity)
+* ```com.philips.bleclient.acom``` - Classes for the ACOM data model and constants for observations. Used by the GHS service handler classes.
+* ```com.philips.bleclient.fhir``` - FhirUploader that handle and support uploading observations to FHIR using okhttp to POST observations, which can be transformed into FHIR JSON strings.
+* ```com.philips.bleclient.extensions``` - Observation, BluetoothBytesParser, BluetoothGattCharacteristic, Byte, ByteArray and List extensions that are used in the project (and generally useful)
+
+## Service Handlers Overview
+As mentioned above, the open source [Blessed for Android](https://github.com/weliem/blessed-android) library simplfies using BLE in Android. To make writing specific BLE peripheral "drivers" easier some additional classes are added in this client example. They are in the [com.philips.bleclient.service](https://github.com/philips-internal/ghs-client-example/tree/main/app/src/main/java/com/philips/bleclient/service) package.
+
+Text for ServiceHandlerManager class
+Text ServiceHandler
+Text for GHS ServiceHandler
 
 ## Client Usage
 
-The Client UX consists of a main screen with a button to start/stop BLE scanning, a list that shows found Generic Health Sensor peripherals (when scanning), a list of connected GHS devices, fields to display latest received observations (temperature, heart rate, SpO2, PPG waveform), a button to show a screen with the received observation log history (and clear it) and a button for the FHIR server to send observations to (either the public server at hapi.fhir.org, or a private server with the observation POST endpoint specified in the text edit field).
+The Client UX consists of a main screen with a button to start/stop BLE scanning, a list that shows found Generic Health Sensor peripherals (when scanning), a list of connected GHS devices, fields to display latest received observations (temperature, heart rate, SpO2, PPG waveform), a button to show a screen with the received observation log history (and clear it). There is also a button to open a screen with a switch to turn sending obseravtions to a FHIR server on/off and another switch for the FHIR server either the public server at hapi.fhir.org, or a private server with the observation POST endpoint specified in the text edit field.
 
 ## Known issues
 
