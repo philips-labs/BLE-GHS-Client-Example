@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".fhir.FhirActivity">
+        tools:context=".ui.FhirActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +17,14 @@
         android:paddingTop="32dp"
         android:paddingLeft="16dp"
         android:paddingRight="16dp">
-
+        <android.widget.Switch
+            android:id="@+id/postObservationsSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="togglePostObservations"
+            android:layout_marginBottom="24dp"
+            android:text="@string/post_observations_to_servier"
+            android:textSize="16sp"/>
         <android.widget.Switch
             android:id="@+id/publicHapiSwitch"
             android:layout_width="wrap_content"

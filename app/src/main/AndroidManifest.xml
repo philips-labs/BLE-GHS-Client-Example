@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.philips.btclient">
+    package="com.philips.bleclient">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -16,10 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Btclient"
         android:usesCleartextTraffic="true">
-        <activity android:name=".PeripheralInfoActivity"></activity>
-        <activity android:name=".fhir.FhirActivity" />
-        <activity android:name=".ObservationLogActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:name="com.philips.bleclient.ui.PeripheralInfoActivity"></activity>
+        <activity android:name="com.philips.bleclient.ui.FhirActivity" />
+        <activity android:name="com.philips.bleclient.ui.ObservationLogActivity" />
+        <activity android:name="com.philips.bleclient.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

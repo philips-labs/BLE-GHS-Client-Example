@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:text="@string/no_ppg_observation"
             android:layout_marginBottom="16dp"/>
-        <com.philips.btclient.WaveformView
+        <com.philips.bleclient.ui.WaveformView
             android:id="@+id/ppgObservation"
             style="@style/Widget.Theme.Btclient.WaveformView"
             android:layout_width="match_parent"
