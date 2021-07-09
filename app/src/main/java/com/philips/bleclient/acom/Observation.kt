@@ -14,14 +14,21 @@ import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstan
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 
+@Suppress("unused")
 class Observation {
     var handle: Int? = null
     var type: ObservationType = ObservationType.UNKNOWN_STATUS_CODE
     var timestamp: LocalDateTime? = null
-    var measurementDuration: Int? = null
-    var patientId: Int? = null
     var value: ObservationValue? = null
     var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
+
+    /*
+     * The following are defined in ACOM but currently not used/set in the current example...
+     * For example, developer may want to have a current patent id in the app and can set
+     * observations created to have the pateint id of the user
+     */
+    var measurementDuration: Int? = null
+    var patientId: Int? = null
 
     constructor(id: Int, type: ObservationType, value: Float, valuePrecision: Int, unitCode: UnitCode, timestamp: LocalDateTime){
         this.handle = id

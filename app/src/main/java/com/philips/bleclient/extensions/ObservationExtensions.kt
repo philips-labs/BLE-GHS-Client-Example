@@ -13,8 +13,6 @@ import com.philips.bleclient.acom.ObservationValue
 import com.philips.bleclient.acom.SampleArrayObservationValue
 import com.philips.bleclient.acom.SimpleNumericObservationValue
 import com.philips.bleclient.toUINT8
-import com.philips.btserver.generichealthservice.ObservationType
-import com.philips.btserver.generichealthservice.UnitCode
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.serialization.json.*

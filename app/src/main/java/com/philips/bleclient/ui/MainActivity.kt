@@ -5,7 +5,7 @@
 package com.philips.bleclient.ui
 
 import android.Manifest
-import android.R
+import android.R.layout.simple_list_item_1
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.content.*
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.plant(Timber.DebugTree())
-        setContentView(com.philips.bleclient.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
         setupFoundPeripheralsList()
         setupConnectedPeripheralsList()
@@ -69,10 +69,11 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun setupFoundPeripheralsList() {
         foundPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
-            R.layout.simple_list_item_1
+            simple_list_item_1
         )
 
-        foundPeripheralsList = findViewById(com.philips.bleclient.R.id.foundPeripheralList) as ListView
+        foundPeripheralsList =
+            findViewById(R.id.foundPeripheralList) as ListView
         foundPeripheralsList?.let {
             it.adapter = foundPeripheralArrayAdapter
             it.setOnItemClickListener { adapterView, view, position, l ->
@@ -94,10 +95,11 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun setupConnectedPeripheralsList() {
         connectedPeripheralArrayAdapter = PeripheralArrayAdapter(
             this,
-            R.layout.simple_list_item_1
+            simple_list_item_1
         )
 
-        connectedPeripheralsList = findViewById(com.philips.bleclient.R.id.connectedPeripheralList) as ListView
+        connectedPeripheralsList =
+            findViewById(com.philips.bleclient.R.id.connectedPeripheralList) as ListView
         connectedPeripheralsList?.let {
             it.adapter = connectedPeripheralArrayAdapter
             it.setOnItemClickListener { adapterView, view, position, l ->
@@ -115,7 +117,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
         } else {
-//            checkPermissions()
+            checkPermissions()
         }
     }
 
@@ -311,7 +313,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 val sampleArray = (observation.value as SampleArrayObservationValue).samples
                 findViewById<TextView>(com.philips.bleclient.R.id.ppgObservationTitle).text =
                     "PPG Waveform ${observation.timestamp}"
-                findViewById<WaveformView>(com.philips.bleclient.R.id.ppgObservation).setWaveform(sampleArray)
+                findViewById<WaveformView>(com.philips.bleclient.R.id.ppgObservation).setWaveform(
+                    sampleArray
+                )
             }
             else -> findViewById<TextView>(com.philips.bleclient.R.id.ppgObservation).text =
                 "${observation.type} ${observation.timestampAsDate()}"
@@ -340,8 +344,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     fun showObservationLog(view: View) {
         startActivity(Intent(this, ObservationLogActivity::class.java))
         overridePendingTransition(
-            com.philips.bleclient.R.anim.slide_from_right,
-            com.philips.bleclient.R.anim.slide_to_left
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
         )
     }
 
@@ -349,8 +353,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     fun openFhirSettings(view: View) {
         startActivity(Intent(this, FhirActivity::class.java))
         overridePendingTransition(
-            com.philips.bleclient.R.anim.slide_from_right,
-            com.philips.bleclient.R.anim.slide_to_left
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
         )
     }
 
@@ -359,8 +363,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun setScanning(enabled: Boolean) {
         foundPeripheralArrayAdapter?.clear()
         if (enabled) serviceHandlerManager?.startScanning() else serviceHandlerManager?.stopScanning()
-        findViewById<TextView>(com.philips.bleclient.R.id.foundPeripheralLabel).setText(if (enabled) com.philips.bleclient.R.string.found_devices_scanning else com.philips.bleclient.R.string.found_devices_not_scanning)
-        findViewById<Button>(com.philips.bleclient.R.id.scanButton).setText(if (enabled) com.philips.bleclient.R.string.stop_scanning else com.philips.bleclient.R.string.start_scanning)
+        findViewById<TextView>(R.id.foundPeripheralLabel).setText(if (enabled) com.philips.bleclient.R.string.found_devices_scanning else com.philips.bleclient.R.string.found_devices_not_scanning)
+        findViewById<Button>(R.id.scanButton).setText(if (enabled) com.philips.bleclient.R.string.stop_scanning else com.philips.bleclient.R.string.start_scanning)
     }
 
     private fun showPeripheralInfo(peripheral: BluetoothPeripheral) {
@@ -369,8 +373,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         }
         startActivity(intent)
         overridePendingTransition(
-            com.philips.bleclient.R.anim.slide_from_right,
-            com.philips.bleclient.R.anim.slide_to_left
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
         )
     }
 
