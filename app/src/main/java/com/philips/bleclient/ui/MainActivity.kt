@@ -30,6 +30,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import android.os.Handler
 import android.os.Looper
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
 
@@ -46,11 +47,31 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
-    private val REQUEST_ENABLE_BT = 1
     private val ACCESS_LOCATION_REQUEST = 2
 
     private val executor = Executors.newSingleThreadExecutor()
     private val handler = Handler(Looper.getMainLooper())
+
+    private val enableBluetoothRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK) {
+            // Bluetooth has been enabled
+            checkPermissions()
+        } else {
+            // Bluetooth has not been enabled, try again
+            askToEnableBluetooth()
+        }
+    }
+
+    private val isBluetoothEnabled: Boolean
+        get() {
+            val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter() ?: return false
+            return bluetoothAdapter.isEnabled
+        }
+
+    private fun askToEnableBluetooth() {
+        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        enableBluetoothRequest.launch(enableBtIntent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,13 +132,16 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     override fun onResume() {
         super.onResume()
-        checkPermissions()
-        refreshPerpheralList()
-        if (!isBluetoothEnabled()) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+//        checkPermissions()
+        if (BluetoothAdapter.getDefaultAdapter() != null) {
+            if (!isBluetoothEnabled) {
+                askToEnableBluetooth()
+            } else {
+                refreshPerpheralList()
+                checkPermissions()
+            }
         } else {
-            checkPermissions()
+            Timber.e("This device has no Bluetooth hardware")
         }
     }
 
@@ -144,11 +168,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 checkPermissions()
             }
         }
-    }
-
-    private fun isBluetoothEnabled(): Boolean {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter() ?: return false
-        return bluetoothAdapter.isEnabled
     }
 
     private fun initBluetoothHandler() {
