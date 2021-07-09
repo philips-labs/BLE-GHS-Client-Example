@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         )
 
         connectedPeripheralsList =
-            findViewById(com.philips.bleclient.R.id.connectedPeripheralList) as ListView
+            findViewById(R.id.connectedPeripheralList) as ListView
         connectedPeripheralsList?.let {
             it.adapter = connectedPeripheralArrayAdapter
             it.setOnItemClickListener { adapterView, view, position, l ->
@@ -132,7 +132,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     override fun onResume() {
         super.onResume()
-//        checkPermissions()
         if (BluetoothAdapter.getDefaultAdapter() != null) {
             if (!isBluetoothEnabled) {
                 askToEnableBluetooth()
