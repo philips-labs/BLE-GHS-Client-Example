@@ -47,7 +47,11 @@ The packages in the project are as follows:
 * ```com.philips.bleclient.extensions``` - Observation, BluetoothBytesParser, BluetoothGattCharacteristic, Byte, ByteArray and List extensions that are used in the project (and generally useful)
 
 ## Service Handlers Overview
-Put intro to service handler code here
+As mentioned above, the open source [Blessed for Android](https://github.com/weliem/blessed-android) library simplfies using BLE in Android. To make writing specific BLE peripheral "drivers" easier some additional classes are added in this client example. They are in the [com.philips.bleclient.service](https://github.com/philips-internal/ghs-client-example/tree/main/app/src/main/java/com/philips/bleclient/service) package.
+
+Text for ServiceHandlerManager class
+Text ServiceHandler
+Text for GHS ServiceHandler
 
 ## Client Usage
 
