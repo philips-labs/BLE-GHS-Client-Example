@@ -49,9 +49,20 @@ The packages in the project are as follows:
 ## Service Handlers Overview
 As mentioned above, the open source [Blessed for Android](https://github.com/weliem/blessed-android) library simplfies using BLE in Android. To make writing specific BLE peripheral "drivers" easier some additional classes are added in this client example. They are in the [com.philips.bleclient.service](https://github.com/philips-internal/ghs-client-example/tree/main/app/src/main/java/com/philips/bleclient/service) package.
 
-Text for ServiceHandlerManager class
-Text ServiceHandler
-Text for GHS ServiceHandler
+The two main classes involved with services handlers are [ServiceHandlerManager](https://github.com/philips-internal/ghs-client-example/blob/main/app/src/main/java/com/philips/bleclient/service/ServiceHandlerManager.kt) and [ServiceHander](https://github.com/philips-internal/ghs-client-example/blob/main/app/src/main/java/com/philips/bleclient/service/ServiceHandler.kt)
+
+The ```ServiceHandlerManager``` class is a singleton (instantiated and kept in the Main actitity, though in the future may be turned into a Kotlin object) that is responsible for:
+* Handling the various callbacks and interfaces into the Blessed library (e.g. the ```BluetoothPeripheralCallback``` and ```BluetoothCentralManagerCallback``` interfaces)
+* Maintaining a set of listeners (```ServiceHandlerManagerListener```) that will be notified on peripheral discovery, connect and disconnect
+* Provide methods for starting/stopping scanning
+* Provide methods for connecting peripherals
+* Maintain the collection of service handlers. When Blessed calls the ```BluetoothCentralManagerCallback``` callback on BLE events this collection will be used to determine which service handler should receive the event.
+
+The ```ServiceHandler``` class is an open class that is instantiated and registered with the ```ServiceHandlerManager``` (in the example done in the MainActivity) that is responsible for:
+* Having a primary service UUID (used by the ```ServiceHandlerManager``` for routing events)
+* Handling the events dispatched for onCharacteristicsDiscovered, onNotificationStateUpdate, onCharacteristicWrite, onCharacteristicUpdate (default implementations are given, subclasses can perform specific behaviors based on peripheral characteristic UUIDs)
+
+The ```GenericHealthSensorServiceHandler``` is a subclass of ```ServiceHandler``` that handles BLE segment packets sent from the peripheral (working with the class ```GenericHealthSensorSegmentHandler``` by being a ```GenericHealthSensorSegmentListener``` and when a full message is received by the handler (via the ```GenericHealthSensorSegmentListener onReceivedMessageBytes()``` callback AcomObjects are parsed and resulting observations are sent to any listeners of the service handler for application specific processing (in the example app the MainActivity where they are display and based on configuration sent to a FHIR server via the ```FhirUploader``` class)
 
 ## Client Usage
 
