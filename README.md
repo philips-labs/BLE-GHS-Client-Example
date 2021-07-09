@@ -30,7 +30,7 @@ The client works in conjunction with a GHS peripheral that can connected to a GH
 
 Alpha - work in progress, in parallel with the specificaion work done in IEEE and the Bluetooth SIG.
 
-Latest updates: link to the [CHANGELOG](CHANGELOG.md).
+Latest updates can be found in the [CHANGELOG](CHANGELOG.md).
 
 ## Project Usage
 
