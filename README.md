@@ -51,7 +51,7 @@ Put intro to service handler code here
 
 ## Client Usage
 
-The Client UX consists of a main screen with a button to start/stop BLE scanning, a list that shows found Generic Health Sensor peripherals (when scanning), a list of connected GHS devices, fields to display latest received observations (temperature, heart rate, SpO2, PPG waveform), a button to show a screen with the received observation log history (and clear it) and a button for the FHIR server to send observations to (either the public server at hapi.fhir.org, or a private server with the observation POST endpoint specified in the text edit field).
+The Client UX consists of a main screen with a button to start/stop BLE scanning, a list that shows found Generic Health Sensor peripherals (when scanning), a list of connected GHS devices, fields to display latest received observations (temperature, heart rate, SpO2, PPG waveform), a button to show a screen with the received observation log history (and clear it). There is also a button to open a screen with a switch to turn sending obseravtions to a FHIR server on/off and another switch for the FHIR server either the public server at hapi.fhir.org, or a private server with the observation POST endpoint specified in the text edit field.
 
 ## Known issues
 
