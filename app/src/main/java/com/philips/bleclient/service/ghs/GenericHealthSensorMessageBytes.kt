@@ -2,7 +2,7 @@
  * Copyright (c) Koninklijke Philips N.V. 2020.
  * All rights reserved.
  */
-package com.philips.bleclient.ghs
+package com.philips.bleclient.service.ghs
 
 data class GenericHealthSensorMessageBytes(
     var receivedMessageBytes : ByteArray = ByteArray(0),

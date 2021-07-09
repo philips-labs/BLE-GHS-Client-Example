@@ -20,8 +20,8 @@ import com.philips.bleclient.acom.Observation
 import com.philips.bleclient.acom.SampleArrayObservationValue
 import com.philips.bleclient.acom.SimpleNumericObservationValue
 import com.philips.bleclient.fhir.FhirUploader
-import com.philips.bleclient.ghs.GenericHealthSensorHandlerListener
-import com.philips.bleclient.ghs.GenericHealthSensorServiceHandler
+import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerListener
+import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.util.timestampAsDate
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral

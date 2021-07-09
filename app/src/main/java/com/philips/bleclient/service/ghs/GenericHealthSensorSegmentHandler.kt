@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-package com.philips.bleclient.ghs
+package com.philips.bleclient.service.ghs
 
 import kotlin.experimental.and
 

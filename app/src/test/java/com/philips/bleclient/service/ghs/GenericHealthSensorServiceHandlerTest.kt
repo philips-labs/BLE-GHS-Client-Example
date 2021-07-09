@@ -2,7 +2,7 @@
  * Copyright (c) Koninklijke Philips N.V., 2021.
  * All rights reserved.
  */
-package com.philips.bleclient.ghs
+package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.acom.AcomObject
