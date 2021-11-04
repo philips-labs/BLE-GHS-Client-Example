@@ -4,21 +4,20 @@
  */
 package com.philips.bleclient.acom
 
-import com.philips.bleclient.extensions.atEnd
-import com.philips.bleclient.extensions.getAcomDateTime
-import com.philips.bleclient.extensions.getMderFloatValue
-import com.philips.bleclient.extensions.isNextAttributeType
+import com.philips.bleclient.extensions.*
 import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
+import java.nio.ByteOrder
 
 @Suppress("unused")
 class Observation {
     var handle: Int? = null
     var type: ObservationType = ObservationType.UNKNOWN_STATUS_CODE
     var timestamp: LocalDateTime? = null
+    var timeCounter: Long? = null
     var value: ObservationValue? = null
     var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
 
@@ -129,7 +128,13 @@ class Observation {
 
     private fun getAbsoluteTimestampAttribute(bytesParser: BluetoothBytesParser, length: Int) {
         // if (length != ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH) return
-        timestamp = bytesParser.getAcomDateTime(length)
+        val timeFlags = bytesParser.getGHSDateTimeFlags()
+        if (timeFlags hasFlag GhsTimestampFlags.isTickCounter) {
+            timeCounter = bytesParser.getLongValue(ByteOrder.LITTLE_ENDIAN)
+        } else {
+            timestamp = bytesParser.getGHSDateTime(timeFlags)
+        }
+//        timestamp = bytesParser.getAcomDateTime(length)
     }
 
     @Suppress("UNUSED_PARAMETER")

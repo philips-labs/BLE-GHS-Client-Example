@@ -10,12 +10,12 @@ import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
 import com.philips.bleclient.acom.Observation
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
-import com.welie.blessed.BluetoothBytesParser.FORMAT_FLOAT
-import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT32
+import com.welie.blessed.BluetoothBytesParser.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import java.nio.ByteOrder
 
 /**
  * Return an Integer value of the specified type. This operation will NOT advance the internal offset to the next position.
@@ -131,6 +131,69 @@ fun BluetoothBytesParser.getAcomDateTime(byteLength: Int): LocalDateTime {
         8 -> longValue.millisAsLocalDateTime()
         else -> 0L.millisAsLocalDateTime()
     }
+}
+
+fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
+    return BitMask(getIntValue(BluetoothBytesParser.FORMAT_UINT8).toLong())
+}
+
+/*
+ * Read bytes (as a GHS date time) and return the DateTime object representing the value. This will increment the offset
+ * past the time bytes struct (depending on if time counter or world time 6-10
+ * The GHS time stamp is currently defined with the following structure:
+ *
+ * Flags (uint8, Mandatory) - flag bits (described below)
+ *
+ * Time counter (uint64, Present for time counter flag) - millisecond tick counter
+ *
+ * Date-time (uint32, Present for world time flag) - seconds since 1/1/2000
+ * Milliseconds (uint16, Present for world time flag) - milliseconds (combined with Date-time for msec since Y2K epoch)
+ * Time set/Sync Source (uint8, Present for world time flag) - flags indicating the source and time sync methods (described below)
+ * TZ Offset (uint8, Present for world time flag) - Timezone offset
+ * DST Offset (uint8, Present for world time flag) - Daylight savings time offset
+ *
+ * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return null if the flags indicate a tick counter
+ */
+
+private val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
+
+fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
+
+    val isUTC = timeFlags hasFlag GhsTimestampFlags.isUTC
+    val hasMillis = timeFlags hasFlag GhsTimestampFlags.isMillisecondsPresent
+    val hasTZ = timeFlags hasFlag GhsTimestampFlags.isTZPresent
+    val hasDST = timeFlags hasFlag GhsTimestampFlags.isDSTPresent
+    val isCurrentTimeline = timeFlags hasFlag GhsTimestampFlags.isCurrentTimeline
+
+    // Double check if the time is actually a time and not ticks according to flags
+    return if (timeFlags hasFlag GhsTimestampFlags.isTickCounter) {
+        null
+    } else {
+        val unixEpochMillis = (getLongValue(ByteOrder.LITTLE_ENDIAN) * 1000L) + UTC_TO_UNIX_EPOCH_MILLIS
+        val millis = if (hasMillis) getIntValue(FORMAT_UINT16).toLong() else 0L
+        val timeSourceMethod = getIntValue(FORMAT_UINT8)
+        val tzOffset = if (hasTZ) getIntValue(FORMAT_SINT8).toLong() else 0L
+        val dstOffset = if (hasDST) getIntValue(FORMAT_SINT8).toLong() else 0L
+
+        // TODO NOT LOCAL, USE TZ, DST OFFSET
+        (unixEpochMillis + millis).millisAsLocalDateTime()
+    }
+
+
+    return when(bits) {
+        4 -> (getIntValue(FORMAT_UINT32)?.toLong()!! * 1000L).millisAsLocalDateTime()
+        6 -> {
+            val topVal = getIntValue(FORMAT_UINT16)?.toLong()!!
+            val bottomVal = getIntValue(FORMAT_UINT32)?.toLong()!!
+            (topVal.shl(32) + bottomVal).millisAsLocalDateTime()
+        }
+        8 -> longValue.millisAsLocalDateTime()
+        else -> 0L.millisAsLocalDateTime()
+    }
+}
+
+fun BluetoothBytesParser.getGHSTimeCounter(): Long {
+    return getLongValue(ByteOrder.LITTLE_ENDIAN)
 }
 
 fun Long.millisAsLocalDateTime(): LocalDateTime {
