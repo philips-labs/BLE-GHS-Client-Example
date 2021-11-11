@@ -24,8 +24,7 @@ import java.nio.ByteOrder
  * @return An Integer object or null in case the byte array was not valid
  */
 fun BluetoothBytesParser.peekIntValue(formatType: Int): Int? {
-    val result = getIntValue(formatType, offset, byteOrder)
-    return result
+    return getIntValue(formatType, offset, byteOrder)
 }
 
 /**
@@ -33,11 +32,11 @@ fun BluetoothBytesParser.peekIntValue(formatType: Int): Int? {
  * to indicate that the last object has completed as attributes can be in any order)
  * This will not change the offset into the bytes being parsed
  *
- * @return True is the next attribute is a object type attribtue
+ * @return True is the next attribute is a object type attribute
  */
 fun BluetoothBytesParser.isNextAttributeType(): Boolean {
-    val nextAttribte = peekIntValue(FORMAT_UINT32)
-    return nextAttribte?.let { MdcConstants.isTypeAttribute(nextAttribte) } ?: false
+    val nextAttribute = peekIntValue(FORMAT_UINT32)
+    return nextAttribute?.let { MdcConstants.isTypeAttribute(nextAttribute) } ?: false
 }
 
 fun BluetoothBytesParser.atEnd(): Boolean {
@@ -117,7 +116,7 @@ fun BluetoothBytesParser.getMderFloatValue(index: Int): Float? {
  * 6 bytes - value is a UInt32 representing milliseconds since Unix epoch (6 bytes is enough for the next few hundred years)
  * 8 bytes - value is a UInt32 representing milliseconds since Unix epoch
  *
- * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return 0 epoch if unparsable
+ * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return 0 epoch if not parsable
  */
 fun BluetoothBytesParser.getAcomDateTime(byteLength: Int): LocalDateTime {
 
@@ -134,7 +133,7 @@ fun BluetoothBytesParser.getAcomDateTime(byteLength: Int): LocalDateTime {
 }
 
 fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
-    return BitMask(getIntValue(BluetoothBytesParser.FORMAT_UINT8).toLong())
+    return BitMask(getIntValue(FORMAT_UINT8).toLong())
 }
 
 /*
@@ -155,7 +154,7 @@ fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
  * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return null if the flags indicate a tick counter
  */
 
-private val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
+private const val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
 
 fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 
@@ -180,16 +179,17 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
     }
 
 
-    return when(bits) {
-        4 -> (getIntValue(FORMAT_UINT32)?.toLong()!! * 1000L).millisAsLocalDateTime()
-        6 -> {
-            val topVal = getIntValue(FORMAT_UINT16)?.toLong()!!
-            val bottomVal = getIntValue(FORMAT_UINT32)?.toLong()!!
-            (topVal.shl(32) + bottomVal).millisAsLocalDateTime()
-        }
-        8 -> longValue.millisAsLocalDateTime()
-        else -> 0L.millisAsLocalDateTime()
-    }
+//    return when(bits) {
+//        4 -> (getIntValue(FORMAT_UINT32)?.toLong()!! * 1000L).millisAsLocalDateTime()
+//        6 -> {
+//            val topVal = getIntValue(FORMAT_UINT16)?.toLong()!!
+//            val bottomVal = getIntValue(FORMAT_UINT32)?.toLong()!!
+//            (topVal.shl(32) + bottomVal).millisAsLocalDateTime()
+//        }
+//        8 -> longValue.millisAsLocalDateTime()
+//        else -> 0L.millisAsLocalDateTime()
+//    }
+    return 0L.millisAsLocalDateTime()
 }
 
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
