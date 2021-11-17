@@ -300,7 +300,15 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
-        Handler.createAsync(Looper.myLooper()!!).post {
+        Handler(Looper.myLooper()!!).post {
+            observations.forEach {
+                Timber.i(it.toString())
+                updateObservationText(it)
+                ObservationLog.log(it)
+                if (FhirUploader.postObservationsToServer) postObservation(it)
+            }
+        }
+        Handler(Looper.myLooper()!!).post {
             observations.forEach {
                 Timber.i(it.toString())
                 updateObservationText(it)

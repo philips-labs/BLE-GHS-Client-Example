@@ -159,13 +159,14 @@ private const val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
 fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 
     val isUTC = timeFlags hasFlag GhsTimestampFlags.isUTC
+    val isTicks = timeFlags hasFlag GhsTimestampFlags.isTickCounter
     val hasMillis = timeFlags hasFlag GhsTimestampFlags.isMillisecondsPresent
     val hasTZ = timeFlags hasFlag GhsTimestampFlags.isTZPresent
     val hasDST = timeFlags hasFlag GhsTimestampFlags.isDSTPresent
     val isCurrentTimeline = timeFlags hasFlag GhsTimestampFlags.isCurrentTimeline
 
     // Double check if the time is actually a time and not ticks according to flags
-    return if (timeFlags hasFlag GhsTimestampFlags.isTickCounter) {
+    return if (isTicks) {
         null
     } else {
         val unixEpochMillis = (getLongValue(ByteOrder.LITTLE_ENDIAN) * 1000L) + UTC_TO_UNIX_EPOCH_MILLIS
@@ -189,7 +190,7 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 //        8 -> longValue.millisAsLocalDateTime()
 //        else -> 0L.millisAsLocalDateTime()
 //    }
-    return 0L.millisAsLocalDateTime()
+//    return 0L.millisAsLocalDateTime()
 }
 
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {

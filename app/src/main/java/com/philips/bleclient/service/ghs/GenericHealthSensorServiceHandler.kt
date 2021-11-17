@@ -44,7 +44,19 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
                 peripheral,
                 value
             )
-            CONTROL_POINT_CHARACTERISTIC_UUID -> handleControlPoint(
+            STORED_OBSERVATIONS_CHARACTERISTIC_UUID -> handleStoredObservationBytes(
+                peripheral,
+                value
+            )
+            GHS_FEATURES_CHARACTERISTIC_UUID -> handleFeaturesCharacteristics(
+                peripheral,
+                value
+            )
+            SIMPLE_TIME_CHARACTERISTIC_UUID -> handleSimpleTime(
+                peripheral,
+                value
+            )
+            UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(
                 peripheral,
                 value
             )
@@ -96,9 +108,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         segmentHandler.receiveBytes(peripheral.address, value)
     }
 
-    private fun handleControlPoint(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(name, "ControlPoint update <${value.asHexString()}> for peripheral: $peripheral")
-        // Not implemented yet since this is still under discussion
+    private fun handleStoredObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i(name, "Stored Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+    }
+
+    private fun handleFeaturesCharacteristics(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i(name, "Features characteristic update <${value.asHexString()}> for peripheral: $peripheral")
+    }
+
+    private fun handleSimpleTime(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i(name, "Simple time bytes: <${value.asHexString()}> for peripheral: $peripheral")
+    }
+
+    private fun handleUniqueDeviceId(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i(name, "Unique device ID bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
     init {
@@ -107,16 +130,28 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
     }
 
     companion object {
-        // Using 0x183D as the GATT Service Allocated UUID since it's the next 16-bit available based on the BT SIG doc
-        val SERVICE_UUID = UUID.fromString("0000183D-0000-1000-8000-00805f9b34fb")
+        // Temp assigned GATT Service UUID Allocated for GHS
+        val SERVICE_UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
 
-        // Using 0x2AC4 (object properties) based on the BT SIG doc for GATT Characteristic and Object Type
-        // This could also be called ACOM_CHARACTERISTIC_UUID as we're actually receiving ACOM objects
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
         val OBSERVATION_CHARACTERISTIC_UUID =
-            UUID.fromString("00002AC4-0000-1000-8000-00805f9b34fb")
+            UUID.fromString("00007f43-0000-1000-8000-00805f9b34fb")
 
-        // Using 0x2AC6 (object list control point) based on the BT SIG doc for GATT Characteristic and Object Type
-        val CONTROL_POINT_CHARACTERISTIC_UUID =
-            UUID.fromString("00002AC6-0000-1000-8000-00805f9b34fb")
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        val STORED_OBSERVATIONS_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f42-0000-1000-8000-00805f9b34fb")
+
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        val GHS_FEATURES_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f41-0000-1000-8000-00805f9b34fb")
+
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        val SIMPLE_TIME_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f3d-0000-1000-8000-00805f9b34fb")
+
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        val UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f3a-0000-1000-8000-00805f9b34fb")
+
     }
 }
