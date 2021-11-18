@@ -45,11 +45,11 @@ enum class GhsTimestampFlags(override val bit: Long) : Flags {
     isTickCounter(1 shl 0),
     isUTC(1 shl 1),
     isMillisecondsPresent(1 shl 2),
-    isTZPresent(1 shl 3),
-    isDSTPresent(1 shl 4),
-    isCurrentTimeline(1 shl 5),
-    reserved_1(1 shl 6),
-    reserved_2(1 shl 7);
+    isHundredthsMicroseconds(1 shl 3),
+    isTZPresent(1 shl 4),
+    isDSTPresent(1 shl 5),
+    isCurrentTimeline(1 shl 6),
+    reserved_1(1 shl 7);
 }
 
 /*

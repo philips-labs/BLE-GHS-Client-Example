@@ -39,26 +39,33 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         status: GattStatus
     ) {
         super.onCharacteristicUpdate(peripheral, value, characteristic, status)
-        when (characteristic.uuid) {
-            OBSERVATION_CHARACTERISTIC_UUID -> handleReceivedObservationBytes(
-                peripheral,
-                value
-            )
-            STORED_OBSERVATIONS_CHARACTERISTIC_UUID -> handleStoredObservationBytes(
-                peripheral,
-                value
-            )
-            GHS_FEATURES_CHARACTERISTIC_UUID -> handleFeaturesCharacteristics(
-                peripheral,
-                value
-            )
-            SIMPLE_TIME_CHARACTERISTIC_UUID -> handleSimpleTime(
-                peripheral,
-                value
-            )
-            UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(
-                peripheral,
-                value
+        if (status == GattStatus.SUCCESS) {
+            when (characteristic.uuid) {
+                OBSERVATION_CHARACTERISTIC_UUID -> handleReceivedObservationBytes(
+                    peripheral,
+                    value
+                )
+                STORED_OBSERVATIONS_CHARACTERISTIC_UUID -> handleStoredObservationBytes(
+                    peripheral,
+                    value
+                )
+                GHS_FEATURES_CHARACTERISTIC_UUID -> handleFeaturesCharacteristics(
+                    peripheral,
+                    value
+                )
+                SIMPLE_TIME_CHARACTERISTIC_UUID -> handleSimpleTime(
+                    peripheral,
+                    value
+                )
+                UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(
+                    peripheral,
+                    value
+                )
+            }
+        } else {
+            Timber.e(
+                name,
+                "Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}"
             )
         }
     }

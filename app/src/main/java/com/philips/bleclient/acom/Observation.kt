@@ -59,7 +59,7 @@ class Observation {
     }
 
     override fun toString(): String {
-        return "Obs: ${type.name} $timestamp\n$value"
+        return "Obs ${type.name} value: $value $unitCode time: $timestamp"
     }
 
     private fun getNextAttribute(bytesParser: BluetoothBytesParser) {
@@ -69,6 +69,7 @@ class Observation {
             MdcConstants.MDC_ATTR_ID_TYPE -> getObservationTypeAttribute(bytesParser, length)
             MdcConstants.MDC_ATTR_ID_HANDLE -> getHandleAttribute(bytesParser, length)
             MdcConstants.MDC_ATTR_NU_VAL_OBS_SIMP -> getSimpleNumericValueAttribute(bytesParser)
+            MdcConstants.MDC_ATTR_NU_VAL_OBS -> getSimpleNumericValueAttribute(bytesParser)
             MdcConstants.MDC_ATTR_NU_CMPD_VAL_OBS -> getCompoundNumericValueAttribute(bytesParser, length)
             MdcConstants.MDC_ATTR_SA_VAL_OBS -> getSampleArrayValueAttribute(bytesParser, length)
             MdcConstants.MDC_ATTR_TIME_STAMP_ABS -> getAbsoluteTimestampAttribute(bytesParser, length)

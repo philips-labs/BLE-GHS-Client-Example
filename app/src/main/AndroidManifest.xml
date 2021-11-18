@@ -19,10 +19,10 @@
         <activity android:name="com.philips.bleclient.ui.PeripheralInfoActivity"></activity>
         <activity android:name="com.philips.bleclient.ui.FhirActivity" />
         <activity android:name="com.philips.bleclient.ui.ObservationLogActivity" />
-        <activity android:name="com.philips.bleclient.ui.MainActivity">
+        <activity android:name="com.philips.bleclient.ui.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
