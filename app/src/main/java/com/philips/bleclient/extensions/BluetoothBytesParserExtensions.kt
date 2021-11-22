@@ -16,6 +16,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.nio.ByteOrder
+import java.util.*
 
 /**
  * Return an Integer value of the specified type. This operation will NOT advance the internal offset to the next position.
@@ -169,28 +170,14 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
     return if (isTicks) {
         null
     } else {
-        val unixEpochMillis = (getLongValue(ByteOrder.LITTLE_ENDIAN) * 1000L) + UTC_TO_UNIX_EPOCH_MILLIS
-        val millis = if (hasMillis) getIntValue(FORMAT_UINT16).toLong() else 0L
+        val timeValue = getGHSLongValue(ByteOrder.LITTLE_ENDIAN)
+        val unixEpochMillis = (timeValue * if (hasMillis) 1L else 1000L) + UTC_TO_UNIX_EPOCH_MILLIS
         val timeSourceMethod = getIntValue(FORMAT_UINT8)
-        val tzOffset = if (hasTZ) getIntValue(FORMAT_SINT8).toLong() else 0L
-        val dstOffset = if (hasDST) getIntValue(FORMAT_SINT8).toLong() else 0L
-
-        // TODO NOT LOCAL, USE TZ, DST OFFSET
-        (unixEpochMillis + millis).millisAsLocalDateTime()
+        val utcOffset = if (hasTZ or hasDST) getIntValue(FORMAT_SINT8).toLong() * MILLIS_IN_15_MINUTES else 0L
+        // creating a local date time so don't need to use the utcOffset and build it on just the UTC times.
+        val result = (unixEpochMillis).millisAsLocalDateTime()
+        result
     }
-
-
-//    return when(bits) {
-//        4 -> (getIntValue(FORMAT_UINT32)?.toLong()!! * 1000L).millisAsLocalDateTime()
-//        6 -> {
-//            val topVal = getIntValue(FORMAT_UINT16)?.toLong()!!
-//            val bottomVal = getIntValue(FORMAT_UINT32)?.toLong()!!
-//            (topVal.shl(32) + bottomVal).millisAsLocalDateTime()
-//        }
-//        8 -> longValue.millisAsLocalDateTime()
-//        else -> 0L.millisAsLocalDateTime()
-//    }
-//    return 0L.millisAsLocalDateTime()
 }
 
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
@@ -199,4 +186,51 @@ fun BluetoothBytesParser.getGHSTimeCounter(): Long {
 
 fun Long.millisAsLocalDateTime(): LocalDateTime {
     return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.currentSystemDefault())
+}
+
+fun Long.millisAsUTCDateTime(): Date {
+    return Date(this)
+}
+
+fun BluetoothBytesParser.getGHSLongValue(): Long {
+    return getLongValue(getByteOrder())
+}
+
+/**
+ * Return a Long value using the specified byte order. This operation will automatically advance the internal offset to the next position.
+ *
+ * @return an Long object or null in case the byte array was not valid
+ */
+fun BluetoothBytesParser.getGHSLongValue(byteOrder: ByteOrder): Long {
+    val result = getLongValue(offset, byteOrder)
+    offset += 8
+    return result
+}
+
+/**
+ * Return a Long value using the specified byte order and offset position. This operation will not advance the internal offset to the next position.
+ *
+ * @return an Long object or null in case the byte array was not valid
+ */
+fun BluetoothBytesParser.getGHSLongValue(offset: Int, byteOrder: ByteOrder): Long {
+    return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
+        var value = getByteAsLongAt(offset + 7)
+//        var value = (0x00FF and getValue().get(offset + 7).toInt()).toLong()
+        for (i in 6 downTo 0) {
+            value = value shl 8
+            value += getByteAsLongAt(offset + i)
+        }
+        value
+    } else {
+        var value = getByteAsLongAt(offset)
+        for (i in 1..7) {
+            value = value shl 8
+            value += getByteAsLongAt(offset + i)
+        }
+        value
+    }
+}
+
+fun BluetoothBytesParser.getByteAsLongAt(offset: Int): Long {
+    return (0x00FF and getValue().get(offset + 7).toInt()).toLong()
 }

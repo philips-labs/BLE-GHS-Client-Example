@@ -52,6 +52,8 @@ enum class GhsTimestampFlags(override val bit: Long) : Flags {
     reserved_1(1 shl 7);
 }
 
+const val MILLIS_IN_15_MINUTES = 900000L
+
 /*
  * Create a binary representation of the receiver based on the timestamp flags passed in.
  *

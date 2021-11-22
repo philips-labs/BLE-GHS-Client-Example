@@ -131,7 +131,7 @@ class Observation {
         // if (length != ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH) return
         val timeFlags = bytesParser.getGHSDateTimeFlags()
         if (timeFlags hasFlag GhsTimestampFlags.isTickCounter) {
-            timeCounter = bytesParser.getLongValue(ByteOrder.LITTLE_ENDIAN)
+            timeCounter = bytesParser.getLongValue(ByteOrder.BIG_ENDIAN)
         } else {
             timestamp = bytesParser.getGHSDateTime(timeFlags)
         }
