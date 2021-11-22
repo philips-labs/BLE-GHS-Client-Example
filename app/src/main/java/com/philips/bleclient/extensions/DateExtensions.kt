@@ -1,6 +1,8 @@
 package com.philips.bleclient.extensions
 
 
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 /*
@@ -66,3 +68,11 @@ fun Date.asGHSBytes(timestampFlags: GhsTimestampFlags): ByteArray {
 //    return hexString
 }
 
+
+fun LocalDateTime.toDate(): Date {
+    return Date.from(atZone(ZoneId.systemDefault()).toInstant())
+}
+
+fun Date.toLocalDateTime(): LocalDateTime {
+    return LocalDateTime.ofInstant(toInstant(), ZoneId.systemDefault())
+}

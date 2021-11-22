@@ -8,6 +8,7 @@ package com.philips.bleclient.extensions
 
 import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
 import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.fhir.FhirUploader
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.*
@@ -15,6 +16,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import timber.log.Timber
 import java.nio.ByteOrder
 import java.util.*
 
@@ -167,17 +169,24 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
     val isCurrentTimeline = timeFlags hasFlag GhsTimestampFlags.isCurrentTimeline
 
     // Double check if the time is actually a time and not ticks according to flags
-    return if (isTicks) {
-        null
-    } else {
+    var result: LocalDateTime? = null
+    if (!isTicks) {
         val timeValue = getGHSLongValue(ByteOrder.LITTLE_ENDIAN)
         val unixEpochMillis = (timeValue * if (hasMillis) 1L else 1000L) + UTC_TO_UNIX_EPOCH_MILLIS
-        val timeSourceMethod = getIntValue(FORMAT_UINT8)
-        val utcOffset = if (hasTZ or hasDST) getIntValue(FORMAT_SINT8).toLong() * MILLIS_IN_15_MINUTES else 0L
-        // creating a local date time so don't need to use the utcOffset and build it on just the UTC times.
-        val result = (unixEpochMillis).millisAsLocalDateTime()
-        result
+        Timber.i("Parsed GHS UTC epoch millis: $unixEpochMillis")
+        result = if (isUTC) {
+            (unixEpochMillis).millisAsLocalDateTime()
+        } else {
+            val timeSourceMethod = getIntValue(FORMAT_UINT8)
+            val utcOffset = if (hasTZ or hasDST) getIntValue(FORMAT_SINT8).toLong() * MILLIS_IN_15_MINUTES else 0L
+            // creating a local date time so don't need to use the utcOffset and build it on just the UTC milliseconds.
+            // If creating a full timestamp that was local to the observation we'd need the utc offset for DST and TZ as seperate components
+            Timber.i("Parsed GHS TZ/DST offset millis: $utcOffset")
+            (unixEpochMillis).millisAsLocalDateTime()
+        }
     }
+    Timber.i("Parsed GHS Date: $result")
+    return result
 }
 
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
