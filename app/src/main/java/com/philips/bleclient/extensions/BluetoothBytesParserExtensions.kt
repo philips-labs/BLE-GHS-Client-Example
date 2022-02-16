@@ -157,7 +157,22 @@ fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
  * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return null if the flags indicate a tick counter
  */
 
-private const val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
+//fun BluetoothBytesParser.getGHSDateFixedFormat(): LocalDateTime? {
+//
+//    val timeFlags = getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+//    // Next is 6 byte millis... need extension
+//
+//    val syncSource = getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+//    val timeOffset = getIntValue(BluetoothBytesParser.FORMAT_SINT8)
+//
+//    getGHSLongValue(epoch2000mills())
+//    return listOf(
+//            byteArrayOf(0x46),
+//            parser.value.copyOfRange(2, 8),
+//            byteArrayOf(0x06, 0x0)
+//    ).merge()
+//    return Date()
+//}
 
 fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 
@@ -189,8 +204,17 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
     return result
 }
 
+/*
+ * Return the 6 byte "long" time counter used in GHS
+ */
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
-    return getLongValue(ByteOrder.LITTLE_ENDIAN)
+    val bytes = getByteArray(6)
+    var value = (0x00FF and bytes[5].toInt()).toLong()
+    for (i in 4 downTo 0) {
+        value = value shl 8
+        value += (0x00FF and bytes[i].toInt()).toLong()
+    }
+    return value
 }
 
 fun Long.millisAsLocalDateTime(): LocalDateTime {

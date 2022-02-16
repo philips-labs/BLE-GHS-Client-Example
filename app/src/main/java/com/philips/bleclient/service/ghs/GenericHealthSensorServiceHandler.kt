@@ -7,15 +7,18 @@ package com.philips.bleclient.service.ghs
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.acom.AcomObject
+import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.asHexString
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import timber.log.Timber
 import java.util.*
 
-class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorSegmentListener {
+class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorSegmentListener, GenericHealthSensorPacketListener {
 
     private val segmentHandler = GenericHealthSensorSegmentHandler(this)
+    private val packetHandler = GenericHealthSensorPacketHandler(this)
 
     var listeners: MutableList<GenericHealthSensorHandlerListener> = ArrayList()
 
@@ -53,10 +56,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
                     peripheral,
                     value
                 )
-                SIMPLE_TIME_CHARACTERISTIC_UUID -> handleSimpleTime(
-                    peripheral,
-                    value
-                )
                 UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(
                     peripheral,
                     value
@@ -83,15 +82,24 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
     fun removeListener(listener: GenericHealthSensorHandlerListener) = listeners.remove(listener)
 
     /*
-     * GenericHealthSensorSegmentListener methods (called when all segments have been received and
+     * GenericHealthSensorSegmentListener/GenericHealthSensorPacketListener methods (called when all segments have been received and
      * have a full ACOM object bytes or an error in the received BLE segments
      */
 
     override fun onReceivedMessageBytes(deviceAddress: String, byteArray: ByteArray) {
-        val acomObject = AcomObject(byteArray)
-        if (acomObject.observations.isNotEmpty()) {
-            listeners.forEach { it.onReceivedObservations(deviceAddress, acomObject.observations) }
+
+        Observation.fromBytes(byteArray)?.let { obs ->
+            listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(obs)) }
         }
+
+//        val acomObject = AcomObject(byteArray)
+//        if (acomObject.observations.isNotEmpty()) {
+//            listeners.forEach { it.onReceivedObservations(deviceAddress, acomObject.observations) }
+//        }
+    }
+
+    override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {
+        Timber.e(name, "Error BYTES OVERFLOW: $deviceAddress bytes: <${byteArray.asFormattedHexString()}>")
     }
 
     override fun onReceivedOutOfSequenceMessageBytes(deviceAddress: String, byteArray: ByteArray) {
@@ -112,7 +120,8 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
             name,
             "Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral"
         )
-        segmentHandler.receiveBytes(peripheral.address, value)
+//        segmentHandler.receiveBytes(peripheral.address, value)
+        packetHandler.receiveBytes(peripheral.address, value)
     }
 
     private fun handleStoredObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -151,10 +160,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         // Temp assigned GATT Characteristic UUID Allocated for GHS
         val GHS_FEATURES_CHARACTERISTIC_UUID =
             UUID.fromString("00007f41-0000-1000-8000-00805f9b34fb")
-
-        // Temp assigned GATT Characteristic UUID Allocated for GHS
-        val SIMPLE_TIME_CHARACTERISTIC_UUID =
-            UUID.fromString("00007f3d-0000-1000-8000-00805f9b34fb")
 
         // Temp assigned GATT Characteristic UUID Allocated for GHS
         val UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID =

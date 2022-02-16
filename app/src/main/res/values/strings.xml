@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Philips GHS Client Example</string>
+    <string name="app_name">GHS Client Simulator</string>
     <string name="found_devices_scanning">Found devices (tap to connect):</string>
     <string name="found_devices_not_scanning">Start scanning to discover devices…</string>
     <string name="connected_devices">Connected devices (tap for info):</string>

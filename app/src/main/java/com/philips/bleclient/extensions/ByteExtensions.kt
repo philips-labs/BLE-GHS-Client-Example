@@ -27,6 +27,11 @@ fun ByteArray.asHexString(): String {
     return this.formatHexBytes(null)
 }
 
+fun ByteArray.asFormattedHexString(): String {
+    return this.formatHexBytes(" ")
+    // return asHexString().replace("..".toRegex(), "$0 ")
+}
+
 fun ByteArray.asAsciiString(): String {
     var resultString = ""
     forEach {
@@ -46,4 +51,15 @@ fun List<Byte>.formatHexBytes(seperator: String?): String {
 
 fun Byte.toUINT8(): Int {
     return this.toInt() and 0xFF
+}
+
+/*
+ * Merge the ByteArrays in the receiver into the returned ByteArray
+ * This could be done with a fold function, but the concat of each cause a lot of allocs
+ * So instead the method creates a large result ByteArray and copies each into it.
+ * The "optimized" Kotlin implementation is kept commented out for comparison and
+ * used fold instead of reduce so that empty list doesn't cause an exception
+ */
+fun List<ByteArray>.merge(): ByteArray {
+    return this.fold(byteArrayOf(), { result, bytes -> result + bytes })
 }

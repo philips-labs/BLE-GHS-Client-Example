@@ -12,6 +12,7 @@ import com.philips.bleclient.acom.Observation.Companion.MDC_SYSTEM_URN_STRING
 import com.philips.bleclient.acom.ObservationValue
 import com.philips.bleclient.acom.SampleArrayObservationValue
 import com.philips.bleclient.acom.SimpleNumericObservationValue
+import com.philips.bleclient.extensions.Flags
 import com.philips.bleclient.toUINT8
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -115,4 +116,21 @@ fun SampleArrayObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
         put("factor", 1)
         put("unit", unitCode.symbol)
     }
+}
+
+enum class ObservationHeaderFlags(override val bit: Long) : Flags {
+    class_bit_0(1 shl 0),
+    class_bit_1(1 shl 1),
+    class_bit_2(1 shl 2),
+    class_bit_3(1 shl 3),
+    isObservationTypePresent(1 shl 4),
+    isTimestampPresent(1 shl 5),
+    isMeasurementDurationPresent(1 shl 6),
+    isMeasurementStatusPresent(1 shl 7),
+    isObjectIdPresent(1 shl 8),
+    isPatientIdPresent(1 shl 9),
+    isSupplementalInformationPresent(1 shl 10),
+    isDerivedFromPresent(1 shl 11),
+    hasMember(1 shl 12),
+    hasTLVPresent(1 shl 13);
 }

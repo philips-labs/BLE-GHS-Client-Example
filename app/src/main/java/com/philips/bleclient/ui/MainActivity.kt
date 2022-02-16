@@ -330,10 +330,10 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 findViewById<TextView>(com.philips.bleclient.R.id.hrObservation).text =
                     "HR: ${floatValue} bpm ${observation.timestamp}"
             }
-            ObservationType.MDC_SPO2_OXYGENATION_RATIO -> {
+            ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
                 findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
-                    "HR: ${floatValue}% ${observation.timestamp}"
+                    "SpO2: ${floatValue}% ${observation.timestamp}"
             }
             ObservationType.MDC_PPG_TIME_PD_PP -> {
                 val sampleArray = (observation.value as SampleArrayObservationValue).samples

@@ -55,7 +55,7 @@ class AcomObject(bytes: ByteArray) {
      * would be to throw and catch exceptions with the details of where in the bytes an error occured
      */
     init {
-        readObservations(BluetoothBytesParser(bytes, 0, ByteOrder.BIG_ENDIAN))
+        readObservations(BluetoothBytesParser(bytes, 0, ByteOrder.LITTLE_ENDIAN))
     }
 
     private fun readObservations(bytesParser: BluetoothBytesParser) {
