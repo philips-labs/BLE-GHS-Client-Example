@@ -5,6 +5,7 @@
 package com.philips.bleclient.acom
 
 import com.philips.bleclient.extensions.*
+import com.philips.bleclient.util.MeasurementStatusFlags
 import com.philips.bleclient.util.ObservationHeaderFlags
 import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
@@ -12,16 +13,14 @@ import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstan
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 import java.nio.ByteOrder
-import java.util.*
-import kotlin.time.Duration
 
 @Suppress("unused")
-class Observation {
+open class Observation {
     var handle: Int? = null
-    var type: ObservationType = ObservationType.UNKNOWN_STATUS_CODE
+    var type: ObservationType = ObservationType.UNKNOWN
     var timestamp: LocalDateTime? = null
     var timeCounter: Long? = null
-    var value: ObservationValue? = null
+    open var value: ObservationValue? = null
     var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
 
     /*
@@ -44,7 +43,10 @@ class Observation {
     }
 
     constructor(id: Int, type: ObservationType, value: ByteArray, unitCode: UnitCode, timestamp: LocalDateTime?) :
-        this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp)
+            this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp)
+
+    constructor(id: Int, type: ObservationType, observations: List<Observation>, timestamp: LocalDateTime?) :
+        this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp)
 
     constructor(id: Int, type: ObservationType, value: ObservationValue, unitCode: UnitCode, timestamp: LocalDateTime?) {
         this.handle = id
@@ -153,20 +155,62 @@ class Observation {
         const val ATTRIBUTE_UNIT_CODE_LENGTH = 0x04
         const val ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH = 0x08
 
+        const val FLAGS_BUNDLED_OBSERVATION_VALUE = 0xF
+
         const val MDC_SYSTEM_URN_STRING = "urn:iso:std:iso:11073:10101"
         const val CODE_SYSTEM_OBSERVATRION_CATEGORY_URL = "http://terminology.hl7.org/CodeSystems/observation_category"
 
-        fun fromBytes(ghsFixedFormatBytes: ByteArray): Observation? {
-            val parser = BluetoothBytesParser(ghsFixedFormatBytes, 0, ByteOrder.LITTLE_ENDIAN)
-            val length = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-            // validate the length and return null if invalid
-            if (length != ghsFixedFormatBytes.size - 2) return null
-            // TODO for now don't validate the CRC, but we'll need to when we're done with the first pass
+        // Continue parsing the observation after it is determined the bytes in parser are a BundledObservation
+        private fun bundledObservationFrom(flags: BitMask, parser: BluetoothBytesParser): Observation? {
+            val observationType = getObservationTypeIfPresent(flags, parser)
+            val timestamp = getTimestampIfPresent(flags, parser)
+            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
+            val objectId = getObjectIdIfPresent(flags, parser)
+            val patientId = getPatientIdIfPresent(flags, parser)
+            val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
+            // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
+            // so for now just check if present and throw and exception if set
+            getDerivedFromIfPresent(flags, parser)
+            getHasMemberIfPresent(flags, parser)
+            getTLVsIfPresent(flags, parser)
+            
+            return Observation(objectId ?: 0, observationType, getBundledObservationValues(parser), timestamp)
+        }
 
-            val observationFlags = BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32).toLong())
-            val observationClass = observationFlags.value and 0xf
-            val observationType: ObservationType = ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+        private fun getBundledObservationValues(parser: BluetoothBytesParser): List<Observation> {
+            val observations = mutableListOf<Observation>()
+            repeat(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)) {
+                getObservationFrom(parser)?.let { observation -> observations.add(observation)}
+            }
+            return observations
+        }
 
+        /*
+         * The Observation Type field contains a 4-byte MDC code from IEEE 11073-10101 [6] that uniquely defines the type of the observation.
+         * This field is mandatory for single observations that are not part of a bundle, and it is optional for observation bundles.
+         * For single observations in bundles, either the bundle contains the Observation Type field that applies to all contained single
+         * observations or each single observation contains Observation Type field.
+         */
+        private fun getObservationTypeIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): ObservationType {
+            return if (observationFlags.hasFlag(ObservationHeaderFlags.isObservationTypePresent)) {
+                return ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+            } else {
+                ObservationType.UNKNOWN
+            }
+        }
+
+        /*
+         * The optional Measurement Duration field contains the duration of the measurement in seconds, reported as a floating number.
+         */
+        private fun getDurationIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): Float? {
+            return if (observationFlags.hasFlag(ObservationHeaderFlags.isMeasurementDurationPresent)) {
+                parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            } else {
+                null
+            }
+        }
+
+        private fun getTimestampIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): LocalDateTime? {
             var timestamp: LocalDateTime? = null
             var timecounter: Long? = null
             // Need to convert to seconds, milliseconds, 100ths microseconds
@@ -186,28 +230,50 @@ class Observation {
                 // Check if ticks or clock
             }
 
+            // We haven't actually computed the timestamp yet!
+            return timestamp
+        }
 
-            // Do we want to use the kotlin.time.Duration class?
-            var measurementDuration: Float? = null
-            if (observationFlags.hasFlag(ObservationHeaderFlags.isMeasurementDurationPresent)) {
-                measurementDuration = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+        /*
+         * The Measurement Status field is defined as a series of Boolean conditions.
+         */
+        private fun getMeasurmentStatusIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): BitMask? {
+            return if (observationFlags.hasFlag(ObservationHeaderFlags.isMeasurementStatusPresent)) {
+                return BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16).toLong())
+            } else {
+                null
             }
+        }
 
-            var measurementStatus: Int? = null
-            if (observationFlags.hasFlag(ObservationHeaderFlags.isMeasurementStatusPresent)) {
-                measurementStatus = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+        /*
+         * The Object Id field contains a value that can be used in other observations to reference this specific observation.
+         * The value shall be unique in the context of its usage, which is a bundle of Observations.
+         */
+        private fun getObjectIdIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): Int? {
+            return if (observationFlags.hasFlag(ObservationHeaderFlags.isObjectIdPresent)) {
+                parser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)
+            } else {
+                null
             }
+        }
 
-            var objId: Int? = null
-            if (observationFlags.hasFlag(ObservationHeaderFlags.isObjectIdPresent)) {
-                objId = parser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)
+        /*
+         * This optional field contains a local identification of the patient or user using the sensor device.
+         */
+        private fun getPatientIdIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): Int? {
+            return if (observationFlags.hasFlag(ObservationHeaderFlags.isPatientIdPresent)) {
+                parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+            } else {
+                null
             }
+        }
 
-            var patientId: Int? = null
-            if (observationFlags.hasFlag(ObservationHeaderFlags.isPatientIdPresent)) {
-                patientId = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-            }
-
+        /*
+         * This optional field contains supplemental information that can help in understanding the observation.
+         * It can be used to report the body location of the sensor, the meal context of an observation,
+         * or other relevant aspects. Only information that can be expressed by an MDC code can be reported.
+         */
+        private fun getSupplementalInfoIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser): List<Int>? {
             var codes: MutableList<Int>? = null
             // TODO Grab Supplemental Information (var # bytes)
             if (observationFlags.hasFlag(ObservationHeaderFlags.isSupplementalInformationPresent)) {
@@ -215,31 +281,101 @@ class Observation {
                 codes = mutableListOf()
                 repeat(count) { codes.add(parser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)) }
             }
+            return codes?.toList()
+        }
 
-            // TODO Grab Derived-from (var # bytes)
-            // TODO Grab hasMember (var # bytes)
+        /*
+         * The Derived From field contains references to other Observations from which this Observation is derived.
+         * To references an Observations its Object Id value is used.
+         */
+        private fun getDerivedFromIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser) {
+            if (observationFlags.hasFlag(ObservationHeaderFlags.isDerivedFromPresent)) {
+                throw RuntimeException("Observation with Derived From Flag Unsupported")
+            }
+        }
 
-            if (observationFlags.hasFlag(ObservationHeaderFlags.isPatientIdPresent)) {
-                patientId = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+        /*
+         * The Has Member field is present in Observations that are defined by a series of other Observations.
+         * An example would be an exercise session on a fitness machine that reports the type of the
+         * session and references the individual heart rate measurements taken during the session. The Has Member
+         * field contains the references to the other Observations that are a member of this group of Observations.
+         */
+        private fun getHasMemberIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser) {
+            if (observationFlags.hasFlag(ObservationHeaderFlags.hasMember)) {
+                throw RuntimeException("Observation with Has Member Flag Unsupported")
+            }
+        }
+
+        /*
+         * ACOM allows addition of new object types to the model as well as the addition of new attributes
+         * to defined object types. To support new attributes in Observations TLVs are used. TLV stands
+         * for Type-Length-Value. For the Type an MDC code is used that typically comes from partition 1,
+         * the Object-oriented partition and have a Reference Id starting with “MDC_ATTR_”.
+         */
+        private fun getTLVsIfPresent(observationFlags: BitMask, parser: BluetoothBytesParser) {
+            if (observationFlags.hasFlag(ObservationHeaderFlags.hasTLVPresent)) {
+                throw RuntimeException("Observation with Has TLVs Flag Unsupported")
+            }
+        }
+
+        private fun getUnitCode(parser: BluetoothBytesParser): UnitCode {
+            return UnitCode.fromGHSValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16))
+        }
+
+        // We need to pass in the lenght of bytes in the parser since BluetoothBytesParser has no method
+        // or property to access the size of the private mValue byte array
+        private fun getObservationFrom(parser: BluetoothBytesParser, bytesLength: Int = 0): Observation? {
+            val length = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+            // validate the length (if passed in) and return null if invalid
+            if (bytesLength > 0 && (length != bytesLength - 2)) return null
+
+            // Note: In the 0.7 spec flags and observation class will seperate into seperate components
+            val observationFlags = BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32).toLong())
+            val observationClass = (observationFlags.value and 0xf).toInt()
+
+            // If a bundled observation continue on with
+            if (observationClass == FLAGS_BUNDLED_OBSERVATION_VALUE) {
+                return bundledObservationFrom(observationFlags, parser);
             }
 
-            val unitCode: UnitCode = UnitCode.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
-            val observationValue: Float = when (observationClass.toInt()) {
+            val observationType = getObservationTypeIfPresent(observationFlags, parser)
+            val timestamp = getTimestampIfPresent(observationFlags, parser)
+
+            // Do we want to use the kotlin.time.Duration class?
+            val measurementDuration = getDurationIfPresent(observationFlags, parser)
+            val measurementStatus = getMeasurmentStatusIfPresent(observationFlags, parser)
+            val objId = getObjectIdIfPresent(observationFlags, parser)
+            val patientId = getPatientIdIfPresent(observationFlags, parser)
+            val supplimentalInfoCodes = getSupplementalInfoIfPresent(observationFlags, parser)
+
+            // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
+            // so for now just check if present and throw and exception if set
+            getDerivedFromIfPresent(observationFlags, parser)
+            getHasMemberIfPresent(observationFlags, parser)
+            getTLVsIfPresent(observationFlags, parser)
+
+            // Unit code, float is true only for a simple numeric
+            val unitCode = getUnitCode(parser)
+
+            val observationValue: Float = when (observationClass) {
 //                0 -> SimpleNumericObservationValue(0f, UnitCode.UNKNOWN_CODE)
                 0 -> parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
                 else -> 0f
             }
 
             return Observation(id = objId,
-                    type = observationType,
-                    value = observationValue,
-                    valuePrecision = 2,
-                    unitCode = unitCode,
-                    timestamp = timestamp)
-
+                type = observationType,
+                value = observationValue,
+                valuePrecision = 2,
+                unitCode = unitCode,
+                timestamp = timestamp)
         }
 
-
+        fun fromBytes(ghsFixedFormatBytes: ByteArray): Observation? {
+            return getObservationFrom(
+                BluetoothBytesParser(ghsFixedFormatBytes, 0, ByteOrder.LITTLE_ENDIAN),
+                ghsFixedFormatBytes.size)
+        }
 
     }
 
