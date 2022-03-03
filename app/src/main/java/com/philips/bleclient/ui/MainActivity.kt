@@ -16,9 +16,6 @@ import android.provider.Settings
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.philips.bleclient.acom.Observation
-import com.philips.bleclient.acom.SampleArrayObservationValue
-import com.philips.bleclient.acom.SimpleNumericObservationValue
 import com.philips.bleclient.fhir.FhirUploader
 import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerListener
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
@@ -33,7 +30,7 @@ import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
-import com.philips.bleclient.acom.BundledObservationValue
+import com.philips.bleclient.acom.*
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -337,6 +334,14 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
                 findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
                     "SpO2: ${floatValue}% ${observation.timestamp}"
+            }
+            ObservationType.MDC_PRESS_BLD_NONINV -> {
+                var valString = ""
+                (observation.value as CompoundNumericValue).values.forEach {
+                    valString = "$valString / ${it.value.toInt()}"
+                }
+                findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
+                    "Blood pressure: $valString ${observation.timestamp}"
             }
             ObservationType.UNKNOWN -> {
                 ObservationLog.log("Unknown Observeration: $observation")
