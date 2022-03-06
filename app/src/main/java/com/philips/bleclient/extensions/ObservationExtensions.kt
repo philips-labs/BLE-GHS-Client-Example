@@ -134,3 +134,15 @@ enum class ObservationHeaderFlags(override val bit: Long) : Flags {
     hasMember(1 shl 12),
     hasTLVPresent(1 shl 13);
 }
+
+
+enum class MeasurementStatusFlags(override val bit: Long) : Flags {
+    invalid(1 shl 0),
+    questionable(1 shl 1),
+    notAvailable(1 shl 2),
+    calibrating(1 shl 4),
+    testData(1 shl 5),
+    earlyEstimate(1 shl 6),
+    thresholdError(1 shl 14),
+    thresholdingDisabled(1 shl 15),
+}

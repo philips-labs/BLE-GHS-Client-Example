@@ -16,9 +16,6 @@ import android.provider.Settings
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.philips.bleclient.acom.Observation
-import com.philips.bleclient.acom.SampleArrayObservationValue
-import com.philips.bleclient.acom.SimpleNumericObservationValue
 import com.philips.bleclient.fhir.FhirUploader
 import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerListener
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
@@ -33,6 +30,7 @@ import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
+import com.philips.bleclient.acom.*
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -302,27 +300,29 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         Handler(Looper.myLooper()!!).post {
             observations.forEach {
-                Timber.i(it.toString())
-                updateObservationText(it)
-                ObservationLog.log(it)
-                if (FhirUploader.postObservationsToServer) postObservation(it)
+                if (it.value is BundledObservationValue) {
+                    (it.value as BundledObservationValue).observations.forEach {
+                        processReceviedObservation(it)
+                    }
+                } else {
+                    processReceviedObservation(it)
+                }
             }
         }
-        Handler(Looper.myLooper()!!).post {
-            observations.forEach {
-                Timber.i(it.toString())
-                updateObservationText(it)
-                ObservationLog.log(it)
-                if (FhirUploader.postObservationsToServer) postObservation(it)
-            }
-        }
+    }
+
+    private fun processReceviedObservation(observation: Observation) {
+        Timber.i(observation.toString())
+        updateObservationText(observation)
+        ObservationLog.log(observation)
+        if (FhirUploader.postObservationsToServer) postObservation(observation)
     }
 
     private fun updateObservationText(observation: Observation) {
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(com.philips.bleclient.R.id.tempObservation).text =
+                findViewById<TextView>(R.id.tempObservation).text =
                     "Temp: ${floatValue} deg ${observation.timestamp}"
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
@@ -335,13 +335,16 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
                     "SpO2: ${floatValue}% ${observation.timestamp}"
             }
-            ObservationType.MDC_PPG_TIME_PD_PP -> {
-                val sampleArray = (observation.value as SampleArrayObservationValue).samples
-                findViewById<TextView>(com.philips.bleclient.R.id.ppgObservationTitle).text =
-                    "PPG Waveform ${observation.timestamp}"
-                findViewById<WaveformView>(com.philips.bleclient.R.id.ppgObservation).setWaveform(
-                    sampleArray
-                )
+            ObservationType.MDC_PRESS_BLD_NONINV -> {
+                var valString = ""
+                (observation.value as CompoundNumericValue).values.forEach {
+                    valString = "$valString / ${it.value.toInt()}"
+                }
+                findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
+                    "Blood pressure: $valString ${observation.timestamp}"
+            }
+            ObservationType.UNKNOWN -> {
+                ObservationLog.log("Unknown Observeration: $observation")
             }
             else -> findViewById<TextView>(com.philips.bleclient.R.id.ppgObservation).text =
                 "${observation.type} ${observation.timestampAsDate()}"

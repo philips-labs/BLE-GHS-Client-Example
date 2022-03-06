@@ -78,6 +78,12 @@
             android:text="@string/no_spo2_observation"
             android:layout_marginBottom="16dp" />
         <TextView
+            android:id="@+id/bpObservation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_bp_observation"
+            android:layout_marginBottom="16dp" />
+        <TextView
             android:id="@+id/ppgObservationTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
