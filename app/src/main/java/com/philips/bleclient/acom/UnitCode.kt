@@ -543,6 +543,11 @@ enum class UnitCode(val value: Int, val symbol: String, val description : String
     UNKNOWN_CODE(0xFFFFFFF, "-", "unknown");
 
     companion object {
+        // GHS Unit Codes assume partition 4
+        fun fromGHSValue(value: Int?): UnitCode {
+            return value?.let { fromValue(it or 0x40000) } ?: UNKNOWN_CODE
+        }
+
         fun fromValue(value: Int?): UnitCode {
             return value?.let {
                 for (type in values()) {

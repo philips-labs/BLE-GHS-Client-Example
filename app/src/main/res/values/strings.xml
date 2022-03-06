@@ -15,6 +15,7 @@
     <string name="no_temp_observation">No temperature received</string>
     <string name="no_hr_observation">No heart rate received</string>
     <string name="no_spo2_observation">No SpO2 received</string>
+    <string name="no_bp_observation">No Blood pressure received</string>
     <string name="no_ppg_observation">No PPG received</string>
     <string name="disconnect_peripheral">Disconnect peripheral</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>

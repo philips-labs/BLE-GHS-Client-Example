@@ -966,7 +966,7 @@ enum class ObservationType(val value: Int) {
     MDC_WORK_OF_BREATHING_PATIENT_RESISTIVE(153280),
     MDC_WORK_OF_BREATHING_VENTILATOR(153288),
 
-    UNKNOWN_STATUS_CODE(-0x1);
+    UNKNOWN(-0x1);
 
     companion object {
         @Suppress("unused")
@@ -975,8 +975,8 @@ enum class ObservationType(val value: Int) {
                 for (type in values()) {
                     if (type.value == value) return@let type
                 }
-                return@let UNKNOWN_STATUS_CODE
-            } ?: UNKNOWN_STATUS_CODE
+                return@let UNKNOWN
+            } ?: UNKNOWN
         }
 
         @Suppress("unused")
@@ -984,7 +984,7 @@ enum class ObservationType(val value: Int) {
             return try {
                 valueOf(string)
             } catch (exception: IllegalArgumentException) {
-                UNKNOWN_STATUS_CODE
+                UNKNOWN
             }
         }
     }
