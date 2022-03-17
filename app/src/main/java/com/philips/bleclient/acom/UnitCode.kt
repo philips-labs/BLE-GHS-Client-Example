@@ -4,6 +4,8 @@
  */
 package com.philips.btserver.generichealthservice
 
+import com.welie.blessed.BluetoothBytesParser
+
 @Suppress("unused")
 enum class UnitCode(val value: Int, val symbol: String, val description : String) {
     MDCX_DIM_MILLI_MOLE_PER_M_SQ_PER_SEC(269586, "mmol m-2 s-1", "milli mole per square meter per second"),
@@ -46,6 +48,7 @@ enum class UnitCode(val value: Int, val symbol: String, val description : String
     MDC_DIM_DECIBEL_X_V(269952, "dB(V)", "decibel volt"),
     MDC_DIM_DECI_BEL(270160, "dB", "Decibel"),
     MDC_DIM_DEGC(268192, "C", "degree Celsius"),
+    MDC_DIM_DIV(262146, "-", "Unspecified"),
     MDC_DIM_DIMLESS(262656, "-", "dimensionless"),
     MDC_DIM_DROP(263168, "Drop", "drop"),
     MDC_DIM_DROPS_PER_MILLI_L(270834, "drops/mL", "drops per mL"),
@@ -542,6 +545,11 @@ enum class UnitCode(val value: Int, val symbol: String, val description : String
     MDC_DIM_YR(264512, "y", "year"),
     UNKNOWN_CODE(0xFFFFFFF, "-", "unknown");
 
+    // A GHS Unit Code is the 16-bit value of the unit code assuming partition 4
+    fun writeOn(parser: BluetoothBytesParser) {
+        parser.setIntValue(value and 0xFFFF, BluetoothBytesParser.FORMAT_UINT16)
+    }
+
     companion object {
         // GHS Unit Codes assume partition 4
         fun fromGHSValue(value: Int?): UnitCode {
@@ -556,5 +564,11 @@ enum class UnitCode(val value: Int, val symbol: String, val description : String
                 return@let UNKNOWN_CODE
             } ?: UNKNOWN_CODE
         }
+
+        // A GHS Unit Code is the 16-bit value of the unit code assuming partition 4
+        fun readFrom(parser: BluetoothBytesParser): UnitCode {
+            return fromGHSValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16))
+        }
+
     }
 }

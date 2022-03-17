@@ -73,7 +73,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.plant(Timber.DebugTree())
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
         setContentView(R.layout.activity_main)
 
         setupFoundPeripheralsList()
@@ -340,14 +342,16 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 (observation.value as CompoundNumericValue).values.forEach {
                     valString = "$valString / ${it.value.toInt()}"
                 }
-                findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
+                findViewById<TextView>(com.philips.bleclient.R.id.bpObservation).text =
                     "Blood pressure: $valString ${observation.timestamp}"
             }
             ObservationType.UNKNOWN -> {
                 ObservationLog.log("Unknown Observeration: $observation")
             }
-            else -> findViewById<TextView>(com.philips.bleclient.R.id.ppgObservation).text =
-                "${observation.type} ${observation.timestampAsDate()}"
+            else -> {
+                val samples = (observation.value as SampleArrayObservationValue).samples
+                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
+            }
         }
     }
 

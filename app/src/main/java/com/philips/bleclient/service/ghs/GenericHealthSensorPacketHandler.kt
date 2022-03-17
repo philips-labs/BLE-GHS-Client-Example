@@ -42,7 +42,11 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun isDeviceReceiveComplete(bytes: ByteArray): Boolean {
         if (bytes.size < 2) return false
         val expectedLength = expectedLengthForBytes(bytes) + 2 // add 2 for length bytes themselves
-        return bytes.size == expectedLength
+        val complete = bytes.size == expectedLength
+        if (!complete) {
+            Timber.e("ERROR: Data length not expected length ${bytes.size} expected: $expectedLength")
+        }
+        return complete
     }
 
     fun isCRCValid(bytes: ByteArray): Boolean {
@@ -52,7 +56,10 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun handlePacketsBytesComplete(deviceAddress: String) {
         val receivedBytes = packetBytesMap.getOrDefault(deviceAddress, byteArrayOf())
         // First reconfirm we got a proper length...
-        if (!isDeviceReceiveComplete(receivedBytes)) throw RuntimeException("Data length not expected length")
+        if (!isDeviceReceiveComplete(receivedBytes)) {
+//            throw RuntimeException("Data length not expected length")
+            return
+        }
 
 //        if (!isCRCValid(receivedBytes)) {
 //            Timber.e("ERROR: Invalid CRC ${receivedBytes.asFormattedHexString()}")

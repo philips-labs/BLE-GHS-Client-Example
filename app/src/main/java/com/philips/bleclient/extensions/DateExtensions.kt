@@ -46,3 +46,25 @@ fun Date.toLocalDateTime(): LocalDateTime {
 fun Date.epoch2000mills(): Long {
     return time - UTC_TO_UNIX_EPOCH_MILLIS
 }
+
+fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.datetime.LocalDateTime {
+
+    val timecounter =
+        (if (timestampFlags.hasFlag(GhsTimestampFlags.isMillisecondsPresent)) {
+            this
+        } else if (timestampFlags.hasFlag(GhsTimestampFlags.isHundredthsMicroseconds)) {
+            this / 10
+        } else {
+            this * 1000
+        })  + UTC_TO_UNIX_EPOCH_MILLIS
+
+//    if (timestampFlags.hasFlag(GhsTimestampFlags.isTickCounter)) {
+//        // TODO What sort of "time" represents the tick counter, or null... or throw an exception
+//    } else {
+        val timeOffset = if (timestampFlags.hasFlag(GhsTimestampFlags.isTZPresent) ||
+                            timestampFlags.hasFlag(GhsTimestampFlags.isDSTPresent)) offset * ( 15 * 60 * 1000)
+                        else 0
+        return (timecounter + timeOffset).millisAsLocalDateTime()
+//    }
+
+}

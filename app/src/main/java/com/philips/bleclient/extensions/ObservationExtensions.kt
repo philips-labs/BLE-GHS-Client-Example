@@ -119,22 +119,27 @@ fun SampleArrayObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
 }
 
 enum class ObservationHeaderFlags(override val bit: Long) : Flags {
-    class_bit_0(1 shl 0),
-    class_bit_1(1 shl 1),
-    class_bit_2(1 shl 2),
-    class_bit_3(1 shl 3),
-    isObservationTypePresent(1 shl 4),
-    isTimestampPresent(1 shl 5),
-    isMeasurementDurationPresent(1 shl 6),
-    isMeasurementStatusPresent(1 shl 7),
-    isObjectIdPresent(1 shl 8),
-    isPatientIdPresent(1 shl 9),
-    isSupplementalInformationPresent(1 shl 10),
-    isDerivedFromPresent(1 shl 11),
-    hasMember(1 shl 12),
-    hasTLVPresent(1 shl 13);
+    isObservationTypePresent(1 shl 0),
+    isTimestampPresent(1 shl 1),
+    isMeasurementDurationPresent(1 shl 2),
+    isMeasurementStatusPresent(1 shl 3),
+    isObjectIdPresent(1 shl 4),
+    isPatientIdPresent(1 shl 5),
+    isSupplementalInformationPresent(1 shl 6),
+    isDerivedFromPresent(1 shl 7),
+    hasMember(1 shl 8),
+    hasTLVPresent(1 shl 9);
 }
 
+enum class TimestampFlags(override val bit: Long) : Flags {
+    isTickCounter(1 shl 0),
+    isUTC(1 shl 1),
+    isMilliseconds(1 shl 2),
+    isHundredsMicroseconds(1 shl 3),
+    isTimezoneValid(1 shl 4),
+    isDSTValid(1 shl 5),
+    isCurrentTimeline(1 shl 6),
+}
 
 enum class MeasurementStatusFlags(override val bit: Long) : Flags {
     invalid(1 shl 0),
@@ -145,4 +150,23 @@ enum class MeasurementStatusFlags(override val bit: Long) : Flags {
     earlyEstimate(1 shl 6),
     thresholdError(1 shl 14),
     thresholdingDisabled(1 shl 15),
+}
+
+enum class ObservationClass(val value: Byte) {
+    SimpleDiscreet(0x01),
+    String(0x02),
+    RealTimeSampleArray(0x03),
+    CompoundNumeric(0x04),
+    CompoundDiscreteEvent(0x05),
+    CompoundState(0x06),
+    CompoundObservation(0x07),
+    TLVEncoded(0x08),
+    ObservationBundle(-1),  // 0xFF
+    Unknown(0x0);
+
+    companion object {
+        fun fromValue(value: Byte): ObservationClass {
+            return values().find { it.value == value } ?: Unknown
+        }
+    }
 }

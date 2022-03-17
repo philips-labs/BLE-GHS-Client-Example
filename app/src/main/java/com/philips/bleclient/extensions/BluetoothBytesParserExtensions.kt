@@ -210,7 +210,7 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
     val bytes = getByteArray(6)
     var value = (0x00FF and bytes[5].toInt()).toLong()
-    for (i in 4 downTo 0) {
+    for (i in 5 downTo 0) {
         value = value shl 8
         value += (0x00FF and bytes[i].toInt()).toLong()
     }

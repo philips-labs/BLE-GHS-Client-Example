@@ -10,9 +10,12 @@ import com.philips.bleclient.acom.AcomObject
 import com.philips.bleclient.acom.Observation
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.asHexString
+import com.philips.btserver.generichealthservice.ObservationType
+import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import timber.log.Timber
+import java.nio.ByteOrder
 import java.util.*
 
 class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorSegmentListener, GenericHealthSensorPacketListener {
@@ -62,10 +65,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
                 )
             }
         } else {
-            Timber.e(
-                name,
-                "Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}"
-            )
+            Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
         }
     }
 
@@ -99,7 +99,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
     }
 
     override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {
-        Timber.e(name, "Error BYTES OVERFLOW: $deviceAddress bytes: <${byteArray.asFormattedHexString()}>")
+        Timber.e("Error BYTES OVERFLOW: $deviceAddress bytes: <${byteArray.asFormattedHexString()}>")
     }
 
     override fun onReceivedOutOfSequenceMessageBytes(deviceAddress: String, byteArray: ByteArray) {
@@ -116,33 +116,40 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
 
     @ExperimentalStdlibApi
     private fun handleReceivedObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(
-            name,
-            "Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral"
-        )
+        Timber.i("Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
 //        segmentHandler.receiveBytes(peripheral.address, value)
         packetHandler.receiveBytes(peripheral.address, value)
     }
 
     private fun handleStoredObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(name, "Stored Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        Timber.i("Stored Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
     private fun handleFeaturesCharacteristics(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(name, "Features characteristic update <${value.asHexString()}> for peripheral: $peripheral")
+        Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
+        val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
+        val numberOfObservations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+        // Ensure the number of bytes matches what we expect
+        if (value.size == (numberOfObservations * 4) + 1) {
+            repeat (numberOfObservations) {
+                ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+            }
+        } else {
+            Timber.i( "Error in features characteristic bytes size: ${value.size} expected: ${(numberOfObservations * 4) + 1}")
+        }
     }
 
     private fun handleSimpleTime(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(name, "Simple time bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        Timber.i( "Simple time bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
     private fun handleUniqueDeviceId(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i(name, "Unique device ID bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        Timber.i( "Unique device ID bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
     init {
         serviceUUID = SERVICE_UUID
-        supportedCharacteristics.add(OBSERVATION_CHARACTERISTIC_UUID)
+        supportedCharacteristics.addAll(arrayOf(OBSERVATION_CHARACTERISTIC_UUID, GHS_FEATURES_CHARACTERISTIC_UUID))
     }
 
     companion object {
