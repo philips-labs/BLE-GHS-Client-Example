@@ -105,7 +105,7 @@ private fun BluetoothBytesParser.getTypeLen(formatType: Int): Int {
  *
  * @return The float value at the position of the internal offset
  */
-fun BluetoothBytesParser.getMderFloatValue(index: Int): Float? {
+fun BluetoothBytesParser.getMderFloatValue(index: Int): Float {
     val result = getFloatValue(FORMAT_FLOAT, index, this.byteOrder)
     offset += getTypeLen(FORMAT_FLOAT)
     return result
