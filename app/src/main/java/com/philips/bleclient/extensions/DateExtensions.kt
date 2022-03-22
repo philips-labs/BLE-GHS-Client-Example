@@ -1,8 +1,10 @@
 package com.philips.bleclient.extensions
 
 
+import kotlinx.datetime.toJavaLocalDateTime
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 enum class GhsTimestampFlags(override val bit: Long) : Flags {
@@ -67,4 +69,8 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
         return (timecounter + timeOffset).millisAsLocalDateTime()
 //    }
 
+}
+
+fun kotlinx.datetime.LocalDateTime.asDisplayString() : String {
+    return this.toJavaLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-mm-dd HH:MM:SS"))
 }

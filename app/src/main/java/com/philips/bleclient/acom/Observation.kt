@@ -47,11 +47,10 @@ open class Observation {
             this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp)
 
     constructor(id: Int, type: ObservationType, observations: List<Observation>, timestamp: LocalDateTime?) :
-        this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp)
+            this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp)
 
     constructor(id: Int, type: ObservationType, compoundValue: CompoundNumericValue, timestamp: LocalDateTime?) :
             this(id, type, compoundValue, UnitCode.UNKNOWN_CODE, timestamp)
-
 
     constructor(id: Int, type: ObservationType, sampleArrayValue: SampleArrayObservationValue, timestamp: LocalDateTime?) :
             this(id, type, sampleArrayValue, UnitCode.UNKNOWN_CODE, timestamp)
@@ -171,27 +170,38 @@ open class Observation {
 
         // Continue parsing the observation after it is determined the bytes in parser are a BundledObservation
         private fun bundledObservationFrom(flags: BitMask, parser: BluetoothBytesParser): Observation? {
+            val attributesMap = mutableMapOf<String, Any>()
             val observationType = getObservationTypeIfPresent(flags, parser)
-            val timestamp = getTimestampIfPresent(flags, parser)
+            val timestamp = getTimestampIfPresent(flags, parser)?.let { attributesMap.put("timestamp", it); it }
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
-            val objectId = getObjectIdIfPresent(flags, parser)
-            val patientId = getPatientIdIfPresent(flags, parser)
-            val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
+            val objectId = getObjectIdIfPresent(flags, parser)?.let { attributesMap.put("objectId", it); it }
+            getPatientIdIfPresent(flags, parser)?.let { attributesMap.put("patientId", it) }
+            getSupplementalInfoIfPresent(flags, parser)?.let { attributesMap.put("supplementalInfo", it) }
             // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
             // so for now just check if present and throw and exception if set
             getDerivedFromIfPresent(flags, parser)
             getHasMemberIfPresent(flags, parser)
             getTLVsIfPresent(flags, parser)
 
-            return Observation(objectId ?: 0, observationType, getBundledObservationValues(parser), timestamp)
+            val bundledObservations = getBundledObservations(parser)
+            disaggragateBundledObservationValues(bundledObservations, attributesMap)
+            return Observation(objectId ?: 0, observationType, bundledObservations, timestamp)
         }
 
-        private fun getBundledObservationValues(parser: BluetoothBytesParser): List<Observation> {
+        private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
             val observations = mutableListOf<Observation>()
             repeat(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)) {
                 getObservationFrom(parser)?.let { observation -> observations.add(observation)}
             }
             return observations
+        }
+
+        private fun disaggragateBundledObservationValues(observations: List<Observation>, commonValues: Map<String, Any>) {
+            observations.forEach { observation ->
+                commonValues.get("patientId")?.let {observation.patientId = it as Int}
+                commonValues.get("timestamp")?.let {observation.timestamp = it as LocalDateTime}
+                observation.timestamp
+            }
         }
 
         private fun compoundNumericObservationFrom(flags: BitMask, parser: BluetoothBytesParser): Observation? {

@@ -2,6 +2,7 @@ package com.philips.bleclient.service.ghs
 
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.merge
+import okhttp3.internal.and
 import timber.log.Timber
 import java.lang.RuntimeException
 
@@ -30,7 +31,11 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun expectedLengthForBytes(bytes: ByteArray): Int {
         // Adding 2 to include the header bytes that are included in the array
 //        return (bytes[0].toUInt() + (bytes[1].toUInt() shl 8)).toInt() + 2
-        return (bytes[0].toUInt() + (bytes[1].toUInt() shl 8)).toInt()
+        val lsb = (bytes[0] and 0xFF).toUInt()
+        val msb = (bytes[1] and 0xFF).toUInt() shl 8
+        val total = (lsb + msb).toInt()
+        Timber.i("expectedLengthForBytes lsb: $lsb msb: $msb total: $total")
+        return total
     }
 
     fun isDevicePacketOverflow(bytes: ByteArray): Boolean {
@@ -56,6 +61,7 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun handlePacketsBytesComplete(deviceAddress: String) {
         val receivedBytes = packetBytesMap.getOrDefault(deviceAddress, byteArrayOf())
         // First reconfirm we got a proper length...
+        Timber.i("Completed receive of ${receivedBytes.size} bytes")
         if (!isDeviceReceiveComplete(receivedBytes)) {
 //            throw RuntimeException("Data length not expected length")
             return
@@ -105,7 +111,7 @@ fun ByteArray.isLastBLESegment(): Boolean {
 }
 
 fun ByteArray.withoutSegmentHeader(): ByteArray {
-    return if (size > 2) copyOfRange(1, this.size) else byteArrayOf()
+    return if (size > 1) copyOfRange(1, this.size) else byteArrayOf()
 }
 
 fun ByteArray.concatBLESegment(byteArray: ByteArray): ByteArray {

@@ -87,6 +87,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
      */
 
     override fun onReceivedMessageBytes(deviceAddress: String, byteArray: ByteArray) {
+        Timber.i("Received Message of ${byteArray.size} bytes")
 
         Observation.fromBytes(byteArray)?.let { obs ->
             listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(obs)) }
@@ -130,10 +131,13 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
         val numberOfObservations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         // Ensure the number of bytes matches what we expect
+        val supportedObs = mutableListOf<ObservationType>()
         if (value.size == (numberOfObservations * 4) + 1) {
             repeat (numberOfObservations) {
-                ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+                supportedObs.add(ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)))
             }
+            Timber.i( "Features characteristic update received obs: <$supportedObs>")
+            listeners.forEach { it.onSupportedObservationTypes(peripheral.address, supportedObs) }
         } else {
             Timber.i( "Error in features characteristic bytes size: ${value.size} expected: ${(numberOfObservations * 4) + 1}")
         }
@@ -154,22 +158,22 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
 
     companion object {
         // Temp assigned GATT Service UUID Allocated for GHS
-        val SERVICE_UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
+        val SERVICE_UUID: UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
 
         // Temp assigned GATT Characteristic UUID Allocated for GHS
-        val OBSERVATION_CHARACTERISTIC_UUID =
+        val OBSERVATION_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f43-0000-1000-8000-00805f9b34fb")
 
         // Temp assigned GATT Characteristic UUID Allocated for GHS
-        val STORED_OBSERVATIONS_CHARACTERISTIC_UUID =
+        val STORED_OBSERVATIONS_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f42-0000-1000-8000-00805f9b34fb")
 
         // Temp assigned GATT Characteristic UUID Allocated for GHS
-        val GHS_FEATURES_CHARACTERISTIC_UUID =
+        val GHS_FEATURES_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f41-0000-1000-8000-00805f9b34fb")
 
         // Temp assigned GATT Characteristic UUID Allocated for GHS
-        val UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID =
+        val UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f3a-0000-1000-8000-00805f9b34fb")
 
     }

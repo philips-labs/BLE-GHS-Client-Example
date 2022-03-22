@@ -8,6 +8,7 @@ import android.Manifest
 import android.R.layout.simple_list_item_1
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -31,6 +32,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
 import com.philips.bleclient.acom.*
+import com.philips.bleclient.extensions.asDisplayString
+import kotlinx.datetime.toJavaLocalDateTime
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -132,7 +135,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     override fun onResume() {
         super.onResume()
-        if (BluetoothAdapter.getDefaultAdapter() != null) {
+
+//        if (BluetoothAdapter.getDefaultAdapter() != null) {
+        if (getBluetoothAdapter() != null) {
             if (!isBluetoothEnabled) {
                 askToEnableBluetooth()
             } else {
@@ -149,6 +154,10 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         unregisterReceiver(locationServiceStateReceiver)
         serviceHandlerManager?.removeListener(this)
         ghsServiceHandler?.removeListener(this)
+    }
+
+    private fun getBluetoothAdapter(): BluetoothAdapter {
+        return (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
     }
 
     private fun refreshPerpheralList() {
@@ -302,16 +311,34 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         Handler(Looper.myLooper()!!).post {
             observations.forEach {
-                if (it.value is BundledObservationValue) {
-                    (it.value as BundledObservationValue).observations.forEach {
-                        processReceviedObservation(it)
-                    }
+                // Assign so smart casting works
+                val observationValue = it.value
+                if (observationValue is BundledObservationValue) {
+                    observationValue.observations.forEach { processReceviedObservation(it) }
                 } else {
                     processReceviedObservation(it)
                 }
             }
         }
     }
+
+    override fun onSupportedObservationTypes(deviceAddress: String, observationTypes: List<ObservationType>) {
+        val allTypes = mutableListOf(
+            ObservationType.MDC_TEMP_BODY,
+            ObservationType.MDC_ECG_CARD_BEAT_RATE,
+            ObservationType.MDC_PULS_OXIM_SAT_O2,
+            ObservationType.MDC_PRESS_BLD_NONINV,
+            ObservationType.MDC_PPG_TIME_PD_PP
+        )
+        observationTypes.forEach {
+            allTypes.remove(it)
+            setVisibilityForObservationType(it, true)
+        }
+        allTypes.forEach {
+            setVisibilityForObservationType(it, false)
+        }
+    }
+
 
     private fun processReceviedObservation(observation: Observation) {
         Timber.i(observation.toString())
@@ -320,30 +347,65 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         if (FhirUploader.postObservationsToServer) postObservation(observation)
     }
 
+    private fun setVisibilityForObservationType(type: ObservationType, visible: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.GONE
+        when (type) {
+            ObservationType.MDC_TEMP_BODY -> {
+                findViewById<TextView>(R.id.tempObservation).visibility = visibility
+            }
+            ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
+                findViewById<TextView>(R.id.hrObservation).visibility = visibility
+            }
+            ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
+                findViewById<TextView>(R.id.spo2Observation).visibility = visibility
+            }
+            ObservationType.MDC_PRESS_BLD_NONINV -> {
+                findViewById<TextView>(R.id.bpObservation).visibility = visibility
+            }
+            ObservationType.MDC_PPG_TIME_PD_PP -> {
+                findViewById<TextView>(R.id.ppgObservationTitle).visibility = visibility
+                findViewById<WaveformView>(R.id.ppgObservation).visibility = visibility
+            }
+            ObservationType.UNKNOWN -> {
+                ObservationLog.log("Unknown Observeration: $type")
+            }
+            else -> {
+                ObservationLog.log("Unsupported Observeration Type: $type")
+            }
+        }
+    }
+
     private fun updateObservationText(observation: Observation) {
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
                 findViewById<TextView>(R.id.tempObservation).text =
-                    "Temp: ${floatValue} deg ${observation.timestamp}"
+                    "Temp: ${floatValue} deg ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
                 findViewById<TextView>(com.philips.bleclient.R.id.hrObservation).text =
-                    "HR: ${floatValue} bpm ${observation.timestamp}"
+                    "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
                 findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
-                    "SpO2: ${floatValue}% ${observation.timestamp}"
+                    "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PRESS_BLD_NONINV -> {
                 var valString = ""
+                var seperator = ""
                 (observation.value as CompoundNumericValue).values.forEach {
-                    valString = "$valString / ${it.value.toInt()}"
+                    valString = "$valString $seperator ${it.value.toInt()}"
+                    seperator = "/"
                 }
                 findViewById<TextView>(com.philips.bleclient.R.id.bpObservation).text =
-                    "Blood pressure: $valString ${observation.timestamp}"
+                    "Blood pressure: $valString ${observation.timestamp?.asDisplayString()}"
+            }
+            ObservationType.MDC_PPG_TIME_PD_PP -> {
+                findViewById<TextView>(R.id.ppgObservationTitle).text = "PPG Waveform: ${observation.timestamp?.asDisplayString()}"
+                val samples = (observation.value as SampleArrayObservationValue).samples
+                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
             }
             ObservationType.UNKNOWN -> {
                 ObservationLog.log("Unknown Observeration: $observation")
