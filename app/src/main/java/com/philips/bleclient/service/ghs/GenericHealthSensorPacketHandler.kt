@@ -31,8 +31,8 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun expectedLengthForBytes(bytes: ByteArray): Int {
         // Adding 2 to include the header bytes that are included in the array
 //        return (bytes[0].toUInt() + (bytes[1].toUInt() shl 8)).toInt() + 2
-        val lsb = (bytes[0] and 0xFF).toUInt()
-        val msb = (bytes[1] and 0xFF).toUInt() shl 8
+        val lsb = (bytes[1] and 0xFF).toUInt()
+        val msb = (bytes[2] and 0xFF).toUInt() shl 8
         val total = (lsb + msb).toInt()
         Timber.i("expectedLengthForBytes lsb: $lsb msb: $msb total: $total")
         return total
@@ -45,8 +45,9 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     }
 
     fun isDeviceReceiveComplete(bytes: ByteArray): Boolean {
-        if (bytes.size < 2) return false
-        val expectedLength = expectedLengthForBytes(bytes) + 2 // add 2 for length bytes themselves
+        // Need to have class byte and 2 length bytes at a minimum to get those values
+        if (bytes.size < 3) return false
+        val expectedLength = expectedLengthForBytes(bytes) + 3 // add 2 for length bytes themselves and 1 for the class
         val complete = bytes.size == expectedLength
         if (!complete) {
             Timber.e("ERROR: Data length not expected length ${bytes.size} expected: $expectedLength")

@@ -172,9 +172,13 @@ class ServiceHandlerManager private constructor(context: Context) {
         serviceHandlers[serviceHandler.serviceUUID] = serviceHandler
     }
 
+    fun serviceHandlerForUUID(serviceUUID: UUID): ServiceHandler? {
+        return serviceHandlers[serviceUUID]
+    }
+
     companion object {
         @Volatile
-        private var instance: ServiceHandlerManager? = null
+        internal var instance: ServiceHandlerManager? = null
 
         fun getInstance(context: Context): ServiceHandlerManager {
             return instance ?: synchronized(this) {

@@ -6,19 +6,25 @@
     <string name="observations">Observations log</string>
     <string name="start_scanning">Start scanning</string>
     <string name="stop_scanning">Stop scanning</string>
-    <string name="show_log">Observation log</string>
+    <string name="show_log">Show log</string>
+    <string name="show_racp">RACP</string>
     <string name="clear_log">Clear observation log</string>
-    <string name="fhir_server">FHIR Server</string>
+    <string name="parseTestObservation">Parse test observation</string>
+    <string name="fhir_server">FHIR</string>
     <string name="post_observations_to_servier">Post observations to server</string>
     <string name="use_public_hapi_fhir_server">Use hapi.fhir.org server</string>
     <string name="title_activity_fhir">FHIR server settings</string>
+    <string name="title_activity_racp">RACP Details</string>
     <string name="no_temp_observation">No temperature received</string>
     <string name="no_hr_observation">No heart rate received</string>
     <string name="no_spo2_observation">No SpO2 received</string>
     <string name="no_bp_observation">No Blood pressure received</string>
     <string name="no_ppg_observation">No PPG Waveform</string>
     <string name="disconnect_peripheral">Disconnect peripheral</string>
+    <string name="enable_live_observatioins">Enable Live Obs</string>
+    <string name="disable_live_observatioins">Disable Live Obs</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
     <string name="revert_url">Revert URL</string>
+    <string name="refresh">Refresh</string>
 </resources>

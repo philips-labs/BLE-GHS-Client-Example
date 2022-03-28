@@ -12,10 +12,12 @@ import android.view.View
 import android.widget.TextView
 import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
+import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.welie.blessed.BluetoothPeripheral
 
 class PeripheralInfoActivity : AppCompatActivity() {
     private var peripheral: BluetoothPeripheral? = null
+    private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,4 +72,20 @@ class PeripheralInfoActivity : AppCompatActivity() {
         goBack()
     }
 
+    @Suppress("UNUSED_PARAMETER")
+    fun enableLiveObservations(view: View) {
+        ghsServiceHandler?.let { peripheral?.let { p -> it.enableLiveObservations(p) } }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun disableLiveObservations(view: View) {
+        ghsServiceHandler?.let { peripheral?.let { p -> it.disableLiveObservations(p) } }
+        peripheral?.cancelConnection()
+        goBack()
+    }
+
+}
+
+fun ServiceHandlerManager.getGhsServiceHandler(): GenericHealthSensorServiceHandler? {
+    return serviceHandlerForUUID(GenericHealthSensorServiceHandler.SERVICE_UUID)?.let {it as GenericHealthSensorServiceHandler}
 }

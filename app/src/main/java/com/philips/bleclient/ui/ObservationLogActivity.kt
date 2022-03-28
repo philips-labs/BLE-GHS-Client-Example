@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
 import com.philips.bleclient.R
+import com.philips.bleclient.acom.Observation
 
 class ObservationLogActivity : AppCompatActivity() {
 
@@ -46,6 +47,20 @@ class ObservationLogActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun clearObservationLog(view: View) {
         ObservationLog.clear()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun parseTestObservation(view: View) {
+        val obs = Observation.fromBytes(testObservationBytes())
+        ObservationLog.log("Test parse observation: $obs")
+    }
+
+    private fun testObservationBytes(): ByteArray {
+        return byteArrayOf( 0xFF.toByte(), 0x2A, 0x00, 0x02, 0x00, 0x46, 0xD1.toByte(), 0x70, 0x79, 0x50,
+            0x9A.toByte(), 0x00, 0x07, 0x80.toByte(), 0x02, 0x00, 0x0C, 0x00, 0x01, 0x00, 0x0C,
+            0xE0.toByte(), 0x02, 0x00, 0x40, 0x11, 0x19, 0x27, 0x00, 0xFE.toByte(), 0x00, 0x0C,
+            0x00, 0x01, 0x00, 0x5C, 0xE0.toByte(), 0x02, 0x00, 0x40, 0x11, 0xF1.toByte(), 0x1C, 0x00, 0xFE.toByte()
+        )
     }
 
     private fun updateLogView() {

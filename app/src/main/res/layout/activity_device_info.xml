@@ -36,6 +36,37 @@
             android:layout_height="wrap_content"
             android:text=""
             android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/enableLiveObservations"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="@string/enable_live_observatioins"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="enableLiveObservations" />
+
+        <Button
+            android:id="@+id/disableLiveObservations"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="@string/disable_live_observatioins"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="disableLiveObservations" />
+
     </LinearLayout>
 
     <Button

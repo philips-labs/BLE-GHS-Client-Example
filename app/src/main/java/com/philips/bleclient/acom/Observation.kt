@@ -190,7 +190,8 @@ open class Observation {
 
         private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
             val observations = mutableListOf<Observation>()
-            repeat(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)) {
+            val numberOfObs = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+            repeat(numberOfObs) {
                 getObservationFrom(parser)?.let { observation -> observations.add(observation)}
             }
             return observations
@@ -402,11 +403,12 @@ open class Observation {
         // We need to pass in the lenght of bytes in the parser since BluetoothBytesParser has no method
         // or property to access the size of the private mValue byte array
         private fun getObservationFrom(parser: BluetoothBytesParser, bytesLength: Int = 0): Observation? {
+            val observationClass = ObservationClass.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte())
             val length = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-            // validate the length (if passed in) and return null if invalid
-            if (bytesLength > 0 && (length != bytesLength - 2)) return null
 
-            val observationClass = ObservationClass.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toByte())
+            // validate the length (if passed in) and return null if invalid
+            // if (bytesLength > 0 && (length != bytesLength - 2)) return null
+
             val observationFlags = BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16).toLong())
 
             return if (observationClass == ObservationClass.ObservationBundle) {
@@ -436,8 +438,8 @@ open class Observation {
                 val unitCode = UnitCode.readFrom(parser)
 
                 val observationValue: Float = when (observationClass) {
-//                0 -> SimpleNumericObservationValue(0f, UnitCode.UNKNOWN_CODE)
-                    ObservationClass.SimpleDiscreet -> parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+                    ObservationClass.SimpleNumeric -> parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+//                    ObservationClass.SimpleDiscreet -> parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
                     else -> 0f
                 }
 

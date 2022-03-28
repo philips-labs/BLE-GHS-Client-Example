@@ -28,6 +28,15 @@
             android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
         <Button
+            android:id="@+id/parseTestObservation"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/parseTestObservation"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="parseTestObservation" />
+        <Button
             android:id="@+id/clearLogButton"
             android:layout_width="wrap_content"
             android:layout_height="64dp"

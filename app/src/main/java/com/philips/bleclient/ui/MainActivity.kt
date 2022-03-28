@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.philips.bleclient.fhir.FhirUploader
 import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerListener
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
-import com.philips.bleclient.util.timestampAsDate
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
@@ -33,7 +32,6 @@ import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
 import com.philips.bleclient.acom.*
 import com.philips.bleclient.extensions.asDisplayString
-import kotlinx.datetime.toJavaLocalDateTime
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -294,11 +292,13 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+        ObservationLog.log("Connected: ${peripheral.name}")
         foundPeripheralArrayAdapter?.remove(peripheral)
         connectedPeripheralArrayAdapter?.add(peripheral)
     }
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
+        ObservationLog.log("Disconnected: ${peripheral.name}")
         connectedPeripheralArrayAdapter?.remove(peripheral)
     }
 
@@ -323,6 +323,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     override fun onSupportedObservationTypes(deviceAddress: String, observationTypes: List<ObservationType>) {
+        ObservationLog.log("Device: $deviceAddress\nSupported Observations:${observationTypes}")
         val allTypes = mutableListOf(
             ObservationType.MDC_TEMP_BODY,
             ObservationType.MDC_ECG_CARD_BEAT_RATE,
@@ -443,6 +444,15 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             R.anim.slide_to_left
         )
     }
+    @Suppress("UNUSED_PARAMETER")
+    fun showRacp(view: View) {
+        startActivity(Intent(this, RacpActivity::class.java))
+        overridePendingTransition(
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
+        )
+    }
+
 
     @Suppress("UNUSED_PARAMETER")
     fun openFhirSettings(view: View) {

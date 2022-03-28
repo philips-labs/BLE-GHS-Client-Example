@@ -15,13 +15,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Btclient"
         android:usesCleartextTraffic="true">
-        <activity android:name="com.philips.bleclient.ui.PeripheralInfoActivity"></activity>
-        <activity android:name="com.philips.bleclient.ui.FhirActivity" />
-        <activity android:name="com.philips.bleclient.ui.ObservationLogActivity" />
-        <activity android:name="com.philips.bleclient.ui.MainActivity"
+        <activity
+            android:name=".ui.RacpActivity"
+            android:exported="false" />
+        <activity android:name=".ui.PeripheralInfoActivity" />
+        <activity android:name=".ui.FhirActivity" />
+        <activity android:name=".ui.ObservationLogActivity" />
+        <activity
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

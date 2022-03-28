@@ -101,7 +101,7 @@ class WaveformView : View {
 
     // Because waveforms being drawn may have different sizes
     @SuppressLint("DrawAllocation")
-    @ExperimentalUnsignedTypes
+//    @ExperimentalUnsignedTypes
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val contentWidth = width - paddingLeft - paddingRight

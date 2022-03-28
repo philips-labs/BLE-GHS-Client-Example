@@ -5,25 +5,35 @@
 package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
-import com.philips.bleclient.ServiceHandler
-import com.philips.bleclient.acom.AcomObject
+import com.philips.bleclient.*
 import com.philips.bleclient.acom.Observation
-import com.philips.bleclient.asFormattedHexString
-import com.philips.bleclient.asHexString
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
+import com.welie.blessed.WriteType
 import timber.log.Timber
 import java.nio.ByteOrder
 import java.util.*
 
-class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorSegmentListener, GenericHealthSensorPacketListener {
+class GenericHealthSensorServiceHandler : ServiceHandler(),
+    GenericHealthSensorSegmentListener,
+    GenericHealthSensorPacketListener,
+    ServiceHandlerManagerListener {
 
     private val segmentHandler = GenericHealthSensorSegmentHandler(this)
     private val packetHandler = GenericHealthSensorPacketHandler(this)
+    private val peripherals = mutableSetOf<BluetoothPeripheral>()
 
     var listeners: MutableList<GenericHealthSensorHandlerListener> = ArrayList()
+
+    internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
+        GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
+        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
+        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
+    )
+
+    var controlPointHandler = GhsControlPointHandler(this)
 
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
@@ -35,9 +45,10 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         Timber.i("Characteristics discovered: ${characteristics.size}")
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         enableAllNotificationsAndRead(peripheral, characteristics)
+        enableLiveObservations(peripheral)
     }
 
-    @ExperimentalStdlibApi
+//    @ExperimentalStdlibApi
     override fun onCharacteristicUpdate(
         peripheral: BluetoothPeripheral,
         value: ByteArray,
@@ -63,6 +74,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
                     peripheral,
                     value
                 )
+                GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleResponse(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -92,11 +104,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         Observation.fromBytes(byteArray)?.let { obs ->
             listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(obs)) }
         }
-
-//        val acomObject = AcomObject(byteArray)
-//        if (acomObject.observations.isNotEmpty()) {
-//            listeners.forEach { it.onReceivedObservations(deviceAddress, acomObject.observations) }
-//        }
     }
 
     override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {
@@ -115,7 +122,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         segmentHandler.reset(deviceAddress)
     }
 
-    @ExperimentalStdlibApi
+    /*
+     * ServiceHandlerManagerListener methods
+     */
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
+
+    override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+        peripherals.add(peripheral)
+    }
+
+    override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
+        peripherals.remove(peripheral)
+    }
+
+    //    @ExperimentalStdlibApi
     private fun handleReceivedObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
 //        segmentHandler.receiveBytes(peripheral.address, value)
@@ -127,12 +147,15 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
     }
 
     private fun handleFeaturesCharacteristics(peripheral: BluetoothPeripheral, value: ByteArray) {
+        // Handle case where features hasn't been set up on the server (shouldn't happen, but safety)
+        if (value.size < 2) return
         Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
         val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
+        val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         val numberOfObservations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        // Ensure the number of bytes matches what we expect
-        val supportedObs = mutableListOf<ObservationType>()
-        if (value.size == (numberOfObservations * 4) + 1) {
+        // Ensure the number of bytes matches what we expect (Flags, number of types and 4 bytes per type
+        if (value.size == (numberOfObservations * 4) + 2) {
+            val supportedObs = mutableListOf<ObservationType>()
             repeat (numberOfObservations) {
                 supportedObs.add(ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)))
             }
@@ -141,6 +164,14 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         } else {
             Timber.i( "Error in features characteristic bytes size: ${value.size} expected: ${(numberOfObservations * 4) + 1}")
         }
+        // Only flag is for Supported Device Specializations field present
+        if (featuresFlags > 0) {
+            handleFeaturesDeviceSpecializations(parser)
+        }
+    }
+
+    private fun handleFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
+        val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
     }
 
     private fun handleSimpleTime(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -151,12 +182,33 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         Timber.i( "Unique device ID bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
+    fun enableLiveObservations(peripheral: BluetoothPeripheral) {
+        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(START_SEND_LIVE_OBSERVATIONS))
+    }
+
+    fun disableLiveObservations(peripheral: BluetoothPeripheral) {
+        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
+    }
+
+    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
+        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
+            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
+            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
+        }
+    }
+
     init {
         serviceUUID = SERVICE_UUID
-        supportedCharacteristics.addAll(arrayOf(OBSERVATION_CHARACTERISTIC_UUID, GHS_FEATURES_CHARACTERISTIC_UUID))
+        supportedCharacteristics.addAll(arrayOf(
+            OBSERVATION_CHARACTERISTIC_UUID,
+            GHS_FEATURES_CHARACTERISTIC_UUID,
+            GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
+            RACP_CHARACTERISTIC_UUID))
+        ServiceHandlerManager.instance?.addListener(this)
     }
 
     companion object {
+
         // Temp assigned GATT Service UUID Allocated for GHS
         val SERVICE_UUID: UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
 
@@ -175,6 +227,23 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), GenericHealthSensorS
         // Temp assigned GATT Characteristic UUID Allocated for GHS
         val UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f3a-0000-1000-8000-00805f9b34fb")
+
+        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        val GHS_CONTROL_POINT_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f40-0000-1000-8000-00805f9b34fb")
+
+        val RACP_CHARACTERISTIC_UUID =
+            UUID.fromString("00002a52-0000-1000-8000-00805f9b34fb")
+
+        /*
+         * GHS Control Point commands and status values
+         */
+        private const val START_SEND_LIVE_OBSERVATIONS = 0x01.toByte()
+        private const val STOP_SEND_LIVE_OBSERVATIONS = 0x02.toByte()
+        private const val CONTROL_POINT_SUCCESS = 0x80.toByte()
+        private const val CONTROL_POINT_SERVER_BUSY = 0x81.toByte()
+        private const val CONTROL_POINT_ERROR_LIVE_OBSERVATIONS = 0x82.toByte()
+
 
     }
 }

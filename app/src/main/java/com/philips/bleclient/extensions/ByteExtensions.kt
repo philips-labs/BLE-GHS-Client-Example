@@ -6,6 +6,8 @@
 
 package com.philips.bleclient
 
+import com.welie.blessed.BluetoothBytesParser
+import java.nio.ByteOrder
 import java.util.*
 
 fun Byte.asHexString(): String {

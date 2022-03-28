@@ -72,5 +72,5 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
 }
 
 fun kotlinx.datetime.LocalDateTime.asDisplayString() : String {
-    return this.toJavaLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-mm-dd HH:MM:SS"))
+    return this.toJavaLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-mm-dd hh:mm:ss"))
 }
