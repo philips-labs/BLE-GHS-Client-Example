@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
 import com.philips.bleclient.R
+import com.philips.bleclient.acom.BundledObservationValue
 import com.philips.bleclient.acom.Observation
 
 class ObservationLogActivity : AppCompatActivity() {
@@ -52,7 +53,13 @@ class ObservationLogActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun parseTestObservation(view: View) {
         val obs = Observation.fromBytes(testObservationBytes())
-        ObservationLog.log("Test parse observation: $obs")
+        val obsValue = obs?.value
+        if (obsValue is BundledObservationValue) {
+            ObservationLog.log("Test parse bundle observations:")
+            obsValue.observations.forEach { ObservationLog.log("$it") }
+        } else {
+            ObservationLog.log("Test parse observation: $obs")
+        }
     }
 
     private fun testObservationBytes(): ByteArray {
