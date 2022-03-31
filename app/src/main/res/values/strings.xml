@@ -26,5 +26,8 @@
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
     <string name="revert_url">Revert URL</string>
-    <string name="refresh">Refresh</string>
+    <string name="totalRecords"># Stored Observations</string>
+    <string name="above4Records"># Stored Observations > 4</string>
+    <string name="getAllRecords">Get Stored Observations</string>
+    <string name="getRecordsAboveFour">Get Stored Observations > 4</string>
 </resources>

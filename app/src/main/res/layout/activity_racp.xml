@@ -18,15 +18,45 @@
         android:weightSum="1"
         android:orientation="vertical">
         <Button
-            android:id="@+id/refreshButton"
+            android:id="@+id/numRecordsButton"
             android:layout_width="wrap_content"
             android:layout_height="64dp"
-            android:text="@string/refresh"
+            android:text="@string/totalRecords"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:textAllCaps="false"
-            android:onClick="refreshRacp" />
+            android:onClick="numberOfRecords" />
+        <Button
+            android:id="@+id/queryRecordsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/above4Records"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="numberRecordsAboveFour" />
+        <Button
+            android:id="@+id/getAllRecordsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/getAllRecords"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="getAllRecords" />
+        <Button
+            android:id="@+id/getRecordsAboveFour"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/getRecordsAboveFour"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="getRecordsAboveFour" />
         <TextView
             android:id="@+id/foundPeripheralLabel"
             android:layout_width="match_parent"

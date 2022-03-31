@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.philips.bleclient.R
+import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.fhir.FhirUploader
 
 class RacpActivity : AppCompatActivity() {
@@ -37,7 +38,31 @@ class RacpActivity : AppCompatActivity() {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun refresh(view: View) {
+    fun numberOfRecords(view: View) {
+        ServiceHandlerManager.instance?.let {
+            it.getGhsServiceHandler()?.racpHandler?.requestNumberOfRecords()
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun numberRecordsAboveFour(view: View) {
+        ServiceHandlerManager.instance?.let {
+            it.getGhsServiceHandler()?.racpHandler?.requestNumberOfRecordsGreaterThan(5)
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun getAllRecords(view: View) {
+        ServiceHandlerManager.instance?.let {
+            it.getGhsServiceHandler()?.racpHandler?.getAllRecords()
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun getRecordsAboveFour(view: View) {
+        ServiceHandlerManager.instance?.let {
+            it.getGhsServiceHandler()?.racpHandler?.getRecordsAbove(4)
+        }
     }
 
 }
