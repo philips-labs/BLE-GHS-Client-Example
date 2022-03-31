@@ -305,7 +305,7 @@ open class Observation {
                 } else {
                     timecounter = parser.getGHSTimeCounter()
                     val syncSource = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-                    val timeOffset = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+                    val timeOffset = parser.getIntValue(BluetoothBytesParser.FORMAT_SINT8)
                     timestamp = timecounter.asKotlinLocalDateTime(timestampFlags, timeOffset)
                 }
             }

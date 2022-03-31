@@ -180,7 +180,6 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
     val isTicks = timeFlags hasFlag GhsTimestampFlags.isTickCounter
     val hasMillis = timeFlags hasFlag GhsTimestampFlags.isMillisecondsPresent
     val hasTZ = timeFlags hasFlag GhsTimestampFlags.isTZPresent
-    val hasDST = timeFlags hasFlag GhsTimestampFlags.isDSTPresent
     val isCurrentTimeline = timeFlags hasFlag GhsTimestampFlags.isCurrentTimeline
 
     // Double check if the time is actually a time and not ticks according to flags
@@ -193,7 +192,7 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
             (unixEpochMillis).millisAsLocalDateTime()
         } else {
             val timeSourceMethod = getIntValue(FORMAT_UINT8)
-            val utcOffset = if (hasTZ or hasDST) getIntValue(FORMAT_SINT8).toLong() * MILLIS_IN_15_MINUTES else 0L
+            val utcOffset = if (hasTZ) getIntValue(FORMAT_SINT8).toLong() * MILLIS_IN_15_MINUTES else 0L
             // creating a local date time so don't need to use the utcOffset and build it on just the UTC milliseconds.
             // If creating a full timestamp that was local to the observation we'd need the utc offset for DST and TZ as seperate components
             Timber.i("Parsed GHS TZ/DST offset millis: $utcOffset")
@@ -221,9 +220,14 @@ fun Long.millisAsLocalDateTime(): LocalDateTime {
     return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.currentSystemDefault())
 }
 
-fun Long.millisAsUTCDateTime(): Date {
-    return Date(this)
+
+fun Long.millisAsUTCDateTime(): LocalDateTime {
+    return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC)
 }
+
+//fun Long.millisAsUTCDateTime(): Date {
+//    return Date(this)
+//}
 
 fun BluetoothBytesParser.getGHSLongValue(): Long {
     return getLongValue(getByteOrder())
