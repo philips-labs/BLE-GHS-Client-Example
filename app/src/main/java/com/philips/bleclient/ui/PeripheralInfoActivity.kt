@@ -80,8 +80,6 @@ class PeripheralInfoActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun disableLiveObservations(view: View) {
         ghsServiceHandler?.let { peripheral?.let { p -> it.disableLiveObservations(p) } }
-        peripheral?.cancelConnection()
-        goBack()
     }
 
 }

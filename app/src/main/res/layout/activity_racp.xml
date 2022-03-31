@@ -57,6 +57,7 @@
             android:layout_marginBottom="16dp"
             android:textAllCaps="false"
             android:onClick="getRecordsAboveFour" />
+        <!--
         <TextView
             android:id="@+id/foundPeripheralLabel"
             android:layout_width="match_parent"
@@ -125,6 +126,7 @@
             android:layout_width="match_parent"
             android:layout_height="96dp"
             app:lineWidth="1.5dp"/>
+        -->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,7 +30,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
 
     internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
         GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
-        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
+        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
         BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
     )
 
@@ -55,6 +55,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         enableAllNotificationsAndRead(peripheral, characteristics)
         enableLiveObservations(peripheral)
+        readFeatures(peripheral)
     }
 
 //    @ExperimentalStdlibApi
@@ -165,7 +166,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
         val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         val numberOfObservations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         // Ensure the number of bytes matches what we expect (Flags, number of types and 4 bytes per type
-        if (value.size == (numberOfObservations * 4) + 2) {
+        if (value.size >= (numberOfObservations * 4) + 2) {
             val supportedObs = mutableListOf<ObservationType>()
             repeat (numberOfObservations) {
                 supportedObs.add(ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)))
@@ -183,6 +184,13 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
 
     private fun handleFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
         val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+        Timber.i( "Number of device specializations: $numberOfDeviceSpecializations")
+        repeat(numberOfDeviceSpecializations, {
+            val deviceSpecBytes = parser.getByteArray(3)
+            Timber.i( "Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
+        })
+
+
     }
 
     private fun handleSimpleTime(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -199,6 +207,16 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
 
     fun disableLiveObservations(peripheral: BluetoothPeripheral) {
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
+    }
+
+    fun readFeatures(peripheral: BluetoothPeripheral) {
+        read(peripheral, GHS_FEATURES_CHARACTERISTIC_UUID)
+    }
+
+    fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
+        peripheral.getCharacteristic(GHS_FEATURES_CHARACTERISTIC_UUID, characteristicUUID)?.let {
+            val result = peripheral.readCharacteristic(it)
+        }
     }
 
     fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {

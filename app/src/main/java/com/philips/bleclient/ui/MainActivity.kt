@@ -208,11 +208,15 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private fun getRequiredPermissions(): Array<String> {
         val targetSdkVersion = applicationInfo.targetSdkVersion
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) else arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN,  Manifest.permission.BLUETOOTH_CONNECT)
+            } else {
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        } else  {
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
     }
 
     private fun permissionsGranted() {
