@@ -90,6 +90,17 @@ open class ServiceHandler {
         }
     }
 
+    protected fun enableAllNotifications(
+        peripheral: BluetoothPeripheral,
+        characteristics: List<BluetoothGattCharacteristic>
+    ) {
+        characteristics.filter {
+            isCharacteristicSupported(it)
+        }.forEach {
+            enableNotify(peripheral, it)
+        }
+    }
+
     // Private methods
 
     private fun enableNotify(

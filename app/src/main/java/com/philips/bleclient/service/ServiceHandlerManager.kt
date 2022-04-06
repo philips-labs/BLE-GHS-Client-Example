@@ -58,7 +58,7 @@ class ServiceHandlerManager private constructor(context: Context) {
                 characteristic: BluetoothGattCharacteristic,
                 status: GattStatus
             ) {
-                serviceHandlers[characteristic.service.uuid]?.onCharacteristicUpdate(
+                serviceHandlers[characteristic.service.uuid]?.onCharacteristicWrite(
                     peripheral,
                     value,
                     characteristic,
