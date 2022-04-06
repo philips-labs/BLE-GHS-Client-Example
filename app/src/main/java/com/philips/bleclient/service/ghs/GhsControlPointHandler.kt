@@ -17,7 +17,7 @@ class GhsControlPointHandler(val service: GenericHealthSensorServiceHandler) {
 
     }
 
-    fun handleResponse(peripheral: BluetoothPeripheral, value: ByteArray) {
+    fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Received Control Point Response Bytes: <${value.asHexString()}> for peripheral: $peripheral")
         if (value.size > 0) {
             when(value[0]) {

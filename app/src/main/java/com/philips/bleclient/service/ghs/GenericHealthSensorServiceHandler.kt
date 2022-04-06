@@ -9,35 +9,28 @@ import com.philips.bleclient.*
 import com.philips.bleclient.acom.Observation
 import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
-import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
 import timber.log.Timber
-import java.nio.ByteOrder
 import java.util.*
 
-class GenericHealthSensorServiceHandler : ServiceHandler(),
-    GenericHealthSensorSegmentListener,
-    GenericHealthSensorPacketListener,
-    ServiceHandlerManagerListener {
+class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
-    private val segmentHandler = GenericHealthSensorSegmentHandler(this)
-    private val packetHandler = GenericHealthSensorPacketHandler(this)
-    private val storedObservationPacketHandler = GenericHealthSensorPacketHandler(this)
     private val peripherals = mutableSetOf<BluetoothPeripheral>()
-
     var listeners: MutableList<GenericHealthSensorHandlerListener> = ArrayList()
+
+    var observationHandler = GhsObservationHandler(this)
+    var storedObservationHandler = GhsObservationHandler(this)
+    var controlPointHandler = GhsControlPointHandler(this)
+    var racpHandler = GhsRacpHandler(this)
+    var featuresHandler = GhsFeaturesHandler(this)
 
     internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
         GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
         BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
         BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
     )
-
-    var controlPointHandler = GhsControlPointHandler(this)
-    var racpHandler = GhsRacpHandler(this)
-
 
     internal val racpCharacteristic = BluetoothGattCharacteristic(
         RACP_CHARACTERISTIC_UUID,
@@ -69,24 +62,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
         super.onCharacteristicUpdate(peripheral, value, characteristic, status)
         if (status == GattStatus.SUCCESS) {
             when (characteristic.uuid) {
-                OBSERVATION_CHARACTERISTIC_UUID -> handleReceivedObservationBytes(
-                    peripheral,
-                    value
-                )
-                STORED_OBSERVATIONS_CHARACTERISTIC_UUID -> handleStoredObservationBytes(
-                    peripheral,
-                    value
-                )
-                GHS_FEATURES_CHARACTERISTIC_UUID -> handleFeaturesCharacteristics(
-                    peripheral,
-                    value
-                )
-                UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(
-                    peripheral,
-                    value
-                )
-                GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleResponse(peripheral, value)
-                RACP_CHARACTERISTIC_UUID -> racpHandler.handleResponse(peripheral, value)
+                OBSERVATION_CHARACTERISTIC_UUID -> observationHandler.handleBytes(peripheral, value)
+                STORED_OBSERVATIONS_CHARACTERISTIC_UUID -> storedObservationHandler.handleBytes(peripheral, value)
+                GHS_FEATURES_CHARACTERISTIC_UUID -> featuresHandler.handleBytes(peripheral, value)
+                UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(peripheral, value)
+                GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
+                RACP_CHARACTERISTIC_UUID -> racpHandler.handleBytes(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -104,7 +85,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
     }
 
     fun removeListener(listener: GenericHealthSensorHandlerListener) = listeners.remove(listener)
-
 
     /*
      * GenericHealthSensorHandler RACP Methods
@@ -131,33 +111,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
         racpHandler.getRecordsAbove(recordNumber)
     }
 
-    /*
-     * GenericHealthSensorSegmentListener/GenericHealthSensorPacketListener methods (called when all segments have been received and
-     * have a full ACOM object bytes or an error in the received BLE segments
-     */
-
-    override fun onReceivedMessageBytes(deviceAddress: String, byteArray: ByteArray) {
-        Timber.i("Received Message of ${byteArray.size} bytes")
-
-        Observation.fromBytes(byteArray)?.let { obs ->
-            listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(obs)) }
-        }
+    fun receivedObservation(deviceAddress: String, observation: Observation) {
+        listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(observation)) }
     }
 
-    override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {
-        Timber.e("Error BYTES OVERFLOW: $deviceAddress bytes: <${byteArray.asFormattedHexString()}>")
-    }
-
-    override fun onReceivedOutOfSequenceMessageBytes(deviceAddress: String, byteArray: ByteArray) {
-        segmentHandler.reset(deviceAddress)
-    }
-
-    override fun onReceivedInvalidSegment(
-        deviceAddress: String,
-        byteArray: ByteArray,
-        error: GenericHealthSensorSegmentListener.InvalidSegmentError
-    ) {
-        segmentHandler.reset(deviceAddress)
+    fun receivedSupportedTypes(deviceAddress: String, supportedTypes: List<ObservationType>) {
+        listeners.forEach { it.onSupportedObservationTypes(deviceAddress, supportedTypes) }
     }
 
     /*
@@ -171,57 +130,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
         peripherals.remove(peripheral)
-    }
-
-    //    @ExperimentalStdlibApi
-    private fun handleReceivedObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i("Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
-//        segmentHandler.receiveBytes(peripheral.address, value)
-        packetHandler.receiveBytes(peripheral.address, value)
-    }
-
-    private fun handleStoredObservationBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i("Stored Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
-        storedObservationPacketHandler.receiveBytes(peripheral.address, value)
-    }
-
-    private fun handleFeaturesCharacteristics(peripheral: BluetoothPeripheral, value: ByteArray) {
-        // Handle case where features hasn't been set up on the server (shouldn't happen, but safety)
-        if (value.size < 2) return
-        Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
-        val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
-        val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        val numberOfObservations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        // Ensure the number of bytes matches what we expect (Flags, number of types and 4 bytes per type
-        if (value.size >= (numberOfObservations * 4) + 2) {
-            val supportedObs = mutableListOf<ObservationType>()
-            repeat (numberOfObservations) {
-                supportedObs.add(ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)))
-            }
-            Timber.i( "Features characteristic update received obs: <$supportedObs>")
-            listeners.forEach { it.onSupportedObservationTypes(peripheral.address, supportedObs) }
-        } else {
-            Timber.i( "Error in features characteristic bytes size: ${value.size} expected: ${(numberOfObservations * 4) + 1}")
-        }
-        // Only flag is for Supported Device Specializations field present
-        if (featuresFlags > 0) {
-            handleFeaturesDeviceSpecializations(parser)
-        }
-    }
-
-    private fun handleFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
-        val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        Timber.i( "Number of device specializations: $numberOfDeviceSpecializations")
-        repeat(numberOfDeviceSpecializations, {
-            val deviceSpecBytes = parser.getByteArray(3)
-            Timber.i( "Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
-        })
-
-
-    }
-
-    private fun handleSimpleTime(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i( "Simple time bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
     private fun handleUniqueDeviceId(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -249,13 +157,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
     fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
         peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
             val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
-            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
-        }
-    }
-
-    fun writeWithoutResponse(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
-        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
-            val result = peripheral.writeCharacteristic(it, value, WriteType.WITHOUT_RESPONSE)
             Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
         }
     }
@@ -311,7 +212,5 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
         private const val CONTROL_POINT_SUCCESS = 0x80.toByte()
         private const val CONTROL_POINT_SERVER_BUSY = 0x81.toByte()
         private const val CONTROL_POINT_ERROR_LIVE_OBSERVATIONS = 0x82.toByte()
-
-
     }
 }

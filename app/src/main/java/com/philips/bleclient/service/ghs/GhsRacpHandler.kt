@@ -46,7 +46,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }
 
-    fun handleResponse(peripheral: BluetoothPeripheral, value: ByteArray) {
+    fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: ${peripheral.address}")
         when(value.first()) {
             OP_CODE_RESPONSE_NUMBER_STORED_RECORDS -> handleResponseNumberStoredRecords(peripheral, value)
