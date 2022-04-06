@@ -7,6 +7,7 @@ package com.philips.bleclient.service.ghs
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.*
 import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
@@ -53,7 +54,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
     ) {
         Timber.i("Characteristics discovered: ${characteristics.size}")
         super.onCharacteristicsDiscovered(peripheral, characteristics)
-        enableAllNotificationsAndRead(peripheral, characteristics)
+        enableAllNotifications(peripheral, characteristics)
         enableLiveObservations(peripheral)
         readFeatures(peripheral)
     }
@@ -103,6 +104,32 @@ class GenericHealthSensorServiceHandler : ServiceHandler(),
     }
 
     fun removeListener(listener: GenericHealthSensorHandlerListener) = listeners.remove(listener)
+
+
+    /*
+     * GenericHealthSensorHandler RACP Methods
+     * (Delegated to the RACP Handler)
+     */
+
+    fun getNumberOfRecords() {
+        ObservationLog.log("RACP: Get number of records sent")
+        racpHandler.getNumberOfRecords()
+    }
+
+    fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
+        ObservationLog.log("RACP: Get number of records greater than $recordNumber sent")
+        racpHandler.getNumberOfRecordsGreaterThan(recordNumber)
+    }
+
+    fun getAllRecords() {
+        ObservationLog.log("RACP: Get all records sent")
+        racpHandler.getAllRecords()
+    }
+
+    fun getRecordsAbove(recordNumber: Int) {
+        ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
+        racpHandler.getRecordsAbove(recordNumber)
+    }
 
     /*
      * GenericHealthSensorSegmentListener/GenericHealthSensorPacketListener methods (called when all segments have been received and

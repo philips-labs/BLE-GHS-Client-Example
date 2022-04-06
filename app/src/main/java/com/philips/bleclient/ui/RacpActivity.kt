@@ -40,28 +40,28 @@ class RacpActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun numberOfRecords(view: View) {
         ServiceHandlerManager.instance?.let {
-            it.getGhsServiceHandler()?.racpHandler?.requestNumberOfRecords()
+            it.getGhsServiceHandler()?.getNumberOfRecords()
         }
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun numberRecordsAboveFour(view: View) {
         ServiceHandlerManager.instance?.let {
-            it.getGhsServiceHandler()?.racpHandler?.requestNumberOfRecordsGreaterThan(5)
+            it.getGhsServiceHandler()?.getNumberOfRecordsGreaterThan(5)
         }
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun getAllRecords(view: View) {
         ServiceHandlerManager.instance?.let {
-            it.getGhsServiceHandler()?.racpHandler?.getAllRecords()
+            it.getGhsServiceHandler()?.getAllRecords()
         }
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun getRecordsAboveFour(view: View) {
         ServiceHandlerManager.instance?.let {
-            it.getGhsServiceHandler()?.racpHandler?.getRecordsAbove(4)
+            it.getGhsServiceHandler()?.getRecordsAbove(4)
         }
     }
 

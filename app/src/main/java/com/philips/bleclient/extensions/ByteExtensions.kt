@@ -42,6 +42,11 @@ fun ByteArray.asAsciiString(): String {
     return resultString
 }
 
+fun ByteArray.getUInt16At(offset: Int, littleEndian: Boolean = true): Int {
+    check((offset > 0) && (offset < this.size - 1)) { "offset is out of array bounds" }
+    return this[offset].toInt() + (this[offset + 1].toInt() shl 16)
+}
+
 fun List<Byte>.formatHexBytes(seperator: String?): String {
     var resultString = ""
     for ((index, value) in iterator().withIndex()) {

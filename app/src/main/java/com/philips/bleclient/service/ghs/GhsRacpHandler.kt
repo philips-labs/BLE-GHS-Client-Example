@@ -1,21 +1,23 @@
 package com.philips.bleclient.service.ghs
 
 import com.philips.bleclient.asHexString
+import com.philips.bleclient.getUInt16At
 import com.philips.bleclient.merge
+import com.philips.bleclient.ui.ObservationLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
-    fun requestNumberOfRecords() {
+    fun getNumberOfRecords() {
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_ALL_RECORDS)
         )
     }
 
-    fun requestNumberOfRecordsGreaterThan(recordNumber: Int) {
+    fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
@@ -45,7 +47,23 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun handleResponse(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: ${peripheral.address}")
+        when(value.first()) {
+            OP_CODE_RESPONSE_NUMBER_STORED_RECORDS -> handleResponseNumberStoredRecords(peripheral, value)
+            OP_CODE_RESPONSE_COMBINED_REPORT -> handleResponseCombinedReport(peripheral, value)
+        }
+    }
+
+    fun handleResponseNumberStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
+        val numberOfRecords = value.getUInt16At(2)
+        Timber.i("RACP Number of stored records: $numberOfRecords for peripheral: ${peripheral.address}")
+        ObservationLog.log("RACP: Number of stored records $numberOfRecords ")
+    }
+
+    fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {
+        val numberOfRecords = value.getUInt16At(2)
+        Timber.i("RACP Number of retrieved records: $numberOfRecords for peripheral: ${peripheral.address}")
+        ObservationLog.log("RACP: Number of retrieved records $numberOfRecords ")
     }
 
     companion object {

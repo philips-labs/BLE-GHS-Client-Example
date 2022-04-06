@@ -72,7 +72,7 @@ open class Observation {
     }
 
     override fun toString(): String {
-        return "Obs ${type.name} value: $value $unitCode time: $timestamp"
+        return "Observation: ${type.name} $value time: $timestamp"
     }
 
     private fun getNextAttribute(bytesParser: BluetoothBytesParser) {
