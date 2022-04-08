@@ -8,8 +8,6 @@ import java.lang.RuntimeException
 
 class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketListener) {
 
-    // TODO Refactor to DRY this code out once we're set with 0.5 spec
-
     private var packetBytesMap = mutableMapOf<String, ByteArray>()
 
     fun receiveBytes(deviceAddress: String, byteArray: ByteArray) {
@@ -28,26 +26,10 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
         }
     }
 
-    fun expectedLengthForBytes(bytes: ByteArray): Int {
-        // Adding 2 to include the header bytes that are included in the array
-//        return (bytes[0].toUInt() + (bytes[1].toUInt() shl 8)).toInt() + 2
-        val lsb = (bytes[1] and 0xFF).toUInt()
-        val msb = (bytes[2] and 0xFF).toUInt() shl 8
-        val total = (lsb + msb).toInt()
-        Timber.i("expectedLengthForBytes lsb: $lsb msb: $msb total: $total")
-        return total
-    }
-
-    fun isDevicePacketOverflow(bytes: ByteArray): Boolean {
-        if (bytes.size < 2) return false
-        val expectedLength = expectedLengthForBytes(bytes)
-        return bytes.size > expectedLength
-    }
-
     fun isDeviceReceiveComplete(bytes: ByteArray): Boolean {
         // Need to have class byte and 2 length bytes at a minimum to get those values
         if (bytes.size < 3) return false
-        val expectedLength = expectedLengthForBytes(bytes) + 3 // add 2 for length bytes themselves and 1 for the class
+        val expectedLength = bytes.expectedPacketLengthForBytes() + 3 // add 2 for length bytes themselves and 1 for the class
         val complete = bytes.size == expectedLength
         if (!complete) {
             Timber.e("ERROR: Data length not expected length ${bytes.size} expected: $expectedLength")
@@ -55,44 +37,16 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
         return complete
     }
 
-    fun isCRCValid(bytes: ByteArray): Boolean {
-        return true;
-    }
-
     fun handlePacketsBytesComplete(deviceAddress: String) {
         val receivedBytes = packetBytesMap.getOrDefault(deviceAddress, byteArrayOf())
         // First reconfirm we got a proper length...
         Timber.i("Completed receive of ${receivedBytes.size} bytes")
-        if (!isDeviceReceiveComplete(receivedBytes)) {
-//            throw RuntimeException("Data length not expected length")
-            return
+        if (isDeviceReceiveComplete(receivedBytes)) {
+            reset(deviceAddress)
+            listener.onReceivedMessageBytes(deviceAddress, receivedBytes)
+        } else {
+            Timber.i("Data length not expected length")
         }
-
-//        if (!isCRCValid(receivedBytes)) {
-//            Timber.e("ERROR: Invalid CRC ${receivedBytes.asFormattedHexString()}")
-//            return
-//        }
-
-        reset(deviceAddress)
-        listener.onReceivedMessageBytes(deviceAddress, receivedBytes)
-    }
-
-    // Return the data without the first length and last CRC bytes
-    fun dataFromPacket(bytes: ByteArray): ByteArray {
-        val bytesWithoutLength = bytes.copyOfRange(2, bytes.size)
-        return bytesWithoutLength.copyOfRange(0, bytes.size - 2)
-    }
-
-    fun handlePacketOverflow(deviceAddress: String) {
-        val receivedBytes = packetBytesMap.getOrDefault(deviceAddress, byteArrayOf())
-        listener.onReceiveBytesOverflow(deviceAddress, receivedBytes)
-        reset(deviceAddress)
-    }
-
-    fun handleReceiveComplete(deviceAddress: String) {
-        val receivedBytes = packetBytesMap.getOrDefault(deviceAddress, byteArrayOf())
-        reset(deviceAddress)
-        listener.onReceivedMessageBytes(deviceAddress, receivedBytes)
     }
 
     fun reset(deviceAddress: String) {
@@ -117,4 +71,9 @@ fun ByteArray.withoutSegmentHeader(): ByteArray {
 
 fun ByteArray.concatBLESegment(byteArray: ByteArray): ByteArray {
     return listOf(this, byteArray.withoutSegmentHeader()).merge()
+}
+
+fun ByteArray.expectedPacketLengthForBytes(): Int {
+    // Adding 2 to include the header bytes that are included in the array
+    return ((this[1] and 0xFF).toUInt() + ((this[2] and 0xFF).toUInt() shl 8)).toInt()
 }

@@ -2,7 +2,7 @@
  * Copyright (c) Koninklijke Philips N.V. 2020.
  * All rights reserved.
  */
-package com.philips.bleclient.acom
+package com.philips.bleclient.observations
 
 @Suppress("unused")
 open class NumericObservationValue: ObservationValue() {

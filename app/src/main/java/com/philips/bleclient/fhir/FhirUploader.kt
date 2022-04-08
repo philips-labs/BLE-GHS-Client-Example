@@ -4,7 +4,7 @@
  */
 package com.philips.bleclient.fhir
 
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.util.asFhir
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType

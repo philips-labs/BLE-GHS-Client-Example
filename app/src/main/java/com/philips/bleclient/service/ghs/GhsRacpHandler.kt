@@ -7,6 +7,7 @@ import com.philips.bleclient.ui.ObservationLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
+import java.util.*
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
@@ -67,6 +68,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     companion object {
+
         /*
          * RACP Operator Code Values
          */

@@ -30,7 +30,7 @@ import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
-import com.philips.bleclient.acom.*
+import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")

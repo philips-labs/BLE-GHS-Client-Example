@@ -2,10 +2,9 @@
  * Copyright (c) Koninklijke Philips N.V. 2020.
  * All rights reserved.
  */
-package com.philips.bleclient.acom
+package com.philips.bleclient.observations
 
 import com.philips.bleclient.extensions.*
-import com.philips.bleclient.util.MeasurementStatusFlags
 import com.philips.bleclient.util.ObservationClass
 import com.philips.bleclient.util.ObservationHeaderFlags
 import com.philips.btserver.generichealthservice.ObservationType

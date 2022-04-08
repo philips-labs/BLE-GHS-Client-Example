@@ -12,8 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
 import com.philips.bleclient.R
-import com.philips.bleclient.acom.BundledObservationValue
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.BundledObservationValue
+import com.philips.bleclient.observations.Observation
 
 class ObservationLogActivity : AppCompatActivity() {
 

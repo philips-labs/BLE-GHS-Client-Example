@@ -6,7 +6,7 @@ package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.*
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
@@ -26,17 +26,17 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
 
-    internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
-        GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
-        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
-        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-    )
-
-    internal val racpCharacteristic = BluetoothGattCharacteristic(
-        RACP_CHARACTERISTIC_UUID,
-        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
-        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-    )
+//    internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
+//        GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
+//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
+//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
+//    )
+//
+//    internal val racpCharacteristic = BluetoothGattCharacteristic(
+//        RACP_CHARACTERISTIC_UUID,
+//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
+//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
+//    )
 
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
@@ -119,6 +119,14 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         listeners.forEach { it.onSupportedObservationTypes(deviceAddress, supportedTypes) }
     }
 
+    fun enableLiveObservations(peripheral: BluetoothPeripheral) {
+        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(START_SEND_LIVE_OBSERVATIONS))
+    }
+
+    fun disableLiveObservations(peripheral: BluetoothPeripheral) {
+        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
+    }
+
     /*
      * ServiceHandlerManagerListener methods
      */
@@ -136,19 +144,11 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         Timber.i( "Unique device ID bytes: <${value.asHexString()}> for peripheral: $peripheral")
     }
 
-    fun enableLiveObservations(peripheral: BluetoothPeripheral) {
-        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(START_SEND_LIVE_OBSERVATIONS))
-    }
-
-    fun disableLiveObservations(peripheral: BluetoothPeripheral) {
-        write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
-    }
-
-    fun readFeatures(peripheral: BluetoothPeripheral) {
+    private fun readFeatures(peripheral: BluetoothPeripheral) {
         read(peripheral, GHS_FEATURES_CHARACTERISTIC_UUID)
     }
 
-    fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
+    private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
         peripheral.getCharacteristic(GHS_FEATURES_CHARACTERISTIC_UUID, characteristicUUID)?.let {
             val result = peripheral.readCharacteristic(it)
         }

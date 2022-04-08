@@ -7,8 +7,7 @@
 package com.philips.bleclient.extensions
 
 import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
-import com.philips.bleclient.acom.Observation
-import com.philips.bleclient.fhir.FhirUploader
+import com.philips.bleclient.observations.Observation
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.*
@@ -18,7 +17,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import timber.log.Timber
 import java.nio.ByteOrder
-import java.util.*
 
 /**
  * Return an Integer value of the specified type. This operation will NOT advance the internal offset to the next position.

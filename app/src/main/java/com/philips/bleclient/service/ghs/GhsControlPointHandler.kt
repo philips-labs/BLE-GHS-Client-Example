@@ -5,6 +5,7 @@ import com.philips.bleclient.asHexString
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler.Companion.GHS_CONTROL_POINT_CHARACTERISTIC_UUID
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
+import java.util.*
 
 class GhsControlPointHandler(val service: GenericHealthSensorServiceHandler) {
 

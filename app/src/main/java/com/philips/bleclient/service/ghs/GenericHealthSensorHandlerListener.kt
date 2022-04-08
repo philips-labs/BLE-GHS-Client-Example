@@ -4,7 +4,7 @@
  */
 package com.philips.bleclient.service.ghs
 
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.Observation
 import com.philips.btserver.generichealthservice.ObservationType
 
 /**

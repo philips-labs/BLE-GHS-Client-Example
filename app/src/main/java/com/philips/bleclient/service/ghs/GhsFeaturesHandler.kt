@@ -12,35 +12,45 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         // Handle case where features hasn't been set up on the server (shouldn't happen, but safety)
-        if (value.size < 2) return
-        Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
-        val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
-        val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+        if (value.size > 2) {
+            Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
+            val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
+            val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+
+            getSupportedTypes(parser)?.let {
+                Timber.i( "Features characteristic update received obs types: <$it>")
+                service.receivedSupportedTypes(peripheral.address, it)
+                // Only flag is for Supported Device Specializations field present
+                if (featuresFlags > 0) { getFeaturesDeviceSpecializations(parser) }
+            }
+        } else {
+            Timber.i( "Error in features characteristic bytes: ${value.asFormattedHexString()}")
+        }
+    }
+
+    private fun getSupportedTypes(parser: BluetoothBytesParser): List<ObservationType>? {
         val numberOfObsTypes = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        // Ensure the number of bytes matches what we expect (Flags, number of types and 4 bytes per type
-        if (value.size >= (numberOfObsTypes * 4) + 2) {
+        return if (parser.bytesLength() >= (numberOfObsTypes * 4) + 2) {
+            Timber.i( "Error in features characteristic bytes size: ${parser.bytesLength()} expected: ${(numberOfObsTypes * 4) + 1}")
+            null
+        } else {
             val supportedTypes = mutableListOf<ObservationType>()
             repeat (numberOfObsTypes) {
                 supportedTypes.add(ObservationType.fromValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)))
             }
-            Timber.i( "Features characteristic update received obs types: <$supportedTypes>")
-            service.receivedSupportedTypes(peripheral.address, supportedTypes)
-        } else {
-            Timber.i( "Error in features characteristic bytes size: ${value.size} expected: ${(numberOfObsTypes * 4) + 1}")
-        }
-        // Only flag is for Supported Device Specializations field present
-        if (featuresFlags > 0) {
-            handleFeaturesDeviceSpecializations(parser)
+            supportedTypes.toList()
         }
     }
 
-    private fun handleFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
+    private fun getFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
         val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         Timber.i( "Number of device specializations: $numberOfDeviceSpecializations")
-        repeat(numberOfDeviceSpecializations, {
+        repeat(numberOfDeviceSpecializations) {
             val deviceSpecBytes = parser.getByteArray(3)
-            Timber.i( "Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
-        })
+            Timber.i("Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
+        }
     }
 
 }
+
+private fun BluetoothBytesParser.bytesLength(): Int = value.size

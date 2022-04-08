@@ -1,6 +1,6 @@
 package com.philips.bleclient.service.ghs
 
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.asHexString
 import com.welie.blessed.BluetoothPeripheral

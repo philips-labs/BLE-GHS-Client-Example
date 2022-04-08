@@ -6,7 +6,7 @@ package com.philips.bleclient.ui
 
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
-import com.philips.bleclient.acom.Observation
+import com.philips.bleclient.observations.Observation
 import androidx.databinding.library.baseAdapters.BR
 
 object ObservationLog: BaseObservable() {

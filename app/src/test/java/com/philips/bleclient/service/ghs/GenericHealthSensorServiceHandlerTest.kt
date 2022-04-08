@@ -5,9 +5,7 @@
 package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
-import com.philips.bleclient.acom.AcomObject
-import com.philips.bleclient.acom.Observation
-import com.philips.btserver.generichealthservice.ObservationType
+import com.philips.bleclient.observations.Observation
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import io.mockk.MockKAnnotations
@@ -41,130 +39,6 @@ class GenericHealthSensorServiceHandlerTest {
 
         handler = GenericHealthSensorServiceHandler()
         handler.addListener(listener)
-    }
-
-    @Test
-    fun `Given a byte array of two observations, when data is parsed, then an AcomObject with two observations is created`() {
-        val byteArray = byteArrayOf(
-            // First Observation
-            0x00,
-            0x01,
-            0x09,
-            0x2F,
-            0x00,
-            0x04,
-            0x00,
-            0x02,
-            0xE0.toByte(),
-            0x08, // Type: Obs Type, Length: 4, value: Oral Temp
-            0x00,
-            0x01,
-            0x09,
-            0x21,
-            0x00,
-            0x02,
-            0x00,
-            0x01,                      // Type: Handle, Length: 2, Value: 0x0001
-            0x00,
-            0x01,
-            0x0A,
-            0x56,
-            0x00,
-            0x04,
-            0xFF.toByte(),
-            0x00,
-            0x01,
-            0x7A, // Type: Simple Num, Length: 4, value: 38.7
-            0x00,
-            0x01,
-            0x09,
-            0x96.toByte(),
-            0x00,
-            0x04,
-            0x00.toByte(),
-            0x04,
-            0x17,
-            0xA0.toByte(), // Type: Unit Code, Length: 4, value: Celsius
-
-            0x00,
-            0x01,
-            0x09,
-            0x90.toByte(),
-            0x00,
-            0x08,
-            0x00,
-            0x00,
-            0x01,
-            0x76,
-            0x24,
-            0x1E,
-            0xE8.toByte(),
-            0x82.toByte(), // Type: Abs Timestamp, Length: 8, value: Wed Dec 02 2020 15:42:54
-//            0x00, 0x01, 0x09, 0x90.toByte(), 0x00, 0x08, 0x20, 0x20, 0x11, 0x26, 0x16, 0x43, 0x44, 0x77, // Type: Abs Timestamp, Length: 8, value: 2020/11/26 16:43:44.77
-
-            // Second Observation
-            0x00,
-            0x01,
-            0x09,
-            0x2F,
-            0x00,
-            0x04,
-            0x00,
-            0x02,
-            0xE0.toByte(),
-            0x08, // Type: Obs Type, Length: 4, value: Oral Temp
-            0x00,
-            0x01,
-            0x09,
-            0x21,
-            0x00,
-            0x02,
-            0x00,
-            0x01,                      // Type: Handle, Length: 2, Value: 0x0001
-            0x00,
-            0x01,
-            0x0A,
-            0x56,
-            0x00,
-            0x04,
-            0xFF.toByte(),
-            0x00,
-            0x01,
-            0x7A, // Type: Simple Num, Length: 4, value: 38.7
-            0x00,
-            0x01,
-            0x09,
-            0x96.toByte(),
-            0x00,
-            0x04,
-            0x00.toByte(),
-            0x04,
-            0x17,
-            0xA0.toByte(), // Type: Unit Code, Length: 4, value: Celsius
-
-            0x00,
-            0x01,
-            0x09,
-            0x90.toByte(),
-            0x00,
-            0x08,
-            0x00,
-            0x00,
-            0x01,
-            0x76,
-            0x24,
-            0x1E,
-            0xE8.toByte(),
-            0x82.toByte() // Type: Abs Timestamp, Length: 8, value: Wed Dec 02 2020 15:42:54
-//            0x00, 0x01, 0x09, 0x90.toByte(), 0x00, 0x08, 0x20, 0x20, 0x11, 0x26, 0x16, 0x43, 0x44, 0x77 // Type: Abs Timestamp, Length: 8, value: 2020/11/26 16:43:44.77
-
-
-        )
-        val acomObject = AcomObject(byteArray)
-        assertNotNull(acomObject)
-        assertTrue { acomObject.observations.size == 2 }
-        assertTrue { acomObject.observations.first().type.value == ObservationType.MDC_TEMP_ORAL.value }
-        assertTrue { acomObject.observations.last().type.value == ObservationType.MDC_TEMP_ORAL.value }
     }
 
     @Test

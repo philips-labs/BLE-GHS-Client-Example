@@ -6,12 +6,12 @@ package com.philips.bleclient.util
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.philips.bleclient.acom.Observation
-import com.philips.bleclient.acom.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
-import com.philips.bleclient.acom.Observation.Companion.MDC_SYSTEM_URN_STRING
-import com.philips.bleclient.acom.ObservationValue
-import com.philips.bleclient.acom.SampleArrayObservationValue
-import com.philips.bleclient.acom.SimpleNumericObservationValue
+import com.philips.bleclient.observations.Observation
+import com.philips.bleclient.observations.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
+import com.philips.bleclient.observations.Observation.Companion.MDC_SYSTEM_URN_STRING
+import com.philips.bleclient.observations.ObservationValue
+import com.philips.bleclient.observations.SampleArrayObservationValue
+import com.philips.bleclient.observations.SimpleNumericObservationValue
 import com.philips.bleclient.extensions.Flags
 import com.philips.bleclient.toUINT8
 import kotlinx.datetime.LocalDateTime

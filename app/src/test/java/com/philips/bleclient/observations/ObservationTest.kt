@@ -2,7 +2,7 @@
  * Copyright (c) Koninklijke Philips N.V. 2021.
  * All rights reserved.
  */
-package com.philips.bleclient.acom
+package com.philips.bleclient.observations
 
 import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
