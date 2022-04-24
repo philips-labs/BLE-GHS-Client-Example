@@ -152,6 +152,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         unregisterReceiver(locationServiceStateReceiver)
         serviceHandlerManager?.removeListener(this)
         ghsServiceHandler?.removeListener(this)
+        ObservationSyncer.disconnect()
     }
 
     private fun getBluetoothAdapter(): BluetoothAdapter {
@@ -185,6 +186,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             it.addListener(this)
             setScanning(false)
         }
+        ObservationSyncer.connect()
     }
 
     private fun checkPermissions() {
@@ -310,7 +312,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
      * GenericHealthSensorHandlerListener interface methods
      */
 
-    @RequiresApi(Build.VERSION_CODES.P)
     override fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {
         Timber.i("Received ${observations.size} observations from device address $deviceAddress")
         Handler(Looper.myLooper()!!).post {
@@ -343,7 +344,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             setVisibilityForObservationType(it, false)
         }
     }
-
 
     private fun processReceviedObservation(observation: Observation) {
         Timber.i(observation.toString())

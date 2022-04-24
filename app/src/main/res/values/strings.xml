@@ -30,4 +30,5 @@
     <string name="above4Records"># Stored Observations > 4</string>
     <string name="getAllRecords">Get Stored Observations</string>
     <string name="getRecordsAboveFour">Get Stored Observations > 4</string>
+    <string name="abort">Abort</string>
 </resources>

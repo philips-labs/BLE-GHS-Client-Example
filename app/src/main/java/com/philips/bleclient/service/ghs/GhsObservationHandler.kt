@@ -6,7 +6,7 @@ import com.philips.bleclient.asHexString
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
 
-class GhsObservationHandler(val service: GenericHealthSensorServiceHandler): GenericHealthSensorPacketListener {
+class GhsObservationHandler(val service: GenericHealthSensorServiceHandler, val isStored: Boolean = false): GenericHealthSensorPacketListener {
 
     private val packetHandler = GenericHealthSensorPacketHandler(this)
 
@@ -22,7 +22,12 @@ class GhsObservationHandler(val service: GenericHealthSensorServiceHandler): Gen
 
     override fun onReceivedMessageBytes(deviceAddress: String, byteArray: ByteArray) {
         Timber.i("Received Message of ${byteArray.size} bytes")
-        Observation.fromBytes(byteArray)?.let { service.receivedObservation(deviceAddress, it) }
+        Observation.fromBytes(byteArray)?.let {
+            if (isStored)
+                service.receivedStoredObservation(deviceAddress, it)
+            else
+                service.receivedObservation(deviceAddress, it)
+        }
     }
 
     override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {

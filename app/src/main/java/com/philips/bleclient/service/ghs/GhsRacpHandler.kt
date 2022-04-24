@@ -47,24 +47,41 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }
 
+    fun abortGetRecords() {
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_ABORT, OP_NULL)
+        )
+    }
+
     fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: ${peripheral.address}")
         when(value.first()) {
             OP_CODE_RESPONSE_NUMBER_STORED_RECORDS -> handleResponseNumberStoredRecords(peripheral, value)
             OP_CODE_RESPONSE_COMBINED_REPORT -> handleResponseCombinedReport(peripheral, value)
+            OP_CODE_RESPONSE_CODE -> handleReponseCode(peripheral, value)
         }
+    }
+
+    // Sent by RACP Abort operation procedure (see GHS 3.4.3.4)
+    fun handleReponseCode(peripheral: BluetoothPeripheral, value: ByteArray) {
+        // Set a boolean indicating the abort successed of failed (a fail could occur due to a ill-formed command)
+        if (value.racpSuccessResponse()) {
+            service.onRacpAbortCompleted(peripheral.address)
+        } else {
+            service.onRacpAbortError(peripheral.address, value.last())
+        }
+
     }
 
     fun handleResponseNumberStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
-        Timber.i("RACP Number of stored records: $numberOfRecords for peripheral: ${peripheral.address}")
-        ObservationLog.log("RACP: Number of stored records $numberOfRecords ")
+        service.onNumberOfStoredRecordsResponse(peripheral.address, numberOfRecords)
     }
 
     fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
-        Timber.i("RACP Number of retrieved records: $numberOfRecords for peripheral: ${peripheral.address}")
-        ObservationLog.log("RACP: Number of retrieved records $numberOfRecords ")
+        service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)
     }
 
     companion object {
@@ -112,5 +129,6 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
     private fun ByteArray.racpOpCode(): Byte = this[0]
     private fun ByteArray.racpOperator(): Byte = this[1]
+    private fun ByteArray.racpSuccessResponse(): Boolean = (size == 4) && (this.last() == RESPONSE_CODE_SUCCESS)
 
 }

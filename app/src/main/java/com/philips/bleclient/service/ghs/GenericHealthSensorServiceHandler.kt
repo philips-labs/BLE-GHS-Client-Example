@@ -18,10 +18,11 @@ import java.util.*
 class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     private val peripherals = mutableSetOf<BluetoothPeripheral>()
-    var listeners: MutableList<GenericHealthSensorHandlerListener> = ArrayList()
+    private val listeners = mutableListOf<GenericHealthSensorHandlerListener>()
+    private val racpListeners = mutableListOf<GenericHealthSensorHandlerRacpListener>()
 
     var observationHandler = GhsObservationHandler(this)
-    var storedObservationHandler = GhsObservationHandler(this)
+    var storedObservationHandler = GhsObservationHandler(this, true)
     var controlPointHandler = GhsControlPointHandler(this)
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
@@ -52,7 +53,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         readFeatures(peripheral)
     }
 
-//    @ExperimentalStdlibApi
     override fun onCharacteristicUpdate(
         peripheral: BluetoothPeripheral,
         value: ByteArray,
@@ -86,9 +86,18 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
     fun removeListener(listener: GenericHealthSensorHandlerListener) = listeners.remove(listener)
 
+    fun addRacpListener(listener: GenericHealthSensorHandlerRacpListener) {
+        if (!racpListeners.contains(listener)) {
+            racpListeners.add(listener)
+        }
+    }
+
+    fun removeRacpListener(listener: GenericHealthSensorHandlerRacpListener) = racpListeners.remove(listener)
+
     /*
      * GenericHealthSensorHandler RACP Methods
      * (Delegated to the RACP Handler)
+     * TODO These methods end up with calls that look for the first connected peripheral..
      */
 
     fun getNumberOfRecords() {
@@ -111,8 +120,49 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.getRecordsAbove(recordNumber)
     }
 
+    fun abortGetRecords() {
+        ObservationLog.log("RACP: Aborting get records")
+        racpHandler.abortGetRecords()
+    }
+
+    /*
+     * RACP callbacks
+     */
+
+    fun onNumberOfStoredRecordsResponse(deviceAddress: String, numberOfRecords: Int) {
+        Timber.i("RACP Number of stored records: $numberOfRecords for peripheral: $deviceAddress")
+        ObservationLog.log("RACP: Number of stored records $numberOfRecords ")
+        racpListeners.forEach { it.onNumberOfStoredRecordsResponse(deviceAddress, numberOfRecords) }
+    }
+
+    fun onNumberOfStoredRecordsRetrieved(deviceAddress: String, numberOfRecords: Int) {
+        Timber.i("RACP Number of retrieved records: $numberOfRecords for peripheral: $deviceAddress")
+        ObservationLog.log("RACP: Number of retrieved records $numberOfRecords ")
+        racpListeners.forEach { it.onNumberOfStoredRecordsRetrieved(deviceAddress, numberOfRecords) }
+    }
+
+    fun onRacpAbortCompleted(deviceAddress: String) {
+        Timber.i("RACP Abort completed successfully")
+        ObservationLog.log("RACP Abort completed successfully")
+        racpListeners.forEach { it.onRacpAbortCompleted(deviceAddress) }
+    }
+
+    fun onRacpAbortError(deviceAddress: String, code: Byte) {
+        Timber.i("RACP Abort failed")
+        ObservationLog.log("RACP Abort failed")
+        racpListeners.forEach { it.onRacpAbortError(deviceAddress, code) }
+    }
+
+    /*
+     * Observation support
+     */
+
     fun receivedObservation(deviceAddress: String, observation: Observation) {
         listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(observation)) }
+    }
+
+    fun receivedStoredObservation(deviceAddress: String, observation: Observation) {
+        racpListeners.forEach { it.onReceivedStoredObservation(deviceAddress, observation) }
     }
 
     fun receivedSupportedTypes(deviceAddress: String, supportedTypes: List<ObservationType>) {
@@ -203,6 +253,10 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
         val RACP_CHARACTERISTIC_UUID =
             UUID.fromString("00002a52-0000-1000-8000-00805f9b34fb")
+
+        val instance: GenericHealthSensorServiceHandler? get() {
+            return ServiceHandlerManager.instance?.serviceHandlerForUUID(SERVICE_UUID)?.let { it as GenericHealthSensorServiceHandler }
+        }
 
         /*
          * GHS Control Point commands and status values

@@ -57,6 +57,25 @@
             android:layout_marginBottom="16dp"
             android:textAllCaps="false"
             android:onClick="getRecordsAboveFour" />
+        <ProgressBar
+            android:id="@+id/obsSyncProgress"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progress="0"/>
+        <Button
+            android:id="@+id/abort"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:text="@string/abort"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="abort" />
         <!--
         <TextView
             android:id="@+id/foundPeripheralLabel"
