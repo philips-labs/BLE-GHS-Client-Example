@@ -1,5 +1,6 @@
 package com.philips.bleclient.ui
 
+import android.view.View
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerRacpListener
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
@@ -7,6 +8,7 @@ import timber.log.Timber
 
 
 interface ObservationSyncerListener {
+    fun onNumberOfStoredRecordsReceived(deviceAddress: String, numberOfRecords: Int)
     fun onStartStoredRetrieve(deviceAddress: String, numberOfObsToRetrieve: Int)
     fun onStoredObservationRetrieved(deviceAddress: String, observation: Observation, numberOfObsActuallyRetrieved: Int, numberOfObsToRetrieve: Int)
     fun onCompleteStoredRetrieve(deviceAddress: String, numberOfObsToRetrieve: Int, numberOfObsActuallyRetrieved: Int, numberOfRecordsSent: Int)
@@ -40,6 +42,23 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         }
     }
 
+    fun getNumberOfRecords() {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecords()
+    }
+
+    fun getNumberOfRecordsGreaterThanId(startRecordNumber: Int) {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsGreaterThan(startRecordNumber)
+    }
+
+    fun retrieveStoredObservationsAboveId(recordId: Int) {
+        isRetrieving = true
+        // Kick off by requesting number of records, then continue in response
+        ghsServiceHandler?.getRecordsAbove(recordId)
+    }
+
+
     fun retrieveStoredObservations() {
         isRetrieving = true
         // Kick off by requesting number of records, then continue in response
@@ -69,6 +88,8 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
             numberOfObsToRetrieve = numberOfRecords
             listeners.forEach { it.onStartStoredRetrieve(deviceAddress, numberOfObsToRetrieve) }
             ghsServiceHandler?.getAllRecords()
+        } else {
+            listeners.forEach { it.onNumberOfStoredRecordsReceived(deviceAddress, numberOfRecords) }
         }
     }
 

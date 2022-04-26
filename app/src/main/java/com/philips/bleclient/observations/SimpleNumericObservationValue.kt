@@ -8,6 +8,6 @@ import com.philips.btserver.generichealthservice.UnitCode
 
 class SimpleNumericObservationValue(val value: Float, override var unitCode: UnitCode): NumericObservationValue() {
     override fun toString(): String {
-        return "value: $value unitCode: ${unitCode.name}"
+        return "value: $value ${unitCode.description}"
     }
 }

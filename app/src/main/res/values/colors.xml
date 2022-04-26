@@ -6,4 +6,5 @@
     <color name="philips_blue_base">#0b5ed7</color>
     <color name="philips_blue_soft">#91c7ff</color>
     <color name="philips_blue_tint">#e1f1ff</color>
+    <color name="separatorColor">#20000000</color>
 </resources>
