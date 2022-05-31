@@ -4,7 +4,6 @@ import java.util.*
 
 interface SimpleTimeServiceHandlerListener {
 
-
     /**
      * Called when a time is received from the SimpleTimeService
      *
@@ -13,6 +12,8 @@ interface SimpleTimeServiceHandlerListener {
      *
      * TODO Need to support tick counters
      */
-    fun onReceivedTime(deviceAddress: String, time: Date)
+    fun onReceivedTime(deviceAddress: String, time: Date) {}
+
+    fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {}
 
 }

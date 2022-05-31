@@ -12,12 +12,16 @@ import android.view.View
 import android.widget.TextView
 import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
+import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
+import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
 import com.welie.blessed.BluetoothPeripheral
+import timber.log.Timber
 
-class PeripheralInfoActivity : AppCompatActivity() {
+class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerListener {
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
+    private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +36,7 @@ class PeripheralInfoActivity : AppCompatActivity() {
             }
         }
 
-        supportActionBar?.let {
-            it.title = title
-            it.setDisplayHomeAsUpEnabled(true)
-        }
+        stsServiceHandler?.addListener(this)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -59,11 +60,6 @@ class PeripheralInfoActivity : AppCompatActivity() {
 
     private fun setupPeripheral(periph: BluetoothPeripheral) {
         findViewById<TextView>(R.id.peripheralMacAddress).text = "MAC address: ${periph.address}"
-        findViewById<TextView>(R.id.serviceUUIDs).text =
-            periph.services.fold("Service UUIDs:\n", { acc, service -> "$acc ${service.uuid}\n" })
-        findViewById<TextView>(R.id.charUUIDs).text = periph.notifyingCharacteristics.fold(
-            "Notifying char UUIDs:\n",
-            { acc, char -> "$acc ${char.uuid}\n" })
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -80,6 +76,18 @@ class PeripheralInfoActivity : AppCompatActivity() {
     @Suppress("UNUSED_PARAMETER")
     fun disableLiveObservations(view: View) {
         ghsServiceHandler?.let { peripheral?.let { p -> it.disableLiveObservations(p) } }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun getStsBytes(view: View) {
+        peripheral?.let { stsServiceHandler?.getSTSBytes(it) }
+    }
+
+    /*
+     * SimpleTimeServiceHandlerListener methods
+     */
+    override fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {
+        Timber.i("STS Bytes: ${bytes.asFormattedHexString() ?: "NULL"}")
     }
 
 }

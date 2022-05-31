@@ -32,6 +32,7 @@ import androidx.annotation.RequiresApi
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
+import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
+    private var stsServiceHandler: SimpleTimeServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val ACCESS_LOCATION_REQUEST = 2
@@ -178,15 +180,27 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     private fun initBluetoothHandler() {
-        ghsServiceHandler = GenericHealthSensorServiceHandler()
-        ghsServiceHandler!!.addListener(this)
         serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
+        initGHSServiceHandler()
+        initSTSServiceHandler()
         serviceHandlerManager?.let {
             it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
         }
         ObservationSyncer.connect()
+    }
+
+    private fun initGHSServiceHandler() {
+        ghsServiceHandler = GenericHealthSensorServiceHandler()
+        ghsServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(ghsServiceHandler!!)
+    }
+
+    private fun initSTSServiceHandler() {
+        stsServiceHandler = SimpleTimeServiceHandler()
+//        stsServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
     }
 
     private fun checkPermissions() {
@@ -448,6 +462,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             R.anim.slide_to_left
         )
     }
+
     @Suppress("UNUSED_PARAMETER")
     fun showRacp(view: View) {
         startActivity(Intent(this, RacpActivity::class.java))
@@ -456,7 +471,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             R.anim.slide_to_left
         )
     }
-
 
     @Suppress("UNUSED_PARAMETER")
     fun openFhirSettings(view: View) {
@@ -468,7 +482,6 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     // Private methods
-
     private fun setScanning(enabled: Boolean) {
         foundPeripheralArrayAdapter?.clear()
         if (enabled) serviceHandlerManager?.startScanning() else serviceHandlerManager?.stopScanning()

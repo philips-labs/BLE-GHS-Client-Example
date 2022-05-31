@@ -21,7 +21,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     internal val simpleTimeCharacteristic = BluetoothGattCharacteristic(
         SIMPLE_TIME_CHARACTERISTIC_UUID,
-        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
+        BluetoothGattCharacteristic.PROPERTY_READ or BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
         BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
     )
 
@@ -58,7 +58,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     }
 
     /*
-     * GenericHealthSensorHandler Listener methods (add/remove)
+     * SimpleTimeServiceHandler Listener methods (add/remove)
      */
 
     fun addListener(listener: SimpleTimeServiceHandlerListener) = listeners.add(listener)
@@ -80,6 +80,11 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     private fun handleTimeBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Time Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        listeners.forEach { it.onReceivedStsBytes(peripheral.address, value) }
+    }
+
+    fun getSTSBytes(peripheral: BluetoothPeripheral) {
+        peripheral.readCharacteristic(SERVICE_UUID, SIMPLE_TIME_CHARACTERISTIC_UUID)
     }
 
     fun setServerTime(peripheral: BluetoothPeripheral, date: Date) {

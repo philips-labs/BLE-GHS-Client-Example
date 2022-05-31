@@ -6,11 +6,12 @@
     <string name="observations">Observations log</string>
     <string name="start_scanning">Start scanning</string>
     <string name="stop_scanning">Stop scanning</string>
-    <string name="show_log">Show log</string>
+    <string name="show_log">Log</string>
     <string name="show_racp">RACP</string>
     <string name="clear_log">Clear observation log</string>
     <string name="parseTestObservation">Parse test observation</string>
     <string name="fhir_server">FHIR</string>
+    <string name="sts">STS</string>
     <string name="post_observations_to_servier">Post observations to server</string>
     <string name="use_public_hapi_fhir_server">Use hapi.fhir.org server</string>
     <string name="title_activity_fhir">FHIR server settings</string>
@@ -25,6 +26,7 @@
     <string name="disable_live_observatioins">Disable Live Obs</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
+    <string name="sts_bytes">Log STS Bytes</string>
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords">Total # records</string>
     <string name="aboveRecords"># Records > ID </string>

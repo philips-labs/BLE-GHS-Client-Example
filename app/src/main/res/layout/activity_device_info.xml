@@ -24,18 +24,16 @@
             android:layout_height="wrap_content"
             android:text=""
             android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/serviceUUIDs"
+        <Button
+            android:id="@+id/btnGetStsBytes"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/charUUIDs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_marginBottom="16dp" />
+            android:layout_height="64dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/sts_bytes"
+            android:textAllCaps="false"
+            android:onClick="getStsBytes" />
 
         <Button
             android:id="@+id/enableLiveObservations"

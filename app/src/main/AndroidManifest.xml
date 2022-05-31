@@ -18,6 +18,9 @@
         android:theme="@style/Theme.Btclient"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.StsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.RacpActivity"
             android:exported="false" />
         <activity android:name=".ui.PeripheralInfoActivity" />
