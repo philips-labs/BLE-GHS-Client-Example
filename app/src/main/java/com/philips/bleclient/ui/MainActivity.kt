@@ -427,11 +427,13 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
             }
             ObservationType.UNKNOWN -> {
-                ObservationLog.log("Unknown Observeration: $observation")
+                ObservationLog.log("Received Unknown Observeration: $observation")
+            }
+            ObservationType.MDC_DRUG_NAME_LABEL -> {
+                ObservationLog.log("Received String Observeration: $observation")
             }
             else -> {
-                val samples = (observation.value as SampleArrayObservationValue).samples
-                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
+                ObservationLog.log("Received Observeration: $observation")
             }
         }
     }

@@ -231,7 +231,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         // Temp assigned GATT Service UUID Allocated for GHS
         val SERVICE_UUID: UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
 
-        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        // Temp assigned GATT Characteristic UUID Allocated for GHSm
         val OBSERVATION_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f43-0000-1000-8000-00805f9b34fb")
 

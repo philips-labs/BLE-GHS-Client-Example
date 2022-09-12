@@ -174,11 +174,11 @@ fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
 
 fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 
-    val isUTC = timeFlags hasFlag GhsTimestampFlags.isUTC
-    val isTicks = timeFlags hasFlag GhsTimestampFlags.isTickCounter
-    val hasMillis = timeFlags hasFlag GhsTimestampFlags.isMillisecondsPresent
-    val hasTZ = timeFlags hasFlag GhsTimestampFlags.isTZPresent
-    val isCurrentTimeline = timeFlags hasFlag GhsTimestampFlags.isCurrentTimeline
+    val isUTC = timeFlags hasFlag TimestampFlags.isUTC
+    val isTicks = timeFlags hasFlag TimestampFlags.isTickCounter
+    val hasMillis = timeFlags hasFlag TimestampFlags.isMilliseconds
+    val hasTZ = timeFlags hasFlag TimestampFlags.isTZPresent
+    val isCurrentTimeline = timeFlags hasFlag TimestampFlags.isCurrentTimeline
 
     // Double check if the time is actually a time and not ticks according to flags
     var result: LocalDateTime? = null

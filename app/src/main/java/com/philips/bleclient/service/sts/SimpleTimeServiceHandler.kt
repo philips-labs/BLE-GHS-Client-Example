@@ -7,6 +7,7 @@ package com.philips.bleclient.service.sts
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.*
+import com.philips.bleclient.extensions.*
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -18,6 +19,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     var listeners: MutableSet<SimpleTimeServiceHandlerListener> = mutableSetOf()
     private val peripherals = mutableSetOf<BluetoothPeripheral>()
+    private val peripheralSTSFlags = mutableMapOf<BluetoothPeripheral, BitMask>()
 
     internal val simpleTimeCharacteristic = BluetoothGattCharacteristic(
         SIMPLE_TIME_CHARACTERISTIC_UUID,
@@ -76,10 +78,12 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
         peripherals.remove(peripheral)
+        peripheralSTSFlags.remove(peripheral)
     }
 
     private fun handleTimeBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Time Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        peripheralSTSFlags.put(peripheral, value.first().asBitmask())
         listeners.forEach { it.onReceivedStsBytes(peripheral.address, value) }
     }
 
@@ -87,8 +91,22 @@ class SimpleTimeServiceHandler : ServiceHandler(),
         peripheral.readCharacteristic(SERVICE_UUID, SIMPLE_TIME_CHARACTERISTIC_UUID)
     }
 
-    fun setServerTime(peripheral: BluetoothPeripheral, date: Date) {
-        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, byteArrayOf())
+    fun setSTSBytes(peripheral: BluetoothPeripheral) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            if (it.hasFlag(TimestampFlags.isTickCounter)) {
+                resetSTSTicks(peripheral)
+            } else {
+                setServerTime(peripheral, it)
+            }
+        } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
+    }
+
+    fun setServerTime(peripheral: BluetoothPeripheral, flags: BitMask) {
+        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes(flags))
+    }
+
+    fun resetSTSTicks(peripheral: BluetoothPeripheral) {
+        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, 0L.asGHSTicks())
     }
 
     fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
