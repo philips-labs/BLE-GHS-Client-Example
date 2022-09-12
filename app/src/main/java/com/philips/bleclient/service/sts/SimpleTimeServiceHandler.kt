@@ -94,9 +94,19 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     fun setSTSBytes(peripheral: BluetoothPeripheral) {
         peripheralSTSFlags.get(peripheral)?.let {
             if (it.hasFlag(TimestampFlags.isTickCounter)) {
-                resetSTSTicks(peripheral)
+                resetTickCounter(peripheral)
             } else {
                 setServerTime(peripheral, it)
+            }
+        } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
+    }
+
+    fun resetTickCounter(peripheral: BluetoothPeripheral) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            if (it.hasFlag(TimestampFlags.isTickCounter)) {
+                resetSTSTicks(peripheral)
+            } else {
+                Timber.i("Not a tick counter, cannot reset")
             }
         } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
     }

@@ -44,6 +44,16 @@
             android:text="@string/set_sts_bytes"
             android:textAllCaps="false"
             android:onClick="setStsClockBytes" />
+        <Button
+            android:id="@+id/btnResetTickCounter"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/reset_tick_counter"
+            android:textAllCaps="false"
+            android:onClick="resetTickCounter" />
 
         <Spinner
             android:id="@+id/stsDateType"

@@ -107,6 +107,11 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
         peripheral?.let { stsServiceHandler?.setSTSBytes(it) }
     }
 
+    @Suppress("UNUSED_PARAMETER")
+    fun resetTickCounter(view: View) {
+        peripheral?.let { stsServiceHandler?.resetTickCounter(it) }
+    }
+
     /*
      * SimpleTimeServiceHandlerListener methods
      */

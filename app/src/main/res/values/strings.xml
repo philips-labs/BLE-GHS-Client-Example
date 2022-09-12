@@ -26,8 +26,9 @@
     <string name="disable_live_observatioins">Disable Live Obs</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
-    <string name="sts_bytes">Log STS Bytes</string>
-    <string name="set_sts_bytes">Set STS Bytes</string>
+    <string name="sts_bytes">Log ETS Bytes</string>
+    <string name="set_sts_bytes">Set ETS Bytes</string>
+    <string name="reset_tick_counter">Reset tick counter</string>
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords">Total # records</string>
     <string name="aboveRecords"># Records > ID </string>

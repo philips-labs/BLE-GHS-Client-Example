@@ -23,8 +23,8 @@ enum class TimestampFlags(override val bit: Long) : Flags {
     zero((0 shl 0).toLong()),
     isTickCounter((1 shl 0).toLong()),
     isUTC((1 shl 1).toLong()),
-    isMilliseconds((1 shl 2).toLong()),
-    isHundredthsMicroseconds((1 shl 3).toLong()),
+    isHundredthsMilliseconds((1 shl 2).toLong()),
+    isMilliseconds((1 shl 3).toLong()),
     isTZPresent((1 shl 4).toLong()),
     isCurrentTimeline((1 shl 5).toLong()),
     reserved_1((1 shl 6).toLong()),
@@ -43,10 +43,30 @@ enum class TimestampFlags(override val bit: Long) : Flags {
 fun BitMask.asTimestampFlagsString(): String {
     val ticksOrTime = if (this hasFlag TimestampFlags.isTickCounter) "Ticks" else "Time"
     val utcOrLocal = if (this hasFlag TimestampFlags.isUTC) "UTC" else "Local"
-    val millsOrSecs = if (this hasFlag TimestampFlags.isMilliseconds) "Millis" else "Seconds"
+    val millsOrSecs = if (this hasFlag TimestampFlags.isMilliseconds) "Millis"
+                        else if (this hasFlag TimestampFlags.isHundredthsMilliseconds)  "100ths millis"
+                            else if (this.isSeconds()) "seconds"
+                                else if(this.isHundredthsMicroseconds()) "100th microsecods"
+                                    else "unknown resolution"
     val hasTZ = if (this hasFlag TimestampFlags.isTZPresent) "TZ" else "No TZ"
     val current = if (this hasFlag TimestampFlags.isCurrentTimeline) "Current" else "Not Current"
     return "Value: ${value.toByte().asHexString()} : $ticksOrTime : $utcOrLocal : $millsOrSecs : $hasTZ : $current timeline"
+}
+
+fun BitMask.isMilliseconds(): Boolean {
+    return (this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isHundredthsMilliseconds)
+}
+
+fun BitMask.isHundredthsMilliseconds(): Boolean {
+    return !(this hasFlag TimestampFlags.isMilliseconds) and (this hasFlag TimestampFlags.isHundredthsMilliseconds)
+}
+
+fun BitMask.isSeconds(): Boolean {
+    return !(this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isHundredthsMilliseconds)
+}
+
+fun BitMask.isHundredthsMicroseconds(): Boolean {
+    return !(this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isMilliseconds)
 }
 
 //enum class GhsTimestampFlags(override val bit: Long) : Flags {
@@ -159,8 +179,18 @@ fun ByteArray.parseSTSDate() : Date? {
         val timeSource = this[7]
         val offset = this[8] * MILLIS_IN_15_MINUTES
         val milliScale = if (writeFlags.hasFlag(TimestampFlags.isMilliseconds)) 1L else 1000L
-        return Date((ticks * milliScale) + UTC_TO_UNIX_EPOCH_MILLIS + offset)
+        val scaledTicks = writeFlags.getTimeResolutionScaledValue(ticks)
+        return Date(scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset)
     }
+}
+
+// TODO: Cleanup now that flags have changed
+fun BitMask.getTimeResolutionScaledValue(millis: Long): Long {
+    return if (isSeconds()) millis / 1000L
+                else if (isMilliseconds()) millis
+                    else if(isHundredthsMilliseconds()) millis / 10L
+                        else if(isHundredthsMicroseconds()) millis * 10L
+                            else millis
 }
 
 fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
@@ -184,14 +214,16 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
     parser.setIntValue(timestampFlags.value.toInt(), BluetoothBytesParser.FORMAT_UINT8)
     Timber.i("Add Flag: ${timestampFlags.asTimestampFlagsString()}")
 
+    val scaledTicks = timestampFlags.getTimeResolutionScaledValue(millis)
+    parser.setLong(scaledTicks / 1000L)
     // Write the utc/local/tick clock value (either milliseconds or seconds)
-    if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
-        parser.setLong(millis)
-        Timber.i("Add Milliseconds Value: $millis")
-    } else {
-        parser.setLong(millis / 1000L)
-        Timber.i("Add Seconds Value: ${millis / 1000L}")
-    }
+//    if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
+//        parser.setLong(millis)
+//        Timber.i("Add Milliseconds Value: $millis")
+//    } else {
+//        parser.setLong(millis / 1000L)
+//        Timber.i("Add Seconds Value: ${millis / 1000L}")
+//    }
 
     var offsetUnits = 0
 
@@ -254,14 +286,15 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
 
     Timber.i("asKotlinLocalDateTime value: $this epoch: ${this + UTC_TO_UNIX_EPOCH_MILLIS} offset: $offset flags: ${timestampFlags.asTimestampFlagsString()}")
 
-    val timecounter =
-        (if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
-            this
-        } else if (timestampFlags.hasFlag(TimestampFlags.isHundredthsMicroseconds)) {
-            this / 10
-        } else {
-            this * 1000
-        })  + UTC_TO_UNIX_EPOCH_MILLIS
+    val timecounter = timestampFlags.getTimeResolutionScaledValue(this) + UTC_TO_UNIX_EPOCH_MILLIS
+//    val timecounter =
+//        (if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
+//            this
+//        } else if (timestampFlags.hasFlag(TimestampFlags.isHundredthsMicroseconds)) {
+//            this / 10
+//        } else {
+//            this * 1000
+//        })  + UTC_TO_UNIX_EPOCH_MILLIS
 
 //    if (timestampFlags.hasFlag(GhsTimestampFlags.isTickCounter)) {
 //        // TODO What sort of "time" represents the tick counter, or null... or throw an exception
