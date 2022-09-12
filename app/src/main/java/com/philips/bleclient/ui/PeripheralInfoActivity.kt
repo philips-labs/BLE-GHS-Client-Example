@@ -16,10 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asFormattedHexString
-import com.philips.bleclient.extensions.BitMask
-import com.philips.bleclient.extensions.TimestampFlags
-import com.philips.bleclient.extensions.hasFlag
-import com.philips.bleclient.extensions.parseSTSDate
+import com.philips.bleclient.extensions.*
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
 import com.welie.blessed.BluetoothPeripheral
@@ -30,6 +27,16 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
     private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
+
+    private enum class TimeType {
+        LOCAL_TIME,
+        LOCAL_TIME_WITH_OFFSET,
+        UTC_ONLY,
+        UTC_WITH_OFFSET,
+        TICK_COUNTER
+    }
+
+    private var writeTimeType = TimeType.TICK_COUNTER
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +56,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
         val spinner = findViewById<View>(R.id.stsDateType) as Spinner
         val adapter: ArrayAdapter<String> = ArrayAdapter<String>(
             this,
-            android.R.layout.simple_spinner_item, arrayOf("Local Time", "UTC only", "UTC + Offset")
+            android.R.layout.simple_spinner_item, arrayOf("Local Time", "UTC only", "UTC + Offset", "Ticks", "Local with DST")
         )
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -107,11 +114,6 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
         peripheral?.let { stsServiceHandler?.setSTSBytes(it) }
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun resetTickCounter(view: View) {
-        peripheral?.let { stsServiceHandler?.resetTickCounter(it) }
-    }
-
     /*
      * SimpleTimeServiceHandlerListener methods
      */
@@ -127,14 +129,36 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     }
 
     /*
-     * Spinner methods
+     * Spinner methods to determine what type of time to write on Set ETS Bytes
      */
 
     override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
         when (position) {
-            0 -> {}
-            1 -> {}
-            2 -> {}
+            0 -> {
+                writeTimeType = TimeType.LOCAL_TIME
+                Timber.i("Set Local TimestampFlags")
+                TimestampFlags.setLocalFlags()
+            }
+            1 -> {
+                writeTimeType = TimeType.UTC_ONLY
+                Timber.i("Set UTC_ONLY TimestampFlags")
+                TimestampFlags.setUtcOnlyFlags()
+            }
+            2 -> {
+                writeTimeType = TimeType.UTC_WITH_OFFSET
+                Timber.i("Set UTC_WITH_OFFSET TimestampFlags")
+                TimestampFlags.setUtcWithOffsetFlags()
+            }
+            3 -> {
+                writeTimeType = TimeType.TICK_COUNTER
+                Timber.i("Set TICK_COUNTER TimestampFlags")
+                TimestampFlags.setTickCounterFlags()
+            }
+            4 -> {
+                writeTimeType = TimeType.LOCAL_TIME_WITH_OFFSET
+                Timber.i("Set LOCAL_TIME_WITH_OFFSET TimestampFlags")
+                TimestampFlags.setLocalWithOffsetFlags()
+            }
         }
     }
 

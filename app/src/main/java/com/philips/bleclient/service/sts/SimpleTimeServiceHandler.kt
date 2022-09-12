@@ -101,6 +101,16 @@ class SimpleTimeServiceHandler : ServiceHandler(),
         } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
     }
 
+
+//    // For now set the time based on the time flags we have, vs. what we got from the peripheral
+//    fun setSTSBytes(peripheral: BluetoothPeripheral) {
+//        if (TimestampFlags.currentFlags.hasFlag(TimestampFlags.isTickCounter)) {
+//            resetTickCounter(peripheral)
+//        } else {
+//            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes())
+//        }
+//    }
+
     fun resetTickCounter(peripheral: BluetoothPeripheral) {
         peripheralSTSFlags.get(peripheral)?.let {
             if (it.hasFlag(TimestampFlags.isTickCounter)) {
@@ -112,11 +122,13 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     }
 
     fun setServerTime(peripheral: BluetoothPeripheral, flags: BitMask) {
-        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes(flags))
+        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes())
     }
 
     fun resetSTSTicks(peripheral: BluetoothPeripheral) {
-        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, 0L.asGHSTicks())
+        peripheralSTSFlags.get(peripheral)?.let {
+            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, 0L.asGHSTicks(it))
+        }
     }
 
     fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {

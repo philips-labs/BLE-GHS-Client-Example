@@ -127,6 +127,10 @@ class ServiceHandlerManager private constructor(context: Context) {
         central.connectPeripheral(peripheral, peripheralCallback)
     }
 
+    fun bond(peripheral: BluetoothPeripheral) {
+        central.createBond(peripheral, peripheralCallback)
+    }
+
     fun addListener(listener: ServiceHandlerManagerListener) {
         listeners.add(listener)
     }

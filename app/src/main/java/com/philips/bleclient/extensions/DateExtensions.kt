@@ -37,6 +37,36 @@ enum class TimestampFlags(override val bit: Long) : Flags {
 //            .plus(TimestampFlags.isCurrentTimeline)
 
         var currentFlags: BitMask = BitMask(0)
+
+        fun setLocalFlags() {
+            currentFlags = currentFlags.unset(isUTC)
+            currentFlags = currentFlags.unset(isTZPresent)
+            currentFlags = currentFlags.unset(isTickCounter)
+        }
+
+        fun setLocalWithOffsetFlags() {
+            currentFlags = currentFlags.unset(isUTC)
+            currentFlags = currentFlags.set(isTZPresent)
+            currentFlags = currentFlags.unset(isTickCounter)
+        }
+
+        fun setUtcOnlyFlags() {
+            currentFlags = currentFlags.set(isUTC)
+            currentFlags = currentFlags.unset(isTZPresent)
+            currentFlags = currentFlags.unset(isTickCounter)
+        }
+
+        fun setUtcWithOffsetFlags() {
+            currentFlags = currentFlags.set(isUTC)
+            currentFlags = currentFlags.set(isTZPresent)
+            currentFlags = currentFlags.unset(isTickCounter)
+        }
+
+        fun setTickCounterFlags() {
+            currentFlags = currentFlags.unset(isUTC)
+            currentFlags = currentFlags.unset(isTZPresent)
+            currentFlags = currentFlags.set(isTickCounter)
+        }
     }
 }
 
@@ -57,7 +87,7 @@ fun BitMask.isMilliseconds(): Boolean {
     return (this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isHundredthsMilliseconds)
 }
 
-fun BitMask.isHundredthsMilliseconds(): Boolean {
+fun BitMask.isHundredMilliseconds(): Boolean {
     return !(this hasFlag TimestampFlags.isMilliseconds) and (this hasFlag TimestampFlags.isHundredthsMilliseconds)
 }
 
@@ -154,10 +184,12 @@ fun Long.asGHSTimeValue(): ByteArray {
     return millParser.value.copyOfRange(0, 6)
 }
 
-fun Long.asGHSTicks(): ByteArray {
-    val flags = BitMask(TimestampFlags.isTickCounter.bit).plus(TimestampFlags.isMilliseconds)
+fun Long.asGHSTicks(flags: BitMask): ByteArray {
+    val newFlags = BitMask(TimestampFlags.isTickCounter.bit)
+    if (flags hasFlag TimestampFlags.isMilliseconds) newFlags.set(TimestampFlags.isMilliseconds)
+    if (flags hasFlag TimestampFlags.isHundredthsMilliseconds) newFlags.set(TimestampFlags.isHundredthsMilliseconds)
     return listOf(
-        byteArrayOf(flags.value.toByte()),
+        byteArrayOf(newFlags.value.toByte()),
         this.asGHSTimeValue(),
         byteArrayOf(0, 0)
     ).merge()
@@ -179,18 +211,29 @@ fun ByteArray.parseSTSDate() : Date? {
         val timeSource = this[7]
         val offset = this[8] * MILLIS_IN_15_MINUTES
         val milliScale = if (writeFlags.hasFlag(TimestampFlags.isMilliseconds)) 1L else 1000L
-        val scaledTicks = writeFlags.getTimeResolutionScaledValue(ticks)
+        val scaledTicks = writeFlags.convertToTimeResolutionScaledMillisValue(ticks)
+        Timber.i("Scaled Y2K: $scaledTicks Y2K:${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS} Y2K + Offset: ${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset}")
         return Date(scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset)
     }
+}
+
+
+// TODO: Cleanup now that flags have changed
+fun BitMask.convertToTimeResolutionScaledMillisValue(value: Long): Long {
+    return if (isSeconds()) value * 1000L
+    else if (isMilliseconds()) value
+    else if(isHundredMilliseconds()) value * 100L
+    else if(isHundredthsMicroseconds()) value / 10L
+    else value
 }
 
 // TODO: Cleanup now that flags have changed
 fun BitMask.getTimeResolutionScaledValue(millis: Long): Long {
     return if (isSeconds()) millis / 1000L
-                else if (isMilliseconds()) millis
-                    else if(isHundredthsMilliseconds()) millis / 10L
-                        else if(isHundredthsMicroseconds()) millis * 10L
-                            else millis
+        else if (isMilliseconds()) millis
+        else if(isHundredMilliseconds()) millis / 10L
+        else if(isHundredthsMicroseconds()) millis * 10L
+        else millis
 }
 
 fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
@@ -201,7 +244,7 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
     var millis = if (isTickCounter) SystemClock.elapsedRealtime() else epoch2000mills()
     Timber.i("Epoch millis Value: Unix: ${millis + UTC_TO_UNIX_EPOCH_MILLIS} Y2K: $millis")
 
-    if (!isTickCounter) {
+    if (!(timestampFlags hasFlag TimestampFlags.isTickCounter)) {
         // Used if the clock is reporting local time, not UTC time. Get UTC offset and add it to the milliseconds reported for local time
         val utcOffsetMillis = if (timestampFlags hasFlag TimestampFlags.isUTC) 0L else java.util.TimeZone.getDefault().getOffset(currentTimeMillis).toLong()
         millis += utcOffsetMillis
@@ -215,7 +258,8 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
     Timber.i("Add Flag: ${timestampFlags.asTimestampFlagsString()}")
 
     val scaledTicks = timestampFlags.getTimeResolutionScaledValue(millis)
-    parser.setLong(scaledTicks / 1000L)
+    Timber.i("Scaled ticks: $scaledTicks")
+    parser.setLong(scaledTicks)
     // Write the utc/local/tick clock value (either milliseconds or seconds)
 //    if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
 //        parser.setLong(millis)
@@ -244,7 +288,7 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
 //    return parser.value
 
     val millParser = BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN)
-    millParser.setLong(millis)
+    millParser.setLong(scaledTicks)
 
     return listOf(
         byteArrayOf(timestampFlags.value.toByte()),
@@ -286,7 +330,7 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
 
     Timber.i("asKotlinLocalDateTime value: $this epoch: ${this + UTC_TO_UNIX_EPOCH_MILLIS} offset: $offset flags: ${timestampFlags.asTimestampFlagsString()}")
 
-    val timecounter = timestampFlags.getTimeResolutionScaledValue(this) + UTC_TO_UNIX_EPOCH_MILLIS
+    val timecounter = timestampFlags.convertToTimeResolutionScaledMillisValue(this) + UTC_TO_UNIX_EPOCH_MILLIS
 //    val timecounter =
 //        (if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
 //            this

@@ -14,6 +14,7 @@
     <string name="sts">STS</string>
     <string name="post_observations_to_servier">Post observations to server</string>
     <string name="use_public_hapi_fhir_server">Use hapi.fhir.org server</string>
+    <string name="connect_devices_with_bonding">Bond with devices</string>
     <string name="title_activity_fhir">FHIR server settings</string>
     <string name="title_activity_racp">RACP Details</string>
     <string name="no_temp_observation">No temperature received</string>

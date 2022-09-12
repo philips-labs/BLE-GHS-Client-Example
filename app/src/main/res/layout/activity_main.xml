@@ -36,7 +36,7 @@
         <ListView
             android:id="@+id/foundPeripheralList"
             android:layout_width="match_parent"
-            android:layout_weight="0.2"
+            android:layout_weight="0.4"
             android:divider="@null"
             android:dividerHeight="0dp"
             android:layout_marginBottom="16dp"
@@ -54,6 +54,13 @@
             android:divider="@null"
             android:dividerHeight="0dp"
             android:layout_marginBottom="16dp" />
+        <android.widget.Switch
+            android:id="@+id/publicHapiSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="toggleBonding"
+            android:layout_marginBottom="24dp"
+            android:text="@string/connect_devices_with_bonding"/>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
