@@ -122,7 +122,9 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     }
 
     fun setServerTime(peripheral: BluetoothPeripheral, flags: BitMask) {
-        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes())
+        peripheralSTSFlags.get(peripheral)?.let {
+            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes(it))
+        }
     }
 
     fun resetSTSTicks(peripheral: BluetoothPeripheral) {

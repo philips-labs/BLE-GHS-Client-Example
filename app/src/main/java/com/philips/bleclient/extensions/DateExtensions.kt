@@ -218,7 +218,6 @@ fun ByteArray.parseSTSDate() : Date? {
 }
 
 
-// TODO: Cleanup now that flags have changed
 fun BitMask.convertToTimeResolutionScaledMillisValue(value: Long): Long {
     return if (isSeconds()) value * 1000L
     else if (isMilliseconds()) value
