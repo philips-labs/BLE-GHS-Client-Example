@@ -5,6 +5,7 @@
 package com.philips.bleclient
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanResult
 import android.content.Context
@@ -129,6 +130,14 @@ class ServiceHandlerManager private constructor(context: Context) {
 
     fun bond(peripheral: BluetoothPeripheral) {
         central.createBond(peripheral, peripheralCallback)
+    }
+
+    fun unbond(peripheral: BluetoothPeripheral) {
+        if(!(peripheral.bondState == BondState.NONE)) unbond(peripheral.address)
+    }
+
+    fun unbond(peripheralAddress: String) {
+        central.removeBond(peripheralAddress)
     }
 
     fun addListener(listener: ServiceHandlerManagerListener) {
