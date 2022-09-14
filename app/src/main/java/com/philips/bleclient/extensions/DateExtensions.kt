@@ -199,7 +199,7 @@ fun Long.asGHSTicks(flags: BitMask): ByteArray {
 fun ByteArray.parseSTSDate() : Date? {
     val writeFlags = this[0].asBitmask()
     return if (writeFlags.hasFlag(TimestampFlags.isTickCounter)) {
-        return null
+        null
     } else {
         var ticks = this[1].toUByte().toLong() +
                 this[2].toUByte().toLong().shl(8) +
@@ -213,7 +213,7 @@ fun ByteArray.parseSTSDate() : Date? {
         val milliScale = if (writeFlags.hasFlag(TimestampFlags.isMilliseconds)) 1L else 1000L
         val scaledTicks = writeFlags.convertToTimeResolutionScaledMillisValue(ticks)
         Timber.i("Scaled Y2K: $scaledTicks Y2K:${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS} Y2K + Offset: ${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset}")
-        return Date(scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset)
+        Date(scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset)
     }
 }
 
@@ -249,45 +249,25 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
         millis += utcOffsetMillis
     }
 
-
-    val parser = BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN)
-
     // Write the flags byte
-    parser.setIntValue(timestampFlags.value.toInt(), BluetoothBytesParser.FORMAT_UINT8)
     Timber.i("Add Flag: ${timestampFlags.asTimestampFlagsString()}")
 
     val scaledTicks = timestampFlags.getTimeResolutionScaledValue(millis)
     Timber.i("Scaled ticks: $scaledTicks")
-    parser.setLong(scaledTicks)
-    // Write the utc/local/tick clock value (either milliseconds or seconds)
-//    if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
-//        parser.setLong(millis)
-//        Timber.i("Add Milliseconds Value: $millis")
-//    } else {
-//        parser.setLong(millis / 1000L)
-//        Timber.i("Add Seconds Value: ${millis / 1000L}")
-//    }
 
     var offsetUnits = 0
 
     if (!isTickCounter) {
-        // If a timestamp include the time sync source (NTP, GPS, Network, etc)
-        parser.setIntValue(Timesource.currentSource.value, BluetoothBytesParser.FORMAT_UINT8)
-        Timber.i("Add Timesource Value: ${Timesource.currentSource.value}")
-
         val calendar = Calendar.getInstance(Locale.getDefault());
         val timeZoneMillis = if (timestampFlags hasFlag TimestampFlags.isTZPresent) calendar.get(Calendar.ZONE_OFFSET) else 0
         val dstMillis =if (timestampFlags hasFlag TimestampFlags.isTZPresent) calendar.get(Calendar.DST_OFFSET) else 0
         offsetUnits = (timeZoneMillis + dstMillis) / MILLIS_IN_15_MINUTES
         Timber.i("Add Offset Value: $offsetUnits")
-
-        parser.setIntValue(offsetUnits, BluetoothBytesParser.FORMAT_SINT8)
     }
 
-//    return parser.value
-
     val millParser = BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN)
-    millParser.setLong(scaledTicks)
+    // millParser.setLong(scaledTicks)
+    millParser.setLong(0L)
 
     return listOf(
         byteArrayOf(timestampFlags.value.toByte()),
