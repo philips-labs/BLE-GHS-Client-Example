@@ -10,10 +10,7 @@ import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
-import com.welie.blessed.BluetoothBytesParser
-import com.welie.blessed.BluetoothPeripheral
-import com.welie.blessed.GattStatus
-import com.welie.blessed.WriteType
+import com.welie.blessed.*
 import timber.log.Timber
 import java.util.*
 
@@ -179,19 +176,36 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
     }
 
+    fun getObservationScheduleDescriptor(peripheral: BluetoothPeripheral, observationType: ObservationType): BluetoothGattDescriptor? {
+        return peripheral.getCharacteristic(serviceUUID, GHS_FEATURES_CHARACTERISTIC_UUID)?.descriptors
+            ?.filter { it.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID }
+            ?.firstOrNull()
+    }
+
     fun writeObservationSchedule(peripheral: BluetoothPeripheral,
                                  observationType: ObservationType,
                                  measurementPeriod: Float,
                                  updateInterval: Float) {
+        val descriptor = getObservationScheduleDescriptor(peripheral, observationType)
         val parser = BluetoothBytesParser()
         parser.setIntValue(observationType.value, BluetoothBytesParser.FORMAT_UINT32)
         parser.setFloatValue(measurementPeriod, 3)
         parser.setFloatValue(updateInterval, 3)
-        writeDescriptor(
-            peripheral,
-            GHS_FEATURES_CHARACTERISTIC_UUID,
-            OBSERVATION_SCHEDULE_DESCRIPTOR_UUID,
-            parser.value)
+        descriptor?.let { peripheral.writeDescriptor(it, parser.value) }
+    }
+
+
+    override fun onDescriptorWrite(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+        if (descriptor.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID) {
+            Timber.i("onDescriptorWrite OBSERVATION_SCHEDULE_DESCRIPTOR_UUID value: ${value.asHexString()}")
+        } else {
+            Timber.i("onDescriptorWrite uuid: ${descriptor.uuid} value: ${value.asHexString()}")
+        }
     }
 
     /*

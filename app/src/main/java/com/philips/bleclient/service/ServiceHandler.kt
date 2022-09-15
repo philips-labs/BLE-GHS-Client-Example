@@ -5,7 +5,7 @@
 package com.philips.bleclient
 
 import android.bluetooth.BluetoothGattCharacteristic
-import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
+import android.bluetooth.BluetoothGattDescriptor
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
@@ -74,6 +74,22 @@ open class ServiceHandler {
     ) {
     }
 
+    open fun onDescriptorRead(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray?,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+    }
+
+    open fun onDescriptorWrite(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+    }
+
     open fun isCharacteristicSupported(characteristic: BluetoothGattCharacteristic): Boolean {
         return supportedCharacteristics.contains(characteristic.uuid)
     }
@@ -114,7 +130,7 @@ open class ServiceHandler {
         peripheral.getCharacteristic(serviceUUID, characteristicUUID)?.let {
             val descriptor = it.getDescriptor(descriptorUUID)
             if (descriptor != null) {
-                val result = descriptor.setValue(value)
+                val result = peripheral.writeDescriptor(descriptor, value)
                 Timber.i( "Set of descriptor uuid: $descriptorUUID from characteristic: $characteristicUUID on: ${peripheral.address} <${value.asHexString()}> for peripheral: $peripheral was $result")
             } else {
                 Timber.i( "Get of descriptor uuid: $descriptorUUID from characteristic: $characteristicUUID on: ${peripheral.address} returned null")
