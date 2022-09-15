@@ -5,10 +5,12 @@
 package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
+import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -177,6 +179,21 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
     }
 
+    fun writeObservationSchedule(peripheral: BluetoothPeripheral,
+                                 observationType: ObservationType,
+                                 measurementPeriod: Float,
+                                 updateInterval: Float) {
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(observationType.value, BluetoothBytesParser.FORMAT_UINT32)
+        parser.setFloatValue(measurementPeriod, 3)
+        parser.setFloatValue(updateInterval, 3)
+        writeDescriptor(
+            peripheral,
+            GHS_FEATURES_CHARACTERISTIC_UUID,
+            OBSERVATION_SCHEDULE_DESCRIPTOR_UUID,
+            parser.value)
+    }
+
     /*
      * ServiceHandlerManagerListener methods
      */
@@ -201,13 +218,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
         peripheral.getCharacteristic(GHS_FEATURES_CHARACTERISTIC_UUID, characteristicUUID)?.let {
             val result = peripheral.readCharacteristic(it)
-        }
-    }
-
-    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
-        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
-            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
-            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
         }
     }
 
@@ -253,6 +263,15 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
         val RACP_CHARACTERISTIC_UUID =
             UUID.fromString("00002a52-0000-1000-8000-00805f9b34fb")
+
+        val OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f3f-0000-1000-8000-00805f9b34fb")
+
+        val OBSERVATION_SCHEDULE_DESCRIPTOR_UUID =
+            UUID.fromString("00007f35-0000-1000-8000-00805f9b34fb")
+
+        val VALID_RANGE_AND_ACCURACY_DESCRIPTOR_UUID =
+            UUID.fromString("00007f34-0000-1000-8000-00805f9b34fb")
 
         val instance: GenericHealthSensorServiceHandler? get() {
             return ServiceHandlerManager.instance?.serviceHandlerForUUID(SERVICE_UUID)?.let { it as GenericHealthSensorServiceHandler }

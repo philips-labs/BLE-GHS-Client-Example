@@ -17,6 +17,7 @@ import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
+import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
 import timber.log.Timber
@@ -178,6 +179,15 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     @Suppress("UNUSED_PARAMETER")
     fun setStsClockBytes(view: View) {
         peripheral?.let { stsServiceHandler?.setSTSBytes(it) }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun writeObservationSchedule(view: View) {
+        ghsServiceHandler?.let {
+            peripheral?.let {
+                p -> it.writeObservationSchedule(p, ObservationType.MDC_ECG_HEART_RATE, 1f, 1f)
+            }
+        }
     }
 
     /*

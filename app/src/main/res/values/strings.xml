@@ -25,6 +25,7 @@
     <string name="disconnect_peripheral">Disconnect peripheral</string>
     <string name="enable_live_observatioins">Enable Live Obs</string>
     <string name="disable_live_observatioins">Disable Live Obs</string>
+    <string name="write_observation_schedule">Write Obs Schedule</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
     <string name="sts_bytes">Log ETS Bytes</string>

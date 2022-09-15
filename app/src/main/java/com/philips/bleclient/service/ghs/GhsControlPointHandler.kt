@@ -10,6 +10,7 @@ import java.util.*
 class GhsControlPointHandler(val service: GenericHealthSensorServiceHandler) {
 
     private val sentCommand: Byte? = null
+    var isLiveObservationsEnabled = false
 
     fun startLiveObservations() {
     }
@@ -22,6 +23,8 @@ class GhsControlPointHandler(val service: GenericHealthSensorServiceHandler) {
         Timber.i("Received Control Point Response Bytes: <${value.asHexString()}> for peripheral: $peripheral")
         if (value.size > 0) {
             when(value[0]) {
+                START_SEND_LIVE_OBSERVATIONS -> isLiveObservationsEnabled = true
+                STOP_SEND_LIVE_OBSERVATIONS -> isLiveObservationsEnabled = false
             }
         }
     }

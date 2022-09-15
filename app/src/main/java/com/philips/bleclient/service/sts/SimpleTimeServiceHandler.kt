@@ -134,13 +134,6 @@ class SimpleTimeServiceHandler : ServiceHandler(),
         }
     }
 
-    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
-        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
-            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
-            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
-        }
-    }
-
     init {
         serviceUUID = SERVICE_UUID
         supportedCharacteristics.add(SIMPLE_TIME_CHARACTERISTIC_UUID)
