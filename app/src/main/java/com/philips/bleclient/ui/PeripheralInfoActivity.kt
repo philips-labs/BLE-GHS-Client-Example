@@ -185,7 +185,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     fun writeObservationSchedule(view: View) {
         ghsServiceHandler?.let {
             peripheral?.let {
-                p -> it.writeObservationSchedule(p, ObservationType.MDC_ECG_HEART_RATE, 1f, 1f)
+                p -> it.writeObservationSchedule(p, ObservationType.MDC_PULS_OXIM_SAT_O2, 1f, 1f)
             }
         }
     }

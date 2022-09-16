@@ -177,7 +177,8 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     fun getObservationScheduleDescriptor(peripheral: BluetoothPeripheral, observationType: ObservationType): BluetoothGattDescriptor? {
-        return peripheral.getCharacteristic(serviceUUID, GHS_FEATURES_CHARACTERISTIC_UUID)?.descriptors
+        val observationScheduleDescriptors = peripheral.getCharacteristic(serviceUUID, GHS_FEATURES_CHARACTERISTIC_UUID)?.descriptors
+        return observationScheduleDescriptors
             ?.filter { it.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID }
             ?.firstOrNull()
     }
