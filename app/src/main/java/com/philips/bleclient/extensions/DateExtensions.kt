@@ -70,19 +70,6 @@ enum class TimestampFlags(override val bit: Long) : Flags {
     }
 }
 
-fun BitMask.asTimestampFlagsString(): String {
-    val ticksOrTime = if (this hasFlag TimestampFlags.isTickCounter) "Ticks" else "Time"
-    val utcOrLocal = if (this hasFlag TimestampFlags.isUTC) "UTC" else "Local"
-    val millsOrSecs = if (this hasFlag TimestampFlags.isMilliseconds) "Millis"
-                        else if (this hasFlag TimestampFlags.isHundredthsMilliseconds)  "100ths millis"
-                            else if (this.isSeconds()) "seconds"
-                                else if(this.isHundredthsMicroseconds()) "100th microsecods"
-                                    else "unknown resolution"
-    val hasTZ = if (this hasFlag TimestampFlags.isTZPresent) "TZ" else "No TZ"
-    val current = if (this hasFlag TimestampFlags.isCurrentTimeline) "Current" else "Not Current"
-    return "Value: ${value.toByte().asHexString()} : $ticksOrTime : $utcOrLocal : $millsOrSecs : $hasTZ : $current timeline"
-}
-
 fun BitMask.isMilliseconds(): Boolean {
     return (this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isHundredthsMilliseconds)
 }
@@ -97,6 +84,20 @@ fun BitMask.isSeconds(): Boolean {
 
 fun BitMask.isHundredthsMicroseconds(): Boolean {
     return !(this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isMilliseconds)
+}
+
+
+fun BitMask.asTimestampFlagsString(): String {
+    val ticksOrTime = if (this hasFlag TimestampFlags.isTickCounter) "Ticks" else "Time"
+    val utcOrLocal = if (this hasFlag TimestampFlags.isUTC) "UTC" else "Local"
+    val millsOrSecs = if (this.isMilliseconds()) "Millis"
+    else if (this.isHundredMilliseconds())  "100ths millis"
+    else if (this.isSeconds()) "seconds"
+    else if(this.isHundredthsMicroseconds()) "100th microsecods"
+    else "unknown resolution"
+    val hasTZ = if (this hasFlag TimestampFlags.isTZPresent) "TZ" else "No TZ"
+    val current = if (this hasFlag TimestampFlags.isCurrentTimeline) "Current" else "Not Current"
+    return "Value: ${value.toByte().asHexString()} : $ticksOrTime : $utcOrLocal : $millsOrSecs : $hasTZ : $current timeline"
 }
 
 const val MILLIS_IN_15_MINUTES = 900000
