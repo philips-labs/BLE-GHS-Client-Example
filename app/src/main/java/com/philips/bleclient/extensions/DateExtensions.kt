@@ -279,9 +279,10 @@ fun Date.epoch2000mills(): Long {
 
 fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.datetime.LocalDateTime {
 
-    Timber.i("asKotlinLocalDateTime value: $this epoch: ${this + UTC_TO_UNIX_EPOCH_MILLIS} offset: $offset flags: ${timestampFlags.asTimestampFlagsString()}")
 
     val timecounter = timestampFlags.convertY2KScaledToUTCEpochMillis(this)
+
+    Timber.i("asKotlinLocalDateTime value: $this epoch millis: $timecounter offset: $offset flags: ${timestampFlags.asTimestampFlagsString()}")
 
     if (timestampFlags.hasFlag(TimestampFlags.isTickCounter)) {
         // TODO What sort of "time" represents the tick counter, or null... or throw an exception
@@ -289,13 +290,16 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
     } else {
         val timeOffset = if (timestampFlags.hasFlag(TimestampFlags.isTZPresent)) offset * MILLIS_IN_15_MINUTES else 0
         val result = if (timestampFlags.hasFlag(TimestampFlags.isUTC)) {
+            // We received a UTC Time so need to add our UTC Offset
             var tz = TimeZone.UTC
             if (timeOffset != 0) {
                 val zoneOffet = ZoneOffset.ofTotalSeconds(timeOffset / 1000)
                 tz = TimeZone.currentSystemDefault()
             }
             timecounter.millisAsUTCDateTime()
-        } else { (timecounter + timeOffset).millisAsLocalDateTime() }
+        } else {
+            (timecounter + timeOffset).millisAsLocalDateTime()
+        }
         return result
     }
 }
