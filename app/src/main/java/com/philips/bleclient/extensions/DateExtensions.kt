@@ -99,26 +99,6 @@ fun BitMask.isHundredthsMicroseconds(): Boolean {
     return !(this hasFlag TimestampFlags.isMilliseconds) and !(this hasFlag TimestampFlags.isMilliseconds)
 }
 
-//enum class GhsTimestampFlags(override val bit: Long) : Flags {
-//    isTickCounter(1 shl 0),
-//    isUTC(1 shl 1),
-//    isMillisecondsPresent(1 shl 2),
-//    isHundredthsMicroseconds(1 shl 3),
-//    isTZPresent(1 shl 4),
-//    isCurrentTimeline(1 shl 5),
-//    reserved_1(1 shl 6),
-//    reserved_2(1 shl 7);
-//}
-//
-//fun BitMask.asTimestampFlagsString(): String {
-//    val ticksOrTime = if (this hasFlag GhsTimestampFlags.isTickCounter) "Ticks" else "Time"
-//    val utcOrLocal = if (this hasFlag GhsTimestampFlags.isUTC) "UTC" else "Local"
-//    val millsOrSecs = if (this hasFlag GhsTimestampFlags.isMillisecondsPresent) "Millis" else "Seconds"
-//    val hasTZ = if (this hasFlag GhsTimestampFlags.isTZPresent) "TZ" else "No TZ"
-//    val current = if (this hasFlag GhsTimestampFlags.isCurrentTimeline) "Current" else "Not Current"
-//    return "Value: ${value.toByte()} : $ticksOrTime : $utcOrLocal : $millsOrSecs : $hasTZ : $current timeline"
-//}
-
 const val MILLIS_IN_15_MINUTES = 900000
 // Magic number 946684800000 is the millisecond offset from 1970 Epoch to Y2K Epoch
 const val UTC_TO_UNIX_EPOCH_MILLIS = 946684800000L
@@ -211,19 +191,23 @@ fun ByteArray.parseSTSDate() : Date? {
         val timeSource = this[7]
         val offset = this[8] * MILLIS_IN_15_MINUTES
         val milliScale = if (writeFlags.hasFlag(TimestampFlags.isMilliseconds)) 1L else 1000L
-        val scaledTicks = writeFlags.convertToTimeResolutionScaledMillisValue(ticks)
-        Timber.i("Scaled Y2K: $scaledTicks Y2K:${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS} Y2K + Offset: ${scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset}")
-        Date(scaledTicks + UTC_TO_UNIX_EPOCH_MILLIS + offset)
+        val scaledTicks = writeFlags.convertY2KScaledToUTCEpochMillis(ticks)
+        Timber.i("UTC Epoch Millis:$scaledTicks Offset: $offset")
+        Date(scaledTicks + offset)
     }
 }
 
-
-fun BitMask.convertToTimeResolutionScaledMillisValue(value: Long): Long {
+/*
+ * Convert the value passed in from a Y2K epoch value to a Unix Epoch (1970) value in millisecods
+ * The receiver bit mask encodes the resolution of the value (seconds, millis, hundred millis,
+ * hundred microseconds as defined by the spec)
+ */
+fun BitMask.convertY2KScaledToUTCEpochMillis(value: Long): Long {
     return if (isSeconds()) value * 1000L
     else if (isMilliseconds()) value
     else if(isHundredMilliseconds()) value * 100L
     else if(isHundredthsMicroseconds()) value / 10L
-    else value
+    else value + UTC_TO_UNIX_EPOCH_MILLIS
 }
 
 // TODO: Cleanup now that flags have changed
@@ -277,19 +261,6 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
 
 }
 
-/*
- * Create a binary representation of the receiver based on the timestamp flags passed in.
- *
- * @returns bytes that are compliant with the GHS Time specification
- */
-//fun Date.asGHSBytes(timestampFlags: GhsTimestampFlags): ByteArray {
-//    return byteArrayOf(0)
-////    var hexString = this.toUINT8().toString(16).toUpperCase(Locale.ROOT)
-////    if (this.toUINT8() < 16) hexString = "0$hexString"
-////    return hexString
-//}
-
-
 fun LocalDateTime.toDate(): Date {
     return Date.from(atZone(ZoneId.systemDefault()).toInstant())
 }
@@ -309,20 +280,13 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
 
     Timber.i("asKotlinLocalDateTime value: $this epoch: ${this + UTC_TO_UNIX_EPOCH_MILLIS} offset: $offset flags: ${timestampFlags.asTimestampFlagsString()}")
 
-    val timecounter = timestampFlags.convertToTimeResolutionScaledMillisValue(this) + UTC_TO_UNIX_EPOCH_MILLIS
-//    val timecounter =
-//        (if (timestampFlags.hasFlag(TimestampFlags.isMilliseconds)) {
-//            this
-//        } else if (timestampFlags.hasFlag(TimestampFlags.isHundredthsMicroseconds)) {
-//            this / 10
-//        } else {
-//            this * 1000
-//        })  + UTC_TO_UNIX_EPOCH_MILLIS
+    val timecounter = timestampFlags.convertY2KScaledToUTCEpochMillis(this)
 
-//    if (timestampFlags.hasFlag(GhsTimestampFlags.isTickCounter)) {
-//        // TODO What sort of "time" represents the tick counter, or null... or throw an exception
-//    } else {
-        val timeOffset = if (timestampFlags.hasFlag(TimestampFlags.isTZPresent)) offset * ( 15 * 60 * 1000) else 0
+    if (timestampFlags.hasFlag(TimestampFlags.isTickCounter)) {
+        // TODO What sort of "time" represents the tick counter, or null... or throw an exception
+        throw RuntimeException("Attempt to convert a tick counter timestamp value into calendar datetime")
+    } else {
+        val timeOffset = if (timestampFlags.hasFlag(TimestampFlags.isTZPresent)) offset * MILLIS_IN_15_MINUTES else 0
         val result = if (timestampFlags.hasFlag(TimestampFlags.isUTC)) {
             var tz = TimeZone.UTC
             if (timeOffset != 0) {
@@ -332,17 +296,8 @@ fun Long.asKotlinLocalDateTime(timestampFlags: BitMask, offset: Int): kotlinx.da
             timecounter.millisAsUTCDateTime()
         } else { (timecounter + timeOffset).millisAsLocalDateTime() }
         return result
-//    }
-
+    }
 }
-//fun Long.millisAsLocalDateTime(): kotlinx.datetime.LocalDateTime {
-//    return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.currentSystemDefault())
-//}
-//
-//fun Long.millisAsUTCDateTime(): Date {
-//    return Date(this)
-//}
-
 
 fun kotlinx.datetime.LocalDateTime.asDisplayString() : String {
     return this.toJavaLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-mm-dd hh:mm:ss"))
