@@ -204,11 +204,11 @@ fun ByteArray.parseSTSDate() : Date? {
  * hundred microseconds as defined by the spec)
  */
 fun BitMask.convertY2KScaledToUTCEpochMillis(value: Long): Long {
-    return if (isSeconds()) value * 1000L
+    return (if (isSeconds()) value * 1000L
     else if (isMilliseconds()) value
     else if(isHundredMilliseconds()) value * 100L
     else if(isHundredthsMicroseconds()) value / 10L
-    else value + UTC_TO_UNIX_EPOCH_MILLIS
+    else value) + UTC_TO_UNIX_EPOCH_MILLIS
 }
 
 // TODO: Cleanup now that flags have changed
