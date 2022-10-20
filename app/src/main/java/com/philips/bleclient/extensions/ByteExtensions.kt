@@ -6,9 +6,11 @@
 
 package com.philips.bleclient
 
+import com.philips.bleclient.extensions.BitMask
 import com.welie.blessed.BluetoothBytesParser
 import java.nio.ByteOrder
 import java.util.*
+
 
 fun Byte.asHexString(): String {
     var hexString = this.toUINT8().toString(16).uppercase(Locale.ROOT)
@@ -58,6 +60,10 @@ fun List<Byte>.formatHexBytes(seperator: String?): String {
 
 fun Byte.toUINT8(): Int {
     return this.toInt() and 0xFF
+}
+
+fun Byte.asBitmask(): BitMask {
+    return BitMask(toLong())
 }
 
 /*

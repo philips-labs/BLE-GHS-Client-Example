@@ -5,9 +5,11 @@
 package com.philips.bleclient
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
+import com.welie.blessed.WriteType
 import timber.log.Timber
 import java.util.*
 
@@ -72,6 +74,22 @@ open class ServiceHandler {
     ) {
     }
 
+    open fun onDescriptorRead(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray?,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+    }
+
+    open fun onDescriptorWrite(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+    }
+
     open fun isCharacteristicSupported(characteristic: BluetoothGattCharacteristic): Boolean {
         return supportedCharacteristics.contains(characteristic.uuid)
     }
@@ -98,6 +116,25 @@ open class ServiceHandler {
             isCharacteristicSupported(it)
         }.forEach {
             enableNotify(peripheral, it)
+        }
+    }
+
+    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
+        peripheral.getCharacteristic(serviceUUID, characteristicUUID)?.let {
+            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
+            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
+        }
+    }
+
+    fun writeDescriptor(peripheral: BluetoothPeripheral, characteristicUUID: UUID, descriptorUUID: UUID, value: ByteArray) {
+        peripheral.getCharacteristic(serviceUUID, characteristicUUID)?.let {
+            val descriptor = it.getDescriptor(descriptorUUID)
+            if (descriptor != null) {
+                val result = peripheral.writeDescriptor(descriptor, value)
+                Timber.i( "Set of descriptor uuid: $descriptorUUID from characteristic: $characteristicUUID on: ${peripheral.address} <${value.asHexString()}> for peripheral: $peripheral was $result")
+            } else {
+                Timber.i( "Get of descriptor uuid: $descriptorUUID from characteristic: $characteristicUUID on: ${peripheral.address} returned null")
+            }
         }
     }
 

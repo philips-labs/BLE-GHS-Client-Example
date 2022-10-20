@@ -5,13 +5,12 @@
 package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
 import com.philips.btserver.generichealthservice.ObservationType
-import com.welie.blessed.BluetoothPeripheral
-import com.welie.blessed.GattStatus
-import com.welie.blessed.WriteType
+import com.welie.blessed.*
 import timber.log.Timber
 import java.util.*
 
@@ -177,6 +176,39 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
     }
 
+    fun getObservationScheduleDescriptor(peripheral: BluetoothPeripheral, observationType: ObservationType): BluetoothGattDescriptor? {
+        val observationScheduleDescriptors = peripheral.getCharacteristic(serviceUUID, GHS_FEATURES_CHARACTERISTIC_UUID)?.descriptors
+        return observationScheduleDescriptors
+            ?.filter { it.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID }
+            ?.firstOrNull()
+    }
+
+    fun writeObservationSchedule(peripheral: BluetoothPeripheral,
+                                 observationType: ObservationType,
+                                 measurementPeriod: Float,
+                                 updateInterval: Float) {
+        val descriptor = getObservationScheduleDescriptor(peripheral, observationType)
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(observationType.value, BluetoothBytesParser.FORMAT_UINT32)
+        parser.setFloatValue(measurementPeriod, 3)
+        parser.setFloatValue(updateInterval, 3)
+        descriptor?.let { peripheral.writeDescriptor(it, parser.value) }
+    }
+
+
+    override fun onDescriptorWrite(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+        if (descriptor.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID) {
+            Timber.i("onDescriptorWrite OBSERVATION_SCHEDULE_DESCRIPTOR_UUID value: ${value.asHexString()}")
+        } else {
+            Timber.i("onDescriptorWrite uuid: ${descriptor.uuid} value: ${value.asHexString()}")
+        }
+    }
+
     /*
      * ServiceHandlerManagerListener methods
      */
@@ -204,13 +236,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         }
     }
 
-    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
-        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
-            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
-            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
-        }
-    }
-
     fun write(characteristicUUID: UUID, value: ByteArray) {
         if (peripherals.size > 0) write(peripherals.first(), characteristicUUID, value)
     }
@@ -231,7 +256,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         // Temp assigned GATT Service UUID Allocated for GHS
         val SERVICE_UUID: UUID = UUID.fromString("00007f44-0000-1000-8000-00805f9b34fb")
 
-        // Temp assigned GATT Characteristic UUID Allocated for GHS
+        // Temp assigned GATT Characteristic UUID Allocated for GHSm
         val OBSERVATION_CHARACTERISTIC_UUID: UUID =
             UUID.fromString("00007f43-0000-1000-8000-00805f9b34fb")
 
@@ -253,6 +278,15 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
         val RACP_CHARACTERISTIC_UUID =
             UUID.fromString("00002a52-0000-1000-8000-00805f9b34fb")
+
+        val OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID =
+            UUID.fromString("00007f3f-0000-1000-8000-00805f9b34fb")
+
+        val OBSERVATION_SCHEDULE_DESCRIPTOR_UUID =
+            UUID.fromString("00007f35-0000-1000-8000-00805f9b34fb")
+
+        val VALID_RANGE_AND_ACCURACY_DESCRIPTOR_UUID =
+            UUID.fromString("00007f34-0000-1000-8000-00805f9b34fb")
 
         val instance: GenericHealthSensorServiceHandler? get() {
             return ServiceHandlerManager.instance?.serviceHandlerForUUID(SERVICE_UUID)?.let { it as GenericHealthSensorServiceHandler }

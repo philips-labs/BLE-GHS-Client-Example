@@ -14,6 +14,7 @@
     <string name="sts">STS</string>
     <string name="post_observations_to_servier">Post observations to server</string>
     <string name="use_public_hapi_fhir_server">Use hapi.fhir.org server</string>
+    <string name="connect_devices_with_bonding">Bond with devices</string>
     <string name="title_activity_fhir">FHIR server settings</string>
     <string name="title_activity_racp">RACP Details</string>
     <string name="no_temp_observation">No temperature received</string>
@@ -24,9 +25,12 @@
     <string name="disconnect_peripheral">Disconnect peripheral</string>
     <string name="enable_live_observatioins">Enable Live Obs</string>
     <string name="disable_live_observatioins">Disable Live Obs</string>
+    <string name="write_observation_schedule">Write Obs Schedule</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
-    <string name="sts_bytes">Log STS Bytes</string>
+    <string name="sts_bytes">Log ETS Bytes</string>
+    <string name="set_sts_bytes">Set ETS Bytes</string>
+    <string name="reset_tick_counter">Reset tick counter</string>
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords">Total # records</string>
     <string name="aboveRecords"># Records > ID </string>

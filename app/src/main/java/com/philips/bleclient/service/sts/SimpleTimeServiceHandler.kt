@@ -7,6 +7,7 @@ package com.philips.bleclient.service.sts
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.*
+import com.philips.bleclient.extensions.*
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -18,6 +19,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     var listeners: MutableSet<SimpleTimeServiceHandlerListener> = mutableSetOf()
     private val peripherals = mutableSetOf<BluetoothPeripheral>()
+    private val peripheralSTSFlags = mutableMapOf<BluetoothPeripheral, BitMask>()
 
     internal val simpleTimeCharacteristic = BluetoothGattCharacteristic(
         SIMPLE_TIME_CHARACTERISTIC_UUID,
@@ -34,7 +36,8 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     ) {
         Timber.i("Characteristics discovered: ${characteristics.size}")
         super.onCharacteristicsDiscovered(peripheral, characteristics)
-        enableAllNotificationsAndRead(peripheral, characteristics)
+        // enableAllNotificationsAndRead(peripheral, characteristics)
+        // enableAllNotifications(peripheral, characteristics)
     }
 
     //    @ExperimentalStdlibApi
@@ -76,10 +79,12 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
         peripherals.remove(peripheral)
+        peripheralSTSFlags.remove(peripheral)
     }
 
     private fun handleTimeBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Time Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        peripheralSTSFlags.put(peripheral, value.first().asBitmask())
         listeners.forEach { it.onReceivedStsBytes(peripheral.address, value) }
     }
 
@@ -87,14 +92,45 @@ class SimpleTimeServiceHandler : ServiceHandler(),
         peripheral.readCharacteristic(SERVICE_UUID, SIMPLE_TIME_CHARACTERISTIC_UUID)
     }
 
-    fun setServerTime(peripheral: BluetoothPeripheral, date: Date) {
-        write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, byteArrayOf())
+    fun setSTSBytes(peripheral: BluetoothPeripheral) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            if (it.hasFlag(TimestampFlags.isTickCounter)) {
+                resetTickCounter(peripheral)
+            } else {
+                setServerTime(peripheral, it)
+            }
+        } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
     }
 
-    fun write(peripheral: BluetoothPeripheral, characteristicUUID: UUID, value: ByteArray) {
-        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
-            val result = peripheral.writeCharacteristic(it, value, WriteType.WITH_RESPONSE)
-            Timber.i( "Write of bytes: <${value.asHexString()}> for peripheral: $peripheral was $result")
+
+//    // For now set the time based on the time flags we have, vs. what we got from the peripheral
+//    fun setSTSBytes(peripheral: BluetoothPeripheral) {
+//        if (TimestampFlags.currentFlags.hasFlag(TimestampFlags.isTickCounter)) {
+//            resetTickCounter(peripheral)
+//        } else {
+//            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes())
+//        }
+//    }
+
+    fun resetTickCounter(peripheral: BluetoothPeripheral) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            if (it.hasFlag(TimestampFlags.isTickCounter)) {
+                resetSTSTicks(peripheral)
+            } else {
+                Timber.i("Not a tick counter, cannot reset")
+            }
+        } ?: Timber.i("No peripheralSTSFlags for peripheral ${peripheral.address}")
+    }
+
+    fun setServerTime(peripheral: BluetoothPeripheral, flags: BitMask) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, Date().asGHSBytes(it))
+        }
+    }
+
+    fun resetSTSTicks(peripheral: BluetoothPeripheral) {
+        peripheralSTSFlags.get(peripheral)?.let {
+            write(peripheral, SIMPLE_TIME_CHARACTERISTIC_UUID, 0L.asGHSTicks(it))
         }
     }
 

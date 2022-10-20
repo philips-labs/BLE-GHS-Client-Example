@@ -8,6 +8,7 @@ import android.Manifest
 import android.R.layout.simple_list_item_1
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.*
 import android.content.pm.PackageManager
@@ -29,6 +30,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
@@ -52,6 +54,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private val executor = Executors.newSingleThreadExecutor()
     private val handler = Handler(Looper.getMainLooper())
+
+    private var bondPeripherals = false
 
     private val enableBluetoothRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
@@ -88,6 +92,12 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             locationServiceStateReceiver,
             IntentFilter(LocationManager.MODE_CHANGED_ACTION)
         )
+
+        registerReceiver(
+            bluetoothBondingReceiver,
+            IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        )
+
     }
 
     private fun setupFoundPeripheralsList() {
@@ -103,7 +113,10 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             it.setOnItemClickListener { adapterView, view, position, l ->
                 val peripheral = foundPeripheralArrayAdapter!!.getItem(position)
                 peripheral?.let {
-                    ServiceHandlerManager.getInstance(applicationContext).connect(it)
+                    if (bondPeripherals)
+                        ServiceHandlerManager.getInstance(applicationContext).bond(it)
+                    else
+                        ServiceHandlerManager.getInstance(applicationContext).connect(it)
                     // Stop scanning on connect as assume we're going to use the just connected peripheral
                     setScanning(false)
                     Toast.makeText(
@@ -175,6 +188,22 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 val isEnabled = areLocationServicesEnabled()
                 Timber.i("Location service state changed to: %s", if (isEnabled) "on" else "off")
                 checkPermissions()
+            }
+        }
+    }
+
+    private val bluetoothBondingReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.action)){
+                val extra: Parcelable? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                extra?.let {
+                    val mDevice = it as BluetoothDevice
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        if (mDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+                            Timber.i("Device bonded")
+                        }
+                    }
+                }
             }
         }
     }
@@ -427,11 +456,13 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
                 (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
             }
             ObservationType.UNKNOWN -> {
-                ObservationLog.log("Unknown Observeration: $observation")
+                ObservationLog.log("Received Unknown Observeration: $observation")
+            }
+            ObservationType.MDC_DRUG_NAME_LABEL -> {
+                ObservationLog.log("Received String Observeration: $observation")
             }
             else -> {
-                val samples = (observation.value as SampleArrayObservationValue).samples
-                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
+                ObservationLog.log("Received Observeration: $observation")
             }
         }
     }
@@ -452,6 +483,10 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     @Suppress("UNUSED_PARAMETER")
     fun toggleScanning(view: View) {
         serviceHandlerManager?.let { setScanning(!it.isScanning()) }
+    }
+
+    fun toggleBonding(view: View) {
+        bondPeripherals = (view as Switch).isChecked
     }
 
     @Suppress("UNUSED_PARAMETER")

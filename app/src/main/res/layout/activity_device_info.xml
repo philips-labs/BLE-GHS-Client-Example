@@ -35,6 +35,33 @@
             android:textAllCaps="false"
             android:onClick="getStsBytes" />
 
+        <Spinner
+            android:id="@+id/stsDateType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/stsTimeSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnSetStsBytes"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/set_sts_bytes"
+            android:textAllCaps="false"
+            android:onClick="setStsClockBytes" />
+
         <Button
             android:id="@+id/enableLiveObservations"
             android:layout_width="match_parent"
@@ -64,6 +91,21 @@
             android:layout_marginBottom="16dp"
             android:textAllCaps="false"
             android:onClick="disableLiveObservations" />
+
+        <Button
+            android:id="@+id/writeObservationSchedule"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="@string/write_observation_schedule"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:textAllCaps="false"
+            android:onClick="writeObservationSchedule" />
 
     </LinearLayout>
 

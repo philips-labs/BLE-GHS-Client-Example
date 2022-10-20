@@ -131,15 +131,15 @@ enum class ObservationHeaderFlags(override val bit: Long) : Flags {
     hasTLVPresent(1 shl 9);
 }
 
-enum class TimestampFlags(override val bit: Long) : Flags {
-    isTickCounter(1 shl 0),
-    isUTC(1 shl 1),
-    isMilliseconds(1 shl 2),
-    isHundredsMicroseconds(1 shl 3),
-    isTimezoneValid(1 shl 4),
-    isDSTValid(1 shl 5),
-    isCurrentTimeline(1 shl 6),
-}
+//enum class TimestampFlags(override val bit: Long) : Flags {
+//    isTickCounter(1 shl 0),
+//    isUTC(1 shl 1),
+//    isMilliseconds(1 shl 2),
+//    isHundredsMicroseconds(1 shl 3),
+//    isTimezoneValid(1 shl 4),
+//    isDSTValid(1 shl 5),
+//    isCurrentTimeline(1 shl 6),
+//}
 
 enum class MeasurementStatusFlags(override val bit: Long) : Flags {
     invalid(1 shl 0),

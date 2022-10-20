@@ -30,7 +30,7 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
 
     private fun getSupportedTypes(parser: BluetoothBytesParser): List<ObservationType>? {
         val numberOfObsTypes = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-        return if (parser.bytesLength() > (numberOfObsTypes * 4) + 2) {
+        return if (parser.bytesLength() < (numberOfObsTypes * 4) + 2) {
             Timber.i( "Error in features characteristic bytes size: ${parser.bytesLength()} expected: ${(numberOfObsTypes * 4) + 2}")
             null
         } else {

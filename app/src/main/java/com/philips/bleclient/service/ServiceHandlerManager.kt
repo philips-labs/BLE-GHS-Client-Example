@@ -6,6 +6,7 @@ package com.philips.bleclient
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
@@ -13,7 +14,6 @@ import android.os.Looper
 import com.welie.blessed.*
 import timber.log.Timber
 import java.util.*
-import kotlin.collections.HashMap
 
 interface ServiceHandlerManagerListener {
     fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral)
@@ -79,6 +79,33 @@ class ServiceHandlerManager private constructor(context: Context) {
                     status
                 )
             }
+
+            override fun onDescriptorRead(
+                peripheral: BluetoothPeripheral,
+                value: ByteArray,
+                descriptor: BluetoothGattDescriptor,
+                status: GattStatus
+            ) {
+                serviceHandlers[descriptor.characteristic.service.uuid]?.onDescriptorRead(
+                    peripheral,
+                    value,
+                    descriptor,
+                    status)
+            }
+
+            override fun onDescriptorWrite(
+                peripheral: BluetoothPeripheral,
+                value: ByteArray,
+                descriptor: BluetoothGattDescriptor,
+                status: GattStatus
+            ) {
+                serviceHandlers[descriptor.characteristic.service.uuid]?.onDescriptorWrite(
+                    peripheral,
+                    value,
+                    descriptor,
+                    status)
+            }
+
         }
 
     private val bluetoothCentralManagerCallback: BluetoothCentralManagerCallback =
@@ -125,6 +152,18 @@ class ServiceHandlerManager private constructor(context: Context) {
 
     fun connect(peripheral: BluetoothPeripheral) {
         central.connectPeripheral(peripheral, peripheralCallback)
+    }
+
+    fun bond(peripheral: BluetoothPeripheral) {
+        central.createBond(peripheral, peripheralCallback)
+    }
+
+    fun unbond(peripheral: BluetoothPeripheral) {
+        if(!(peripheral.bondState == BondState.NONE)) unbond(peripheral.address)
+    }
+
+    fun unbond(peripheralAddress: String) {
+        central.removeBond(peripheralAddress)
     }
 
     fun addListener(listener: ServiceHandlerManagerListener) {
