@@ -26,18 +26,6 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
 
-//    internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
-//        GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
-//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
-//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-//    )
-//
-//    internal val racpCharacteristic = BluetoothGattCharacteristic(
-//        RACP_CHARACTERISTIC_UUID,
-//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
-//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-//    )
-
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
 
