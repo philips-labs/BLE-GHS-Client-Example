@@ -8,6 +8,7 @@ package com.philips.bleclient
 
 import com.philips.bleclient.extensions.BitMask
 import com.welie.blessed.BluetoothBytesParser
+import com.welie.blessed.BluetoothBytesParser.bytes2String
 import java.nio.ByteOrder
 import java.util.*
 
@@ -36,17 +37,16 @@ fun ByteArray.asFormattedHexString(): String {
     // return asHexString().replace("..".toRegex(), "$0 ")
 }
 
+fun ByteArray.asMACAddressString(): String {
+    return this.formatHexBytes(":")
+}
+
 fun ByteArray.asAsciiString(): String {
     var resultString = ""
     forEach {
         resultString += it.toInt().toChar()
     }
     return resultString
-}
-
-fun ByteArray.getUInt16At(offset: Int, littleEndian: Boolean = true): Int {
-    check((offset > 0) && (offset < this.size - 1)) { "offset is out of array bounds" }
-    return (this[offset].toUByte().toInt() + (this[offset + 1].toUByte().toInt() shl 8))
 }
 
 fun List<Byte>.formatHexBytes(seperator: String?): String {
@@ -56,6 +56,11 @@ fun List<Byte>.formatHexBytes(seperator: String?): String {
         if (seperator != null && index < (this.size - 1)) resultString += seperator
     }
     return resultString
+}
+
+fun ByteArray.getUInt16At(offset: Int, littleEndian: Boolean = true): Int {
+    check((offset > 0) && (offset < this.size - 1)) { "offset is out of array bounds" }
+    return (this[offset].toUByte().toInt() + (this[offset + 1].toUByte().toInt() shl 8))
 }
 
 fun Byte.toUINT8(): Int {
@@ -70,9 +75,7 @@ fun Byte.asBitmask(): BitMask {
  * Merge the ByteArrays in the receiver into the returned ByteArray
  * This could be done with a fold function, but the concat of each cause a lot of allocs
  * So instead the method creates a large result ByteArray and copies each into it.
- * The "optimized" Kotlin implementation is kept commented out for comparison and
- * used fold instead of reduce so that empty list doesn't cause an exception
  */
 fun List<ByteArray>.merge(): ByteArray {
-    return this.fold(byteArrayOf(), { result, bytes -> result + bytes })
+    return this.fold(byteArrayOf()) { result, bytes -> result + bytes }
 }

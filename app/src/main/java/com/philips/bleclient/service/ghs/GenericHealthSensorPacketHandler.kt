@@ -29,7 +29,7 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun isDeviceReceiveComplete(bytes: ByteArray): Boolean {
         // Need to have class byte and 2 length bytes at a minimum to get those values
         if (bytes.size < 3) return false
-        val expectedLength = bytes.expectedPacketLengthForBytes() + 3 // add 2 for length bytes themselves and 1 for the class
+        val expectedLength = bytes.expectedObservationLengthForBytes()
         val complete = bytes.size == expectedLength
         if (!complete) {
             Timber.e("ERROR: Data length not expected length ${bytes.size} expected: $expectedLength")
@@ -73,7 +73,7 @@ fun ByteArray.concatBLESegment(byteArray: ByteArray): ByteArray {
     return listOf(this, byteArray.withoutSegmentHeader()).merge()
 }
 
-fun ByteArray.expectedPacketLengthForBytes(): Int {
+fun ByteArray.expectedObservationLengthForBytes(): Int {
     // Adding 2 to include the header bytes that are included in the array
     return ((this[1] and 0xFF).toUInt() + ((this[2] and 0xFF).toUInt() shl 8)).toInt()
 }

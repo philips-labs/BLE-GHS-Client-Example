@@ -39,7 +39,8 @@ open class Observation {
         value: Float,
         valuePrecision: Int,
         unitCode: UnitCode,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) {
         this.handle = id
         this.type = type
@@ -48,6 +49,7 @@ open class Observation {
         this.value = obsVal
         this.unitCode = unitCode
         this.timestamp = timestamp
+        this.patientId = patientId
     }
 
     constructor(
@@ -55,18 +57,20 @@ open class Observation {
         type: ObservationType,
         value: String,
         unitCode: UnitCode,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, StringObservationValue(value), unitCode, timestamp)
+            this(id, type, StringObservationValue(value), unitCode, timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         value: Int,
         unitCode: UnitCode,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, DiscreteObservationValue(value), unitCode, timestamp)
+            this(id, type, DiscreteObservationValue(value), unitCode, timestamp, patientId)
 
 
     constructor(
@@ -74,46 +78,52 @@ open class Observation {
         type: ObservationType,
         value: ByteArray,
         unitCode: UnitCode,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp)
+            this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         observations: List<Observation>,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp)
+            this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         compoundValue: CompoundNumericValue,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, compoundValue, UnitCode.UNKNOWN_CODE, timestamp)
+            this(id, type, compoundValue, UnitCode.UNKNOWN_CODE, timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         sampleArrayValue: SampleArrayObservationValue,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) :
-            this(id, type, sampleArrayValue, UnitCode.UNKNOWN_CODE, timestamp)
+            this(id, type, sampleArrayValue, UnitCode.UNKNOWN_CODE, timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         value: ObservationValue,
         unitCode: UnitCode,
-        timestamp: LocalDateTime?
+        timestamp: LocalDateTime?,
+        patientId: Int?
     ) {
         this.handle = id
         this.type = type
         this.value = value
         this.unitCode = unitCode
         this.timestamp = timestamp
+        this.patientId = patientId
     }
 
     constructor(bytesParser: BluetoothBytesParser) {
@@ -206,11 +216,10 @@ open class Observation {
         // if (length != ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH) return
         val timeFlags = bytesParser.getGHSDateTimeFlags()
         if (timeFlags hasFlag TimestampFlags.isTickCounter) {
-            timeCounter = bytesParser.getLongValue(ByteOrder.LITTLE_ENDIAN)
+            timeCounter = bytesParser.getGHSTimeCounter()
         } else {
             timestamp = bytesParser.getGHSDateTime(timeFlags)
         }
-//        timestamp = bytesParser.getAcomDateTime(length)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -238,7 +247,7 @@ open class Observation {
         private fun bundledObservationFrom(
             flags: BitMask,
             parser: BluetoothBytesParser
-        ): Observation? {
+        ): Observation {
             val attributesMap = mutableMapOf<String, Any>()
             val observationType = getObservationTypeIfPresent(flags, parser)
             val timestamp =
@@ -246,7 +255,8 @@ open class Observation {
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
             val objectId =
                 getObjectIdIfPresent(flags, parser)?.let { attributesMap.put("objectId", it); it }
-            getPatientIdIfPresent(flags, parser)?.let { attributesMap.put("patientId", it) }
+            val patientId = getPatientIdIfPresent(flags, parser)
+            patientId?.let { attributesMap.put("patientId", it) }
             getSupplementalInfoIfPresent(flags, parser)?.let {
                 attributesMap.put(
                     "supplementalInfo",
@@ -261,7 +271,7 @@ open class Observation {
 
             val bundledObservations = getBundledObservations(parser)
             disaggragateBundledObservationValues(bundledObservations, attributesMap)
-            return Observation(objectId ?: 0, observationType, bundledObservations, timestamp)
+            return Observation(objectId ?: 0, observationType, bundledObservations, timestamp, patientId)
         }
 
         private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
@@ -302,7 +312,7 @@ open class Observation {
             getTLVsIfPresent(flags, parser)
 
             val values = getCompoundNumericValues(parser)
-            return Observation(objectId ?: 0, observationType, values, timestamp)
+            return Observation(objectId ?: 0, observationType, values, timestamp, patientId)
         }
 
         private fun getCompoundNumericValues(parser: BluetoothBytesParser): CompoundNumericValue {
@@ -337,7 +347,7 @@ open class Observation {
             getTLVsIfPresent(flags, parser)
 
             val values = getSampleArrayValue(parser)
-            return Observation(objectId ?: 0, observationType, values, timestamp)
+            return Observation(objectId ?: 0, observationType, values, timestamp, patientId)
         }
 
         // This could be merged back into the main obs creation and just do the value in the switch on obs class
@@ -359,7 +369,7 @@ open class Observation {
             getTLVsIfPresent(flags, parser)
 
             val stringVal = getStringValue(parser)
-            return Observation(objectId ?: 0, observationType, stringVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp)
+            return Observation(objectId ?: 0, observationType, stringVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp, patientId)
         }
 
         private fun getStringValue(bytesParser: BluetoothBytesParser): String {
@@ -387,7 +397,7 @@ open class Observation {
             getTLVsIfPresent(flags, parser)
 
             val discreteVal = getDiscreteValue(parser)
-            return Observation(objectId ?: 0, observationType, discreteVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp)
+            return Observation(objectId ?: 0, observationType, discreteVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp, patientId)
         }
 
         private fun getDiscreteValue(bytesParser: BluetoothBytesParser): Int {
@@ -591,7 +601,7 @@ open class Observation {
             val length = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
 
             // validate the length (if passed in) and return null if invalid
-            // if (bytesLength > 0 && (length != bytesLength - 2)) return null
+             if (length != bytesLength) return null
 
             val observationFlags =
                 BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16).toLong())
@@ -643,7 +653,8 @@ open class Observation {
                         value = observationValue,
                         valuePrecision = 2,
                         unitCode = unitCode,
-                        timestamp = timestamp
+                        timestamp = timestamp,
+                        patientId = patientId
                     )
                 }
             }

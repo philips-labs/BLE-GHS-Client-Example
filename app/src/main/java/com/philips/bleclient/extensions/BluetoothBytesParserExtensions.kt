@@ -6,7 +6,6 @@
 
 package com.philips.bleclient.extensions
 
-import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
 import com.philips.bleclient.observations.Observation
 import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
@@ -24,7 +23,7 @@ import java.nio.ByteOrder
  * @param formatType The format type used to interpret the byte(s) value
  * @return An Integer object or null in case the byte array was not valid
  */
-fun BluetoothBytesParser.peekIntValue(formatType: Int): Int? {
+fun BluetoothBytesParser.peekIntValue(formatType: Int): Int {
     return getIntValue(formatType, offset, byteOrder)
 }
 
@@ -36,8 +35,7 @@ fun BluetoothBytesParser.peekIntValue(formatType: Int): Int? {
  * @return True is the next attribute is a object type attribute
  */
 fun BluetoothBytesParser.isNextAttributeType(): Boolean {
-    val nextAttribute = peekIntValue(FORMAT_UINT32)
-    return nextAttribute?.let { MdcConstants.isTypeAttribute(nextAttribute) } ?: false
+    return peekIntValue(FORMAT_UINT32).let { MdcConstants.isTypeAttribute(it) }
 }
 
 fun BluetoothBytesParser.atEnd(): Boolean {
@@ -51,14 +49,11 @@ fun BluetoothBytesParser.atEnd(): Boolean {
  * @return the next observation from the bytes received. Return null if the next bytes are not an observation
  */
 fun BluetoothBytesParser.getObservation(): Observation? {
-    if (atEnd() || !isNextAttributeType() ) {
-        return null
-    }
-    return Observation(this)
+    return if (atEnd() || !isNextAttributeType() ) null else Observation(this)
 }
 
 /**
- * Return all the next ACOM Observations. This operation will read observations until no more can be read from the bytes.
+ * Return all the next Observations. This operation will read observations until no more can be read from the bytes.
  *
  * @return the a list observations from the bytes received (could be empty if no observations)
  */
@@ -109,30 +104,6 @@ fun BluetoothBytesParser.getMderFloatValue(index: Int): Float {
     return result
 }
 
-/*
- * Read bytes (as a Acom date time) and return the DateTime object representing the value. This will increment the offset
- * Length determines how to read the epoch second value and lengths can be:
- *
- * 4 bytes - value is a UInt32 representing seconds since Unix epoch
- * 6 bytes - value is a UInt32 representing milliseconds since Unix epoch (6 bytes is enough for the next few hundred years)
- * 8 bytes - value is a UInt32 representing milliseconds since Unix epoch
- *
- * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return 0 epoch if not parsable
- */
-fun BluetoothBytesParser.getAcomDateTime(byteLength: Int): LocalDateTime {
-
-    return when(byteLength) {
-        4 -> (getIntValue(FORMAT_UINT32)?.toLong()!! * 1000L).millisAsLocalDateTime()
-        6 -> {
-            val topVal = getIntValue(FORMAT_UINT16)?.toLong()!!
-            val bottomVal = getIntValue(FORMAT_UINT32)?.toLong()!!
-            (topVal.shl(32) + bottomVal).millisAsLocalDateTime()
-        }
-        8 -> longValue.millisAsLocalDateTime()
-        else -> 0L.millisAsLocalDateTime()
-    }
-}
-
 fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
     return BitMask(getIntValue(FORMAT_UINT8).toLong())
 }
@@ -154,23 +125,6 @@ fun BluetoothBytesParser.getGHSDateTimeFlags(): BitMask {
  *
  * @return The DateTime read from the bytes. This will cause an exception if bytes run past end. Will return null if the flags indicate a tick counter
  */
-
-//fun BluetoothBytesParser.getGHSDateFixedFormat(): LocalDateTime? {
-//
-//    val timeFlags = getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-//    // Next is 6 byte millis... need extension
-//
-//    val syncSource = getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-//    val timeOffset = getIntValue(BluetoothBytesParser.FORMAT_SINT8)
-//
-//    getGHSLongValue(epoch2000mills())
-//    return listOf(
-//            byteArrayOf(0x46),
-//            parser.value.copyOfRange(2, 8),
-//            byteArrayOf(0x06, 0x0)
-//    ).merge()
-//    return Date()
-//}
 
 fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
 
@@ -205,6 +159,7 @@ fun BluetoothBytesParser.getGHSDateTime(timeFlags: BitMask): LocalDateTime? {
  * Return the 6 byte "long" time counter used in GHS
  */
 fun BluetoothBytesParser.getGHSTimeCounter(): Long {
+    /*
     val bytes = getByteArray(6)
     var value = (0x00FF and bytes[5].toInt()).toLong()
     for (i in 5 downTo 0) {
@@ -212,6 +167,8 @@ fun BluetoothBytesParser.getGHSTimeCounter(): Long {
         value += (0x00FF and bytes[i].toInt()).toLong()
     }
     return value
+     */
+    return getLongValue(FORMAT_UINT48)
 }
 
 fun Long.millisAsLocalDateTime(): LocalDateTime {
@@ -223,12 +180,8 @@ fun Long.millisAsUTCDateTime(): LocalDateTime {
     return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC)
 }
 
-//fun Long.millisAsUTCDateTime(): Date {
-//    return Date(this)
-//}
-
 fun BluetoothBytesParser.getGHSLongValue(): Long {
-    return getLongValue(getByteOrder())
+    return getLongValue(FORMAT_UINT64)
 }
 
 /**
@@ -250,7 +203,6 @@ fun BluetoothBytesParser.getGHSLongValue(byteOrder: ByteOrder): Long {
 fun BluetoothBytesParser.getGHSLongValue(offset: Int, byteOrder: ByteOrder): Long {
     return if (byteOrder == ByteOrder.LITTLE_ENDIAN) {
         var value = getByteAsLongAt(offset + 7)
-//        var value = (0x00FF and getValue().get(offset + 7).toInt()).toLong()
         for (i in 6 downTo 0) {
             value = value shl 8
             value += getByteAsLongAt(offset + i)
