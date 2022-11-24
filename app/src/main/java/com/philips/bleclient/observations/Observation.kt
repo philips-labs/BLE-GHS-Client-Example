@@ -601,7 +601,7 @@ open class Observation {
             val length = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
 
             // validate the length (if passed in) and return null if invalid
-             if (length != bytesLength) return null
+            // if (length != bytesLength) return null
 
             val observationFlags =
                 BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16).toLong())
