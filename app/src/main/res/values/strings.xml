@@ -8,6 +8,7 @@
     <string name="stop_scanning">Stop scanning</string>
     <string name="show_log">Log</string>
     <string name="show_racp">RACP</string>
+    <string name="users">Users</string>
     <string name="clear_log">Clear observation log</string>
     <string name="parseTestObservation">Parse test observation</string>
     <string name="fhir_server">FHIR</string>
@@ -17,6 +18,8 @@
     <string name="connect_devices_with_bonding">Bond with devices</string>
     <string name="title_activity_fhir">FHIR server settings</string>
     <string name="title_activity_racp">RACP Details</string>
+    <string name="title_activity_users">Users</string>
+    <string name="no_observation">No observations received</string>
     <string name="no_temp_observation">No temperature received</string>
     <string name="no_hr_observation">No heart rate received</string>
     <string name="no_spo2_observation">No SpO2 received</string>

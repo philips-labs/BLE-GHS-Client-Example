@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 
 class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
-    private val ghsServiceHandlerManager get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
+    private val ghsServiceHandler get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
 
     private var isGetRecordsAll = false
 

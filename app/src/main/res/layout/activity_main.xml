@@ -20,7 +20,7 @@
         <Button
             android:id="@+id/scanButton"
             android:layout_width="wrap_content"
-            android:layout_height="64dp"
+            android:layout_height="48dp"
             android:text="@string/start_scanning"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
@@ -32,20 +32,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/found_devices_not_scanning"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
         <ListView
             android:id="@+id/foundPeripheralList"
             android:layout_width="match_parent"
             android:layout_weight="0.4"
             android:divider="@null"
             android:dividerHeight="0dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:layout_height="0dp"/>
+        <android.widget.Switch
+            android:id="@+id/publicHapiSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="toggleBonding"
+            android:layout_marginBottom="8dp"
+            android:text="@string/connect_devices_with_bonding"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/connected_devices"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
         <ListView
             android:id="@+id/connectedPeripheralList"
             android:layout_width="match_parent"
@@ -53,18 +60,17 @@
             android:layout_height="0dp"
             android:divider="@null"
             android:dividerHeight="0dp"
-            android:layout_marginBottom="16dp" />
-        <android.widget.Switch
-            android:id="@+id/publicHapiSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="toggleBonding"
-            android:layout_marginBottom="24dp"
-            android:text="@string/connect_devices_with_bonding"/>
+            android:layout_marginBottom="8dp" />
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@color/white"
+            android:layout_marginBottom="16dp" />
+        <TextView
+            android:id="@+id/patientId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_observation"
             android:layout_marginBottom="16dp" />
         <TextView
             android:id="@+id/tempObservation"
@@ -114,7 +120,7 @@
             android:id="@+id/showLogButton"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="64dp"
+            android:layout_height="48dp"
             android:text="@string/show_log"
             android:textAllCaps="false"
             android:textSize="12sp"
@@ -127,7 +133,7 @@
             android:id="@+id/showRacpButton"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="64dp"
+            android:layout_height="48dp"
             android:text="@string/show_racp"
             android:textAllCaps="false"
             android:textSize="12sp"
@@ -137,10 +143,23 @@
             android:layout_height="0dp"
             android:layout_weight="0" />
         <Button
+            android:id="@+id/usersButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:text="@string/users"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            android:onClick="openUsers" />
+        <Space
+            android:layout_width="8dp"
+            android:layout_height="0dp"
+            android:layout_weight="0" />
+        <Button
             android:id="@+id/fhirServerButton"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="64dp"
+            android:layout_height="48dp"
             android:text="@string/fhir_server"
             android:textAllCaps="false"
             android:textSize="12sp"

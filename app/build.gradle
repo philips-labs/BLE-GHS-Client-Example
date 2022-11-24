@@ -47,6 +47,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1"
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.5.30"
     testImplementation "io.mockk:mockk:1.12.0"

@@ -424,6 +424,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     private fun updateObservationText(observation: Observation) {
+        findViewById<TextView>(R.id.patientId).text =  "Patient Id: ${observation.patientId.toString()}"
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
@@ -510,6 +511,15 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     @Suppress("UNUSED_PARAMETER")
     fun openFhirSettings(view: View) {
         startActivity(Intent(this, FhirActivity::class.java))
+        overridePendingTransition(
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
+        )
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun openUsers(view: View) {
+        startActivity(Intent(this, UsersActivity::class.java))
         overridePendingTransition(
             R.anim.slide_from_right,
             R.anim.slide_to_left
