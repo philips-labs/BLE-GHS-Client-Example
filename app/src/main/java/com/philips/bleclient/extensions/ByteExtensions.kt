@@ -7,9 +7,6 @@
 package com.philips.bleclient
 
 import com.philips.bleclient.extensions.BitMask
-import com.welie.blessed.BluetoothBytesParser
-import com.welie.blessed.BluetoothBytesParser.bytes2String
-import java.nio.ByteOrder
 import java.util.*
 
 

@@ -51,18 +51,9 @@ open class ServiceHandler {
         status: GattStatus
     ) {
         if (status == GattStatus.SUCCESS) {
-            Timber.i(
-                "SUCCESS: Writing <%s> to <%s>",
-                BluetoothBytesParser.bytes2String(value),
-                characteristic.uuid
-            )
+            Timber.i("SUCCESS: Writing <${value.asFormattedHexString()}> to <${characteristic.uuid}>")
         } else {
-            Timber.i(
-                "ERROR: Failed writing <%s> to <%s> (%s)",
-                BluetoothBytesParser.bytes2String(value),
-                characteristic.uuid,
-                status
-            )
+            Timber.i("ERROR: writing <${value.asFormattedHexString()}> to <${characteristic.uuid}> ($status)")
         }
     }
 
