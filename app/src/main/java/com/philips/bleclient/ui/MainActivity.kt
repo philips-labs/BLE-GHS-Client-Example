@@ -35,6 +35,7 @@ import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.user.UserDataServiceHandler
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
     private var stsServiceHandler: SimpleTimeServiceHandler? = null
+    private var udsServiceHandler: UserDataServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val ACCESS_LOCATION_REQUEST = 2
@@ -212,6 +214,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
         initGHSServiceHandler()
         initSTSServiceHandler()
+        initUDSServiceHandler()
         serviceHandlerManager?.let {
             it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
@@ -230,6 +233,12 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         stsServiceHandler = SimpleTimeServiceHandler()
 //        stsServiceHandler!!.addListener(this)
         serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
+    }
+
+    private fun initUDSServiceHandler() {
+        udsServiceHandler = UserDataServiceHandler()
+//        udsServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(udsServiceHandler!!)
     }
 
     private fun checkPermissions() {

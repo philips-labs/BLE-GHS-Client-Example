@@ -145,6 +145,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
      */
 
     fun receivedObservation(deviceAddress: String, observation: Observation) {
+        Timber.i("GHS Service Hander rececied Observation: $observation from: $deviceAddress")
         listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(observation)) }
     }
 
@@ -219,7 +220,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
-        peripheral.getCharacteristic(GHS_FEATURES_CHARACTERISTIC_UUID, characteristicUUID)?.let {
+        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
             val result = peripheral.readCharacteristic(it)
         }
     }
