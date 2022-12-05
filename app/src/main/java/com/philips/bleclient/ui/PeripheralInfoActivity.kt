@@ -185,8 +185,15 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     fun writeObservationSchedule(view: View) {
         ghsServiceHandler?.let {
             peripheral?.let {
-                p -> it.writeObservationSchedule(p, ObservationType.MDC_PULS_OXIM_SAT_O2, 1f, 1f)
+                p -> it.writeObservationSchedule(p, 1f, 1f)
             }
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun readObservationSchedule(view: View) {
+        ghsServiceHandler?.let {
+            peripheral?.let { p -> it.debugObservationScheduleDescriptors(p) }
         }
     }
 
