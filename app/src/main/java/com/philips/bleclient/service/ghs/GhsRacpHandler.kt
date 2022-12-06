@@ -4,6 +4,7 @@ import com.philips.bleclient.asHexString
 import com.philips.bleclient.getUInt16At
 import com.philips.bleclient.merge
 import com.philips.bleclient.ui.ObservationLog
+import com.philips.bleclient.ui.RacpLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
@@ -11,7 +12,7 @@ import timber.log.Timber
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun getNumberOfRecords() {
-        Timber.i("getNumberOfRecords...")
+        racpLog("getNumberOfRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_ALL_RECORDS)
@@ -30,7 +31,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getAllRecords() {
-        Timber.i("getAllRecords...")
+        racpLog("getAllRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_ALL_RECORDS)
@@ -66,31 +67,36 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun handleReponseCode(peripheral: BluetoothPeripheral, value: ByteArray) {
         if (value.size != 4){
-            Timber.i("Incorrect RACP response received.")
-            ObservationLog.log("Incorrect RACP response received.")
+            racpLog("Incorrect RACP response received.")
+//            ObservationLog.log("Incorrect RACP response received.")
         } else {
             when (value.last()){
                 RESPONSE_CODE_SUCCESS -> {
-                    Timber.i("RESPONSE_CODE_SUCCESS received.")
+                    racpLog("RESPONSE_CODE_SUCCESS received.")
                     service.onRacpAbortCompleted(peripheral.address)
                 }
                 RESPONSE_CODE_NO_RECORDS -> {
-                    Timber.i("RESPONSE_CODE_NO_RECORDS received.")
+                    racpLog("RESPONSE_CODE_NO_RECORDS received.")
                     handleResponseNoRecordsFound(peripheral)
                 }
                 RESPONSE_CODE_ABORT_UNSUCCESSFUL -> {
-                    Timber.i("RESPONSE_CODE_ABORT_UNSUCCESSFUL received.")
+                    racpLog("RESPONSE_CODE_ABORT_UNSUCCESSFUL received.")
                     service.onRacpAbortError(peripheral.address, value.last())
                 }
-                RESPONSE_CODE_INVALID_OPERAND -> Timber.i("RESPONSE_CODE_INVALID_OPERAND received.")
-                RESPONSE_CODE_INVALID_OPERATOR -> Timber.i("RESPONSE_CODE_INVALID_OPERATOR received.")
-                RESPONSE_CODE_OPERAND_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OPERAND_UNSUPPORTED received.")
-                RESPONSE_CODE_OPERATOR_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OPERATOR_UNSUPPORTED received.")
-                RESPONSE_CODE_OP_CODE_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OP_CODE_UNSUPPORTED received.")
-                RESPONSE_CODE_PROCEDURE_NOT_COMPLETED -> Timber.i("RESPONSE_CODE_PROCEDURE_NOT_COMPLETED received.")
+                RESPONSE_CODE_INVALID_OPERAND -> racpLog("RESPONSE_CODE_INVALID_OPERAND received.")
+                RESPONSE_CODE_INVALID_OPERATOR -> racpLog("RESPONSE_CODE_INVALID_OPERATOR received.")
+                RESPONSE_CODE_OPERAND_UNSUPPORTED -> racpLog("RESPONSE_CODE_OPERAND_UNSUPPORTED received.")
+                RESPONSE_CODE_OPERATOR_UNSUPPORTED -> racpLog("RESPONSE_CODE_OPERATOR_UNSUPPORTED received.")
+                RESPONSE_CODE_OP_CODE_UNSUPPORTED -> racpLog("RESPONSE_CODE_OP_CODE_UNSUPPORTED received.")
+                RESPONSE_CODE_PROCEDURE_NOT_COMPLETED -> racpLog("RESPONSE_CODE_PROCEDURE_NOT_COMPLETED received.")
             }
         }
 
+    }
+
+    private fun racpLog(message: String) {
+        RacpLog.log(message)
+        Timber.i(message)
     }
 
     fun handleResponseNumberStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
