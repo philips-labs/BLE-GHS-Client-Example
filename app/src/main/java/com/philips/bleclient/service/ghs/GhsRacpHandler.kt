@@ -7,11 +7,11 @@ import com.philips.bleclient.ui.ObservationLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
-import java.util.*
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun getNumberOfRecords() {
+        Timber.i("getNumberOfRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_ALL_RECORDS)
@@ -30,6 +30,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getAllRecords() {
+        Timber.i("getAllRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_ALL_RECORDS)
@@ -63,13 +64,31 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         }
     }
 
-    // Sent by RACP Abort operation procedure (see GHS 3.4.3.4)
     fun handleReponseCode(peripheral: BluetoothPeripheral, value: ByteArray) {
-        // Set a boolean indicating the abort successed of failed (a fail could occur due to a ill-formed command)
-        if (value.racpSuccessResponse()) {
-            service.onRacpAbortCompleted(peripheral.address)
+        if (value.size != 4){
+            Timber.i("Incorrect RACP response received.")
+            ObservationLog.log("Incorrect RACP response received.")
         } else {
-            service.onRacpAbortError(peripheral.address, value.last())
+            when (value.last()){
+                RESPONSE_CODE_SUCCESS -> {
+                    Timber.i("RESPONSE_CODE_SUCCESS received.")
+                    service.onRacpAbortCompleted(peripheral.address)
+                }
+                RESPONSE_CODE_NO_RECORDS -> {
+                    Timber.i("RESPONSE_CODE_NO_RECORDS received.")
+                    handleResponseNoRecordsFound(peripheral)
+                }
+                RESPONSE_CODE_ABORT_UNSUCCESSFUL -> {
+                    Timber.i("RESPONSE_CODE_ABORT_UNSUCCESSFUL received.")
+                    service.onRacpAbortError(peripheral.address, value.last())
+                }
+                RESPONSE_CODE_INVALID_OPERAND -> Timber.i("RESPONSE_CODE_INVALID_OPERAND received.")
+                RESPONSE_CODE_INVALID_OPERATOR -> Timber.i("RESPONSE_CODE_INVALID_OPERATOR received.")
+                RESPONSE_CODE_OPERAND_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OPERAND_UNSUPPORTED received.")
+                RESPONSE_CODE_OPERATOR_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OPERATOR_UNSUPPORTED received.")
+                RESPONSE_CODE_OP_CODE_UNSUPPORTED -> Timber.i("RESPONSE_CODE_OP_CODE_UNSUPPORTED received.")
+                RESPONSE_CODE_PROCEDURE_NOT_COMPLETED -> Timber.i("RESPONSE_CODE_PROCEDURE_NOT_COMPLETED received.")
+            }
         }
 
     }
@@ -81,6 +100,11 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
+        service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)
+    }
+
+    fun handleResponseNoRecordsFound(peripheral: BluetoothPeripheral) {
+        val numberOfRecords = 0
         service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)
     }
 
@@ -117,7 +141,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
          * Response Code values associated with Op Code 0x06
          */
         private const val RESPONSE_CODE_SUCCESS = 0x01.toByte()
-        private const val RESPONSE_CODE_OP_CODE_UNSUPPOERTED = 0x02.toByte()
+        private const val RESPONSE_CODE_OP_CODE_UNSUPPORTED = 0x02.toByte()
         private const val RESPONSE_CODE_INVALID_OPERATOR = 0x03.toByte()
         private const val RESPONSE_CODE_OPERATOR_UNSUPPORTED = 0x04.toByte()
         private const val RESPONSE_CODE_INVALID_OPERAND = 0x05.toByte()
