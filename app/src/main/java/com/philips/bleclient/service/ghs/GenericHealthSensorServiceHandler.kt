@@ -26,6 +26,8 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
 
+    val observationScheduleDescriptorsInfo = mutableMapOf<String, MutableMap<ObservationType, BluetoothGattDescriptor>>()
+
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
 
@@ -60,7 +62,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                 UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(peripheral, value)
                 GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
                 RACP_CHARACTERISTIC_UUID -> racpHandler.handleBytes(peripheral, value)
-                OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID -> handleObservationScheduledChanged(peripheral, value)
+                OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID -> handleObservationScheduledCharChanged(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -187,6 +189,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     fun writeObservationSchedule(peripheral: BluetoothPeripheral,
                                  measurementPeriod: Float,
                                  updateInterval: Float) {
+        Timber.i("observationScheduleDescriptorsInfo for ${peripheral.address}: ${observationScheduleDescriptorsInfo[peripheral.address]?.keys}")
+        val info =  observationScheduleDescriptorsInfo.get(peripheral.address)
+        if (info == null) {
+            getObservationScheduleDescriptors(peripheral)
+            Timber.i("refreshed observationScheduleDescriptorsInfo: ${observationScheduleDescriptorsInfo[peripheral.address]?.keys}")
+        }
         observationScheduleDescriptorsInfo.get(peripheral.address)?.forEach {
             val parser = BluetoothBytesParser()
             parser.setIntValue(it.key.value, BluetoothBytesParser.FORMAT_UINT32)
@@ -199,15 +207,19 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         }
     }
 
-    val observationScheduleDescriptorsInfo = mutableMapOf<String, MutableMap<ObservationType, BluetoothGattDescriptor>>()
 
     fun saveObservationScheduleDescriptorInfo(
         peripheral: BluetoothPeripheral,
         descriptor: BluetoothGattDescriptor,
         observationType: ObservationType
     ) {
-        val descMap = observationScheduleDescriptorsInfo.getOrPut(peripheral.address) { mutableMapOf() }
+        val descMap = observationScheduleDescriptorsInfo.getOrPut(peripheral.address) {
+            Timber.i("Creating new entry in observationScheduleDescriptorsInfo for peripheral: ${peripheral.address}")
+            mutableMapOf()
+        }
+        Timber.i("Add Observation Scheulde Changed Descriptor for type: $observationType")
         descMap.put(observationType, descriptor)
+        observationScheduleDescriptorsInfo.put(peripheral.address, descMap)
     }
 
     override fun onDescriptorRead(
@@ -243,7 +255,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     ) {
         if (descriptor.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID) {
             Timber.i("onDescriptorWrite OBSERVATION_SCHEDULE_DESCRIPTOR_UUID value: ${value.asHexString()}")
-            peripheral.readDescriptor(descriptor)
+//            peripheral.readDescriptor(descriptor)
         } else {
             Timber.i("onDescriptorWrite uuid: ${descriptor.uuid} value: ${value.asHexString()}")
         }
@@ -262,9 +274,9 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         peripherals.remove(peripheral)
     }
 
-    private fun handleObservationScheduledChanged(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i( "Observation Schedule bytes: <${value.asHexString()}> for peripheral: $peripheral")
-        readObservationScheduleChangedBytes(value, "Observation schedule changed")
+    private fun handleObservationScheduledCharChanged(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i( "Observation Schedule Char Update bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        readObservationScheduleChangedBytes(value, "Observation schedule Char changed")
     }
 
     private fun handleUniqueDeviceId(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -292,6 +304,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
             STORED_OBSERVATIONS_CHARACTERISTIC_UUID,
             GHS_FEATURES_CHARACTERISTIC_UUID,
             GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
+            OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID,
             RACP_CHARACTERISTIC_UUID))
         ServiceHandlerManager.instance?.addListener(this)
     }
