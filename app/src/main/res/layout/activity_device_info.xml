@@ -9,134 +9,145 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:weightSum="1"
-        android:orientation="vertical">
+        app:layout_constraintTop_toTopOf="parent">
+
         <TextView
             android:id="@+id/peripheralMacAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=""
-            android:layout_marginBottom="16dp" />
-        <Button
-            android:id="@+id/btnGetStsBytes"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            android:text="@string/sts_bytes"
-            android:textAllCaps="false"
-            android:onClick="getStsBytes" />
-
-        <Spinner
-            android:id="@+id/stsDateType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <Spinner
-            android:id="@+id/stsTimeSource"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp" />
+            android:text="" />
 
         <Button
-            android:id="@+id/btnSetStsBytes"
+            android:id="@+id/disconnectButton"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/set_sts_bytes"
-            android:textAllCaps="false"
-            android:onClick="setStsClockBytes" />
-
-        <Button
-            android:id="@+id/enableLiveObservations"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="@string/enable_live_observatioins"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
             android:layout_gravity="bottom"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="enableLiveObservations" />
+            android:onClick="disconnectPeripheral"
+            android:text="@string/disconnect_peripheral"
+            android:textAllCaps="false" />
 
-        <Button
-            android:id="@+id/disableLiveObservations"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="@string/disable_live_observatioins"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="disableLiveObservations" />
+            android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/writeObservationSchedule"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="@string/write_observation_schedule"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="writeObservationSchedule" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/readObservationSchedule"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="Read Obs Schedule"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="readObservationSchedule" />
+                <Button
+                    android:id="@+id/btnGetStsBytes"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="getStsBytes"
+                    android:text="@string/sts_bytes"
+                    android:textAllCaps="false" />
+
+                <Spinner
+                    android:id="@+id/stsDateType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:minHeight="48dp"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <Spinner
+                    android:id="@+id/stsTimeSource"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:minHeight="48dp"
+                    tools:ignore="SpeakableTextPresentCheck" />
+
+                <Button
+                    android:id="@+id/btnSetStsBytes"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="setStsClockBytes"
+                    android:text="@string/set_sts_bytes"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/enableLiveObservations"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="enableLiveObservations"
+                    android:text="@string/enable_live_observatioins"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent" />
+
+                <Button
+                    android:id="@+id/disableLiveObservations"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="disableLiveObservations"
+                    android:text="@string/disable_live_observatioins"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent" />
+
+                <Button
+                    android:id="@+id/writeObservationSchedule"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="writeObservationSchedule"
+                    android:text="@string/write_observation_schedule"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent" />
+
+                <Button
+                    android:id="@+id/readObservationSchedule"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:onClick="readObservationSchedule"
+                    android:text="Read Obs Schedule"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent" />
+            </LinearLayout>
+        </ScrollView>
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/disconnectButton"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:text="@string/disconnect_peripheral"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:textAllCaps="false"
-        android:onClick="disconnectPeripheral" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

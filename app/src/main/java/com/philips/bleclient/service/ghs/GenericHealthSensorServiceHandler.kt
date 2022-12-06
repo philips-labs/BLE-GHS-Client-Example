@@ -196,14 +196,19 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
             Timber.i("refreshed observationScheduleDescriptorsInfo: ${observationScheduleDescriptorsInfo[peripheral.address]?.keys}")
         }
         observationScheduleDescriptorsInfo.get(peripheral.address)?.forEach {
-            val parser = BluetoothBytesParser()
-            parser.setIntValue(it.key.value, BluetoothBytesParser.FORMAT_UINT32)
-            parser.setFloatValue(measurementPeriod, 3)
-            parser.setFloatValue(updateInterval, 3)
-            val result = peripheral.writeDescriptor(it.value, parser.value)
-            val debugString = "${if (result) "SUCCESS" else "FAILED"} write Observation Schedule type: ${it.key} period: $measurementPeriod interval: $updateInterval"
-            Timber.i(debugString)
-            ObservationLog.log(debugString)
+            if (it.key != ObservationType.UNKNOWN) {
+                val parser = BluetoothBytesParser()
+                parser.setIntValue(it.key.value, BluetoothBytesParser.FORMAT_UINT32)
+                parser.setFloatValue(measurementPeriod, 3)
+                parser.setFloatValue(updateInterval, 3)
+                val result = peripheral.writeDescriptor(it.value, parser.value)
+                val debugString =
+                    "${if (result) "SUCCESS" else "FAILED"} write Observation Schedule type: ${it.key} period: $measurementPeriod interval: $updateInterval"
+                Timber.i(debugString)
+                ObservationLog.log(debugString)
+            } else {
+                Timber.i("No observation schedule to write yet...")
+            }
         }
     }
 
@@ -237,14 +242,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     private fun readObservationScheduleChangedBytes(value: ByteArray, debugPrefix: String = ""): ObservationType {
-        val parser = BluetoothBytesParser(value)
-        val obsType = ObservationType.fromValue(parser.getUInt32())
-        val measurementPeriod = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-        val updateInterval = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-        val debugString = "$debugPrefix type: $obsType measurementPeriod: $measurementPeriod updateInterval: $updateInterval"
-        Timber.i(debugString)
-        ObservationLog.log(debugString)
-        return obsType
+        if (value.size == 12) {
+            val parser = BluetoothBytesParser(value)
+            val obsType = ObservationType.fromValue(parser.getUInt32())
+            val measurementPeriod = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            val updateInterval = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            val debugString =
+                "$debugPrefix type: $obsType measurementPeriod: $measurementPeriod updateInterval: $updateInterval"
+            Timber.i(debugString)
+            ObservationLog.log(debugString)
+            return obsType
+        } else {
+            Timber.i("Invalid schedule descriptor")
+            return ObservationType.UNKNOWN
+        }
     }
 
     override fun onDescriptorWrite(
