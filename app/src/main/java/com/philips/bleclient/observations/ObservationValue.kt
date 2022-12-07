@@ -32,7 +32,7 @@ abstract class ObservationValue {
         private fun getSimpleNumericObservationValue(bytesParser: BluetoothBytesParser): SimpleNumericObservationValue {
             // Unit code, float is true only for a simple numeric
             val unitCode = UnitCode.readFrom(bytesParser)
-            val value = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            val value = bytesParser.getFloat()
             return SimpleNumericObservationValue(value, unitCode)
         }
 
@@ -94,7 +94,9 @@ abstract class ObservationValue {
                 val observationComponent = ObservationComponent(componentType, componentValue)
                 values.add(observationComponent)
             }
-            return CompoundObservationValue(values)
+            val cov = CompoundObservationValue(values)
+            Timber.i("cov: $cov")
+            return cov
         }
 
         private fun getComponentValue(componentValueType: ObservationComponentValueType, parser: BluetoothBytesParser): ObservationValue {

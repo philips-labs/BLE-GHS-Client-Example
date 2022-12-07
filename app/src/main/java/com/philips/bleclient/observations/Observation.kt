@@ -164,7 +164,7 @@ open class Observation {
     }
 
     private fun getSimpleNumericValueAttribute(bytesParser: BluetoothBytesParser) {
-        val numValue = bytesParser.getMderFloatValue() ?: Float.NaN
+        val numValue = bytesParser.getMderFloatValue()
         value = SimpleNumericObservationValue(numValue, unitCode)
     }
 
@@ -254,7 +254,7 @@ open class Observation {
 
         private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
             val observations = mutableListOf<Observation>()
-            val numberOfObs = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+            val numberOfObs = parser.getUInt8()
             repeat(numberOfObs) {
                 getObservationFrom(parser)?.let { observation -> observations.add(observation) }
             }
