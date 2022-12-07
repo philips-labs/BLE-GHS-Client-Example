@@ -143,65 +143,6 @@ open class Observation {
         return "Observation: ${type.name} $value time: $timestamp"
     }
 
-    private fun getObservationTypeAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        if (length != ATTRIBUTE_OBSERVATION_TYPE_LENGTH) return
-        type =
-            ObservationType.fromValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
-    }
-
-
-    private fun getHandleAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        if (length != ATTRIBUTE_HANDLE_LENGTH) return
-        handle = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-    }
-
-    private fun getAttributeType(bytesParser: BluetoothBytesParser): Int? {
-        return bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
-    }
-
-    private fun getAttributeLength(bytesParser: BluetoothBytesParser): Int? {
-        return bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-    }
-
-    private fun getSimpleNumericValueAttribute(bytesParser: BluetoothBytesParser) {
-        val numValue = bytesParser.getMderFloatValue()
-        value = SimpleNumericObservationValue(numValue, unitCode)
-    }
-
-    private fun getSampleArrayValueAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        value = ObservationValue.from(ObservationClass.RealTimeSampleArray, bytesParser)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun getCompoundNumericValueAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        TODO("not implemented")
-    }
-
-    private fun getUnitCodeAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        if (length != ATTRIBUTE_UNIT_CODE_LENGTH) return
-        // In case observation value isn't before the unit code... store it in the observation
-        unitCode = UnitCode.fromValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
-        value?.unitCode = unitCode
-    }
-
-    private fun getAbsoluteTimestampAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        // if (length != ATTRIBUTE_ABSOLUTE_TIMESTAMP_LENGTH) return
-        val timeFlags = bytesParser.getGHSDateTimeFlags()
-        if (timeFlags hasFlag TimestampFlags.isTickCounter) {
-            timeCounter = bytesParser.getGHSTimeCounter()
-        } else {
-            timestamp = bytesParser.getGHSDateTime(timeFlags)
-        }
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun getSupplementalInformationAttribute(
-        bytesParser: BluetoothBytesParser,
-        length: Int
-    ) {
-        TODO("not implemented")
-    }
-
     companion object {
         const val ATTRIBUTE_HANDLE_LENGTH = 0x02
         const val ATTRIBUTE_OBSERVATION_TYPE_LENGTH = 0x04
