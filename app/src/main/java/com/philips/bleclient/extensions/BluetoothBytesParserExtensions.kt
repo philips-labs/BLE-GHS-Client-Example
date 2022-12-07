@@ -6,8 +6,6 @@
 
 package com.philips.bleclient.extensions
 
-import com.philips.bleclient.observations.Observation
-import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.*
 import kotlinx.datetime.Instant
@@ -17,54 +15,8 @@ import kotlinx.datetime.toLocalDateTime
 import timber.log.Timber
 import java.nio.ByteOrder
 
-/**
- * Return an Integer value of the specified type. This operation will NOT advance the internal offset to the next position.
- *
- * @param formatType The format type used to interpret the byte(s) value
- * @return An Integer object or null in case the byte array was not valid
- */
-fun BluetoothBytesParser.peekIntValue(formatType: Int): Int {
-    return getIntValue(formatType, offset, byteOrder)
-}
-
-/**
- * Test if the next attribute (32-bit int) is a ACOM object type attribute (used in receiving bytes
- * to indicate that the last object has completed as attributes can be in any order)
- * This will not change the offset into the bytes being parsed
- *
- * @return True is the next attribute is a object type attribute
- */
-fun BluetoothBytesParser.isNextAttributeType(): Boolean {
-    return peekIntValue(FORMAT_UINT32).let { MdcConstants.isTypeAttribute(it) }
-}
-
 fun BluetoothBytesParser.atEnd(): Boolean {
     return this.offset >= this.value.size - 1
-}
-
-/**
- * Return the next ACOM Observation. This operation will automatically advance the internal offset to the next position after the
- * observation bytes. Note it is assumed that the offset is at the start of the observation bytes.
- *
- * @return the next observation from the bytes received. Return null if the next bytes are not an observation
- */
-fun BluetoothBytesParser.getObservation(): Observation? {
-    return if (atEnd() || !isNextAttributeType() ) null else Observation(this)
-}
-
-/**
- * Return all the next Observations. This operation will read observations until no more can be read from the bytes.
- *
- * @return the a list observations from the bytes received (could be empty if no observations)
- */
-fun BluetoothBytesParser.getObservations(): List<Observation> {
-    val observations = mutableListOf<Observation>()
-    var obs: Observation? = getObservation()
-    while( obs != null) {
-        observations.add(obs)
-        obs = getObservation()
-    }
-    return observations
 }
 
 /**
@@ -72,7 +24,7 @@ fun BluetoothBytesParser.getObservations(): List<Observation> {
  *
  * @return The float value at the position of the internal offset
  */
-fun BluetoothBytesParser.getMderFloatValue(): Float? {
+fun BluetoothBytesParser.getMderFloatValue(): Float {
     return getMderFloatValue(offset)
 }
 

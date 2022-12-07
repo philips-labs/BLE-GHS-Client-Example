@@ -4,13 +4,11 @@
  */
 package com.philips.bleclient.observations
 
-import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.util.ObservationClass
 import com.philips.bleclient.util.ObservationHeaderFlags
 import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
-import com.philips.mjolnir.services.handlers.generichealthsensor.acom.MdcConstants
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 import timber.log.Timber
@@ -141,49 +139,8 @@ open class Observation {
         this.patientId = patientId
     }
 
-    constructor(bytesParser: BluetoothBytesParser) {
-        var firstTime = true
-        while (!bytesParser.atEnd() && (firstTime || !bytesParser.isNextAttributeType())) {
-            firstTime = false
-            getNextAttribute(bytesParser)
-        }
-    }
-
     override fun toString(): String {
         return "Observation: ${type.name} $value time: $timestamp"
-    }
-
-    private fun getNextAttribute(bytesParser: BluetoothBytesParser) {
-        val attributeType = getAttributeType(bytesParser) ?: return
-        val length = getAttributeLength(bytesParser) ?: return
-        when (attributeType) {
-            MdcConstants.MDC_ATTR_ID_TYPE -> getObservationTypeAttribute(bytesParser, length)
-            MdcConstants.MDC_ATTR_ID_HANDLE -> getHandleAttribute(bytesParser, length)
-            MdcConstants.MDC_ATTR_NU_VAL_OBS_SIMP -> getSimpleNumericValueAttribute(bytesParser)
-            MdcConstants.MDC_ATTR_NU_VAL_OBS -> getSimpleNumericValueAttribute(bytesParser)
-            MdcConstants.MDC_ATTR_NU_CMPD_VAL_OBS -> getCompoundNumericValueAttribute(
-                bytesParser,
-                length
-            )
-            MdcConstants.MDC_ATTR_SA_VAL_OBS -> getSampleArrayValueAttribute(bytesParser, length)
-            MdcConstants.MDC_ATTR_TIME_STAMP_ABS -> getAbsoluteTimestampAttribute(
-                bytesParser,
-                length
-            )
-            MdcConstants.MDC_ATTR_UNIT_CODE -> getUnitCodeAttribute(bytesParser, length)
-            // MDC_ATTR_PERSON_ID is not defined in the latest 10101R document, but specified as the ACOM Observation attribute type
-//            MdcConstants.MDC_ATTR_PERSON_ID -> getPateintIdAttribute(bytesParser, length)
-            // MDC_ATTR_TIME_PD_MSMT_ACTIVE_ACOM is not defined in the latest 10101R document, but specified as the Observation
-            // measurement duration attribute type
-//            MdcConstants.MDC_ATTR_TIME_PD_MSMT_ACTIVE_ACOM -> getMeasurementDurationAttribute(bytesParser, length)
-            // TODO: 11/26/20  MDC_ATTR_SUPPLEMENTAL_INFO is not defined in the latest 10101R document, however MDC_ATTR_SUPPLEMENTAL_TYPES is
-            // Using that as a placeholder until defined or perhaps info recast to types
-            MdcConstants.MDC_ATTR_SUPPLEMENTAL_TYPES -> getSupplementalInformationAttribute(
-                bytesParser,
-                length
-            )
-            else -> return
-        }
     }
 
     private fun getObservationTypeAttribute(bytesParser: BluetoothBytesParser, length: Int) {
@@ -212,7 +169,7 @@ open class Observation {
     }
 
     private fun getSampleArrayValueAttribute(bytesParser: BluetoothBytesParser, length: Int) {
-        value = getSampleArrayValue(bytesParser)
+        value = ObservationValue.from(ObservationClass.RealTimeSampleArray, bytesParser)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -315,57 +272,6 @@ open class Observation {
             }
         }
 
-        private fun getCompoundObservationValue(parser: BluetoothBytesParser): CompoundObservationValue {
-            val values = mutableListOf<ObservationComponent>()
-            val numValues = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-            repeat(numValues) {
-                val componentType =
-                    getObservationType(parser) // 4-byte MDC code from IEEE 11073-10101
-                val valueType = parser.getUInt8()
-                val valueLength = getBluetoothValueLength(valueType)
-                val valueBytes = parser.getByteArray(valueLength)
-                // TODO This assumes numeric compound values
-                val obsValue = SimpleNumericObservationValue(
-                    getBluetoothValue(
-                        valueType,
-                        valueBytes
-                    ).toFloat(), UnitCode.UNKNOWN_CODE
-                )
-                val value = ObservationComponent(componentType, obsValue)
-                values.add(value)
-            }
-            return CompoundObservationValue(values)
-        }
-
-        private fun getStringValue(bytesParser: BluetoothBytesParser): StringObservationValue {
-            val length = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
-            val bytes = bytesParser.getByteArray(length)
-            val str = String(bytes)
-            Timber.i("getStringValue of len: $length from bytes: ${bytes.asFormattedHexString()} value: $str")
-            return StringObservationValue(str)
-        }
-
-        private fun getCompoundDiscreteValue(bytesParser: BluetoothBytesParser): CompoundDiscreetObservationValue {
-            val numValues = bytesParser.getUInt8()
-            val list = mutableListOf<Int>()
-            repeat(numValues) {
-                list.add(bytesParser.getUInt32())
-            }
-            return CompoundDiscreetObservationValue(list)
-        }
-
-        private fun getDiscreteValue(bytesParser: BluetoothBytesParser): DiscreteObservationValue {
-            return DiscreteObservationValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
-        }
-
-        private fun getCompoundStateValue(bytesParser: BluetoothBytesParser): CompoundStateObservationValue {
-            val size = bytesParser.getUInt8()
-            val supportedMaskBits = bytesParser.getByteArray(size)
-            val stateOrEventMaskBits = bytesParser.getByteArray(size)
-            val bits = bytesParser.getByteArray(size)
-            return CompoundStateObservationValue(supportedMaskBits, stateOrEventMaskBits, bits)
-        }
-
         private fun buildObservationFrom(
             observationClass: ObservationClass,
             flags: BitMask,
@@ -384,7 +290,7 @@ open class Observation {
             getHasMemberIfPresent(flags, parser)
             getTLVsIfPresent(flags, parser)
 
-            val observationValue = getObservationValue(observationClass, parser)
+            val observationValue = ObservationValue.from(observationClass, parser)
             return Observation(
                 objectId ?: 0,
                 observationType,
@@ -392,89 +298,6 @@ open class Observation {
                 unitCode = UnitCode.UNKNOWN_CODE,
                 timestamp,
                 patientId
-            )
-        }
-
-        private fun getObservationValue(
-            observationClass: ObservationClass,
-            bytesParser: BluetoothBytesParser
-        ): ObservationValue {
-            return when (observationClass) {
-                ObservationClass.TLVEncoded -> getTLVObservationValue(bytesParser)
-                ObservationClass.CompoundDiscreteEvent -> getCompoundDiscreteValue(bytesParser)
-                ObservationClass.String -> getStringValue(bytesParser)
-                ObservationClass.CompoundState -> getCompoundStateValue(bytesParser)
-                ObservationClass.RealTimeSampleArray -> getSampleArrayValue(bytesParser)
-                ObservationClass.CompoundObservation -> getCompoundObservationValue(bytesParser)
-                ObservationClass.SimpleDiscreet -> getDiscreteValue(bytesParser)
-                ObservationClass.SimpleNumeric -> getSimpleNumericObservationValue(bytesParser)
-                else -> NumericObservationValue()
-            }
-        }
-
-        private fun getSimpleNumericObservationValue(bytesParser: BluetoothBytesParser): SimpleNumericObservationValue {
-            // Unit code, float is true only for a simple numeric
-            val unitCode = UnitCode.readFrom(bytesParser)
-            val value = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-            return SimpleNumericObservationValue(value, unitCode)
-        }
-
-        private fun getTLVObservationValue(bytesParser: BluetoothBytesParser): TLVObservationValue {
-            val numValues = bytesParser.getUInt8()
-            val list = mutableListOf<Pair<Int, Long>>()
-            repeat(numValues) {
-                val type = bytesParser.getUInt32()
-                val length = bytesParser.getUInt16()
-                val formatType = bytesParser.getUInt8()
-                val bytes = bytesParser.getByteArray(length)
-                val value = getBluetoothValue(formatType, bytes)
-                list.add(Pair(type, value))
-            }
-            return TLVObservationValue(list)
-        }
-
-        private fun getBluetoothValueLength(formatType: Int): Int {
-            return when (formatType) {
-                4 -> 1
-                6 -> 2
-                8 -> 4
-                9 -> 6
-                10 -> 8
-                else -> 0
-            }
-        }
-
-        private fun getBluetoothValue(formatType: Int, bytes: ByteArray): Long {
-            val parser = BluetoothBytesParser(bytes)
-            return when (formatType) {
-                4 -> parser.getUInt8().toLong()
-                6 -> parser.getUInt16().toLong()
-                8 -> parser.getUInt32().toLong()
-                9 -> parser.getUInt48()
-                10 -> parser.getUInt64()
-                else -> -1.toLong()
-            }
-        }
-
-        private fun getSampleArrayValue(bytesParser: BluetoothBytesParser): SampleArrayObservationValue {
-            val unitCode = UnitCode.readFrom(bytesParser)
-            val scaleFactor = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-            val offset = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-            val samplePeriod = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-            val samplesPerPeriod = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-            val bytesPerSample = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
-            val numberOfSamples = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
-
-            val byteArray = bytesParser.getByteArray(bytesPerSample * numberOfSamples)
-            return SampleArrayObservationValue(
-                byteArray,
-                scaleFactor,
-                offset,
-                samplePeriod,
-                samplesPerPeriod,
-                bytesPerSample,
-                numberOfSamples,
-                unitCode
             )
         }
 

@@ -6,6 +6,7 @@ package com.philips.bleclient.util
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.philips.bleclient.extensions.BitMask
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.observations.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
 import com.philips.bleclient.observations.Observation.Companion.MDC_SYSTEM_URN_STRING
@@ -13,6 +14,7 @@ import com.philips.bleclient.observations.ObservationValue
 import com.philips.bleclient.observations.SampleArrayObservationValue
 import com.philips.bleclient.observations.SimpleNumericObservationValue
 import com.philips.bleclient.extensions.Flags
+import com.philips.bleclient.extensions.hasFlag
 import com.philips.bleclient.toUINT8
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -129,6 +131,12 @@ enum class ObservationHeaderFlags(override val bit: Long) : Flags {
     isDerivedFromPresent(1 shl 7),
     hasMember(1 shl 8),
     hasTLVPresent(1 shl 9);
+}
+
+
+class ObservationFlagBitMask(value: Long) : BitMask(value) {
+
+    val isObservationTypePresent get() = hasFlag(ObservationHeaderFlags.isObservationTypePresent)
 }
 
 //enum class TimestampFlags(override val bit: Long) : Flags {

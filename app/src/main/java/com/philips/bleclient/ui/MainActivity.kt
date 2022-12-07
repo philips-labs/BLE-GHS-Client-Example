@@ -441,19 +441,19 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(com.philips.bleclient.R.id.hrObservation).text =
+                findViewById<TextView>(R.id.hrObservation).text =
                     "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
                 val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
+                findViewById<TextView>(R.id.spo2Observation).text =
                     "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PRESS_BLD_NONINV -> {
                 var valString = ""
                 var seperator = ""
                 (observation.value as CompoundObservationValue).values.forEach {
-                    valString = "$valString $seperator ${it.value.toInt()}"
+                    valString = "$valString $seperator ${it.value}"
                     seperator = "/"
                 }
                 findViewById<TextView>(com.philips.bleclient.R.id.bpObservation).text =
