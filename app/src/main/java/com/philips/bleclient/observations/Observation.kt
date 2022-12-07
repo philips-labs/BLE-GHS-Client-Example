@@ -4,6 +4,7 @@
  */
 package com.philips.bleclient.observations
 
+import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.util.ObservationClass
 import com.philips.bleclient.util.ObservationHeaderFlags
@@ -81,7 +82,14 @@ open class Observation {
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
-            this(id, type, SampleArrayObservationValue(value, unitCode), unitCode, timestamp, patientId)
+            this(
+                id,
+                type,
+                SampleArrayObservationValue(value, unitCode),
+                unitCode,
+                timestamp,
+                patientId
+            )
 
     constructor(
         id: Int,
@@ -90,12 +98,19 @@ open class Observation {
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
-            this(id, type, BundledObservationValue(observations), UnitCode.UNKNOWN_CODE, timestamp, patientId)
+            this(
+                id,
+                type,
+                BundledObservationValue(observations),
+                UnitCode.UNKNOWN_CODE,
+                timestamp,
+                patientId
+            )
 
     constructor(
         id: Int,
         type: ObservationType,
-        compoundValue: CompoundNumericValue,
+        compoundValue: CompoundObservationValue,
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
@@ -271,7 +286,13 @@ open class Observation {
 
             val bundledObservations = getBundledObservations(parser)
             disaggragateBundledObservationValues(bundledObservations, attributesMap)
-            return Observation(objectId ?: 0, observationType, bundledObservations, timestamp, patientId)
+            return Observation(
+                objectId ?: 0,
+                observationType,
+                bundledObservations,
+                timestamp,
+                patientId
+            )
         }
 
         private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
@@ -294,92 +315,59 @@ open class Observation {
             }
         }
 
-        private fun compoundNumericObservationFrom(
-            flags: BitMask,
-            parser: BluetoothBytesParser
-        ): Observation? {
-            // TODO DRY This with bundle observations
-            val observationType = getObservationTypeIfPresent(flags, parser)
-            val timestamp = getTimestampIfPresent(flags, parser)
-            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
-            val objectId = getObjectIdIfPresent(flags, parser)
-            val patientId = getPatientIdIfPresent(flags, parser)
-            val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
-            // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
-            // so for now just check if present and throw and exception if set
-            getDerivedFromIfPresent(flags, parser)
-            getHasMemberIfPresent(flags, parser)
-            getTLVsIfPresent(flags, parser)
-
-            val values = getCompoundNumericValues(parser)
-            return Observation(objectId ?: 0, observationType, values, timestamp, patientId)
-        }
-
-        private fun getCompoundNumericValues(parser: BluetoothBytesParser): CompoundNumericValue {
-            val values = mutableListOf<SimpleNumericObservationValue>()
+        private fun getCompoundObservationValue(parser: BluetoothBytesParser): CompoundObservationValue {
+            val values = mutableListOf<ObservationComponent>()
             val numValues = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
             repeat(numValues) {
-                val type = getObservationType(parser)
-                val unitCode = UnitCode.readFrom(parser)
-                val value = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-                // TODO Add type to SimpleNumericObservationValue
-                values.add(SimpleNumericObservationValue(value, unitCode))
+                val componentType =
+                    getObservationType(parser) // 4-byte MDC code from IEEE 11073-10101
+                val valueType = parser.getUInt8()
+                val valueLength = getBluetoothValueLength(valueType)
+                val valueBytes = parser.getByteArray(valueLength)
+                // TODO This assumes numeric compound values
+                val obsValue = SimpleNumericObservationValue(
+                    getBluetoothValue(
+                        valueType,
+                        valueBytes
+                    ).toFloat(), UnitCode.UNKNOWN_CODE
+                )
+                val value = ObservationComponent(componentType, obsValue)
+                values.add(value)
             }
-            return CompoundNumericValue(values)
+            return CompoundObservationValue(values)
         }
 
-        // This could be merged back into the main obs creation and just do the value in the switch on obs class
-        private fun sampleArrayObservationFrom(
-            flags: BitMask,
-            parser: BluetoothBytesParser
-        ): Observation {
-            // TODO DRY This with bundle observations
-            val observationType = getObservationTypeIfPresent(flags, parser)
-            val timestamp = getTimestampIfPresent(flags, parser)
-            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
-            val objectId = getObjectIdIfPresent(flags, parser)
-            val patientId = getPatientIdIfPresent(flags, parser)
-            val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
-            // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
-            // so for now just check if present and throw and exception if set
-            getDerivedFromIfPresent(flags, parser)
-            getHasMemberIfPresent(flags, parser)
-            getTLVsIfPresent(flags, parser)
-
-            val values = getSampleArrayValue(parser)
-            return Observation(objectId ?: 0, observationType, values, timestamp, patientId)
-        }
-
-        // This could be merged back into the main obs creation and just do the value in the switch on obs class
-        private fun stringObservationFrom(
-            flags: BitMask,
-            parser: BluetoothBytesParser
-        ): Observation {
-            // TODO DRY This with bundle observations
-            val observationType = getObservationTypeIfPresent(flags, parser)
-            val timestamp = getTimestampIfPresent(flags, parser)
-            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
-            val objectId = getObjectIdIfPresent(flags, parser)
-            val patientId = getPatientIdIfPresent(flags, parser)
-            val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
-            // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
-            // so for now just check if present and throw and exception if set
-            getDerivedFromIfPresent(flags, parser)
-            getHasMemberIfPresent(flags, parser)
-            getTLVsIfPresent(flags, parser)
-
-            val stringVal = getStringValue(parser)
-            return Observation(objectId ?: 0, observationType, stringVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp, patientId)
-        }
-
-        private fun getStringValue(bytesParser: BluetoothBytesParser): String {
+        private fun getStringValue(bytesParser: BluetoothBytesParser): StringObservationValue {
             val length = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
             val bytes = bytesParser.getByteArray(length)
-            return String(bytes)
+            val str = String(bytes)
+            Timber.i("getStringValue of len: $length from bytes: ${bytes.asFormattedHexString()} value: $str")
+            return StringObservationValue(str)
         }
 
-        // This could be merged back into the main obs creation and just do the value in the switch on obs class
-        private fun discreteObservationFrom(
+        private fun getCompoundDiscreteValue(bytesParser: BluetoothBytesParser): CompoundDiscreetObservationValue {
+            val numValues = bytesParser.getUInt8()
+            val list = mutableListOf<Int>()
+            repeat(numValues) {
+                list.add(bytesParser.getUInt32())
+            }
+            return CompoundDiscreetObservationValue(list)
+        }
+
+        private fun getDiscreteValue(bytesParser: BluetoothBytesParser): DiscreteObservationValue {
+            return DiscreteObservationValue(bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32))
+        }
+
+        private fun getCompoundStateValue(bytesParser: BluetoothBytesParser): CompoundStateObservationValue {
+            val size = bytesParser.getUInt8()
+            val supportedMaskBits = bytesParser.getByteArray(size)
+            val stateOrEventMaskBits = bytesParser.getByteArray(size)
+            val bits = bytesParser.getByteArray(size)
+            return CompoundStateObservationValue(supportedMaskBits, stateOrEventMaskBits, bits)
+        }
+
+        private fun buildObservationFrom(
+            observationClass: ObservationClass,
             flags: BitMask,
             parser: BluetoothBytesParser
         ): Observation {
@@ -396,20 +384,82 @@ open class Observation {
             getHasMemberIfPresent(flags, parser)
             getTLVsIfPresent(flags, parser)
 
-            val discreteVal = getDiscreteValue(parser)
-            return Observation(objectId ?: 0, observationType, discreteVal,  unitCode = UnitCode.UNKNOWN_CODE, timestamp, patientId)
+            val observationValue = getObservationValue(observationClass, parser)
+            return Observation(
+                objectId ?: 0,
+                observationType,
+                observationValue,
+                unitCode = UnitCode.UNKNOWN_CODE,
+                timestamp,
+                patientId
+            )
         }
 
-        private fun getDiscreteValue(bytesParser: BluetoothBytesParser): Int {
-            return bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
+        private fun getObservationValue(
+            observationClass: ObservationClass,
+            bytesParser: BluetoothBytesParser
+        ): ObservationValue {
+            return when (observationClass) {
+                ObservationClass.TLVEncoded -> getTLVObservationValue(bytesParser)
+                ObservationClass.CompoundDiscreteEvent -> getCompoundDiscreteValue(bytesParser)
+                ObservationClass.String -> getStringValue(bytesParser)
+                ObservationClass.CompoundState -> getCompoundStateValue(bytesParser)
+                ObservationClass.RealTimeSampleArray -> getSampleArrayValue(bytesParser)
+                ObservationClass.CompoundObservation -> getCompoundObservationValue(bytesParser)
+                ObservationClass.SimpleDiscreet -> getDiscreteValue(bytesParser)
+                ObservationClass.SimpleNumeric -> getSimpleNumericObservationValue(bytesParser)
+                else -> NumericObservationValue()
+            }
+        }
+
+        private fun getSimpleNumericObservationValue(bytesParser: BluetoothBytesParser): SimpleNumericObservationValue {
+            // Unit code, float is true only for a simple numeric
+            val unitCode = UnitCode.readFrom(bytesParser)
+            val value = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            return SimpleNumericObservationValue(value, unitCode)
+        }
+
+        private fun getTLVObservationValue(bytesParser: BluetoothBytesParser): TLVObservationValue {
+            val numValues = bytesParser.getUInt8()
+            val list = mutableListOf<Pair<Int, Long>>()
+            repeat(numValues) {
+                val type = bytesParser.getUInt32()
+                val length = bytesParser.getUInt16()
+                val formatType = bytesParser.getUInt8()
+                val bytes = bytesParser.getByteArray(length)
+                val value = getBluetoothValue(formatType, bytes)
+                list.add(Pair(type, value))
+            }
+            return TLVObservationValue(list)
+        }
+
+        private fun getBluetoothValueLength(formatType: Int): Int {
+            return when (formatType) {
+                4 -> 1
+                6 -> 2
+                8 -> 4
+                9 -> 6
+                10 -> 8
+                else -> 0
+            }
+        }
+
+        private fun getBluetoothValue(formatType: Int, bytes: ByteArray): Long {
+            val parser = BluetoothBytesParser(bytes)
+            return when (formatType) {
+                4 -> parser.getUInt8().toLong()
+                6 -> parser.getUInt16().toLong()
+                8 -> parser.getUInt32().toLong()
+                9 -> parser.getUInt48()
+                10 -> parser.getUInt64()
+                else -> -1.toLong()
+            }
         }
 
         private fun getSampleArrayValue(bytesParser: BluetoothBytesParser): SampleArrayObservationValue {
             val unitCode = UnitCode.readFrom(bytesParser)
             val scaleFactor = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
             val offset = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-            val scaledMin = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)
-            val scaledMax = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)
             val samplePeriod = bytesParser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
             val samplesPerPeriod = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
             val bytesPerSample = bytesParser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
@@ -420,8 +470,6 @@ open class Observation {
                 byteArray,
                 scaleFactor,
                 offset,
-                scaledMin,
-                scaledMax,
                 samplePeriod,
                 samplesPerPeriod,
                 bytesPerSample,
@@ -607,56 +655,20 @@ open class Observation {
                 BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16).toLong())
 
             return when (observationClass) {
+                ObservationClass.CompoundObservation,
+                ObservationClass.RealTimeSampleArray,
+                ObservationClass.String,
+                ObservationClass.SimpleDiscreet,
+                ObservationClass.CompoundDiscreteEvent,
+                ObservationClass.CompoundState,
+                ObservationClass.TLVEncoded,
+                ObservationClass.SimpleNumeric -> {
+                    buildObservationFrom(observationClass, observationFlags, parser)
+                }
                 ObservationClass.ObservationBundle -> {
                     bundledObservationFrom(observationFlags, parser)
                 }
-                ObservationClass.CompoundNumeric -> {
-                    compoundNumericObservationFrom(observationFlags, parser)
-                }
-                ObservationClass.RealTimeSampleArray -> {
-                    sampleArrayObservationFrom(observationFlags, parser)
-                }
-                ObservationClass.String -> {
-                    stringObservationFrom(observationFlags, parser)
-                }
-                ObservationClass.SimpleDiscreet -> {
-                    discreteObservationFrom(observationFlags, parser)
-                }
-                else -> {
-                    val observationType = getObservationTypeIfPresent(observationFlags, parser)
-                    val timestamp = getTimestampIfPresent(observationFlags, parser)
-
-                    // Do we want to use the kotlin.time.Duration class?
-                    val measurementDuration = getDurationIfPresent(observationFlags, parser)
-                    val measurementStatus = getMeasurmentStatusIfPresent(observationFlags, parser)
-                    val objId = getObjectIdIfPresent(observationFlags, parser)
-                    val patientId = getPatientIdIfPresent(observationFlags, parser)
-                    val supplimentalInfoCodes = getSupplementalInfoIfPresent(observationFlags, parser)
-
-                    // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
-                    // so for now just check if present and throw and exception if set
-                    getDerivedFromIfPresent(observationFlags, parser)
-                    getHasMemberIfPresent(observationFlags, parser)
-                    getTLVsIfPresent(observationFlags, parser)
-
-                    // Unit code, float is true only for a simple numeric
-                    val unitCode = UnitCode.readFrom(parser)
-
-                    val observationValue: Float = when (observationClass) {
-                        ObservationClass.SimpleNumeric -> parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
-                        else -> 0f
-                    }
-
-                    Observation(
-                        id = objId,
-                        type = observationType,
-                        value = observationValue,
-                        valuePrecision = 2,
-                        unitCode = unitCode,
-                        timestamp = timestamp,
-                        patientId = patientId
-                    )
-                }
+                else -> null
             }
         }
 
@@ -668,5 +680,4 @@ open class Observation {
         }
 
     }
-
 }

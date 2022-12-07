@@ -157,11 +157,10 @@ enum class ObservationClass(val value: UByte) {
     SimpleDiscreet(0x01.toUByte()),
     String(0x02.toUByte()),
     RealTimeSampleArray(0x03.toUByte()),
-    CompoundNumeric(0x04.toUByte()),
+    CompoundObservation(0x04.toUByte()),
     CompoundDiscreteEvent(0x05.toUByte()),
     CompoundState(0x06.toUByte()),
-    CompoundObservation(0x07.toUByte()),
-    TLVEncoded(0x08.toUByte()),
+    TLVEncoded(0x07.toUByte()),
     ObservationBundle(0xFF.toUByte()),  // 0xFF
     Unknown(0xF0.toUByte());
 

@@ -29,7 +29,6 @@ import java.util.concurrent.Executors
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
@@ -453,7 +452,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
             ObservationType.MDC_PRESS_BLD_NONINV -> {
                 var valString = ""
                 var seperator = ""
-                (observation.value as CompoundNumericValue).values.forEach {
+                (observation.value as CompoundObservationValue).values.forEach {
                     valString = "$valString $seperator ${it.value.toInt()}"
                     seperator = "/"
                 }
