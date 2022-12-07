@@ -390,7 +390,7 @@ open class Observation {
             parser: BluetoothBytesParser
         ): Int? {
             return if (observationFlags.hasFlag(ObservationHeaderFlags.isPatientIdPresent)) {
-                parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+                parser.getUInt8()
             } else {
                 null
             }
