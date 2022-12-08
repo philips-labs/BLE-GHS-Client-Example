@@ -120,8 +120,10 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         useIndications = !useIndications
 
         if (useIndications) {
+            ObservationLog.log("Using Indications for RACP")
             Timber.i("Using Indications for RACP")
         } else {
+            ObservationLog.log("Using Notificiations for RACP")
             Timber.i("Using Notificiations for RACP")
         }
         ghsServiceHandler?.racpHandler?.useIndicationsForRACP(useIndications)
