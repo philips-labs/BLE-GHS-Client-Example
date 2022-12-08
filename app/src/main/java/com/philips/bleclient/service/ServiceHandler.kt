@@ -6,7 +6,6 @@ package com.philips.bleclient
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -129,9 +128,20 @@ open class ServiceHandler {
         }
     }
 
-    // Private methods
-
-    private fun enableNotify(
+     fun enableNotify(
+        peripheral: BluetoothPeripheral,
+        characteristicUUID: UUID
+    ) {
+         val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
+         if (characteristic != null) {
+            enableNotify(peripheral, characteristic)
+         } else {
+             val message =
+                 "Peripheral ${peripheral.name} setNotify failed for missing ${characteristicUUID}"
+             throw ServiceHandlerCharacteristicException(message)
+         }
+    }
+    fun enableNotify(
         peripheral: BluetoothPeripheral,
         characteristic: BluetoothGattCharacteristic
     ) {
@@ -143,6 +153,30 @@ open class ServiceHandler {
             }
         }
     }
+
+    private val CCC_DESCRIPTOR_UUID: UUID? = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    private val enableIndications = byteArrayOf(2.toByte(), 0.toByte())
+
+    fun enableIndicate(
+        peripheral: BluetoothPeripheral,
+        characteristicUUID: UUID
+    ) {
+        val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
+        if (characteristic != null) {
+            if (characteristic.isIndicate()) {
+                if (!peripheral.writeDescriptor(characteristic.getDescriptor(CCC_DESCRIPTOR_UUID), enableIndications)) {
+                    val message =
+                        "Peripheral ${peripheral.name} enableIndicate failed for ${characteristic.uuid}"
+                    throw ServiceHandlerCharacteristicException(message)
+                }
+            } else {
+                val message = "Indications cannot be enabled for ${characteristic.uuid}"
+                throw ServiceHandlerCharacteristicException(message)
+            }
+        }
+    }
+
+    // Private methods
 
     private fun checkAndReadCharacteristic(
         peripheral: BluetoothPeripheral,
