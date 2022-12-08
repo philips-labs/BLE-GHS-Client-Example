@@ -35,8 +35,17 @@
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">
             <Button
+                android:id="@+id/deleteAllRecordsButton"
+                android:layout_width="96dp"
+                android:layout_height="64dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/deleteAll"
+                android:layout_gravity="center_vertical"
+                android:textAllCaps="false"
+                android:onClick="deleteAllRecords" />
+            <Button
                 android:id="@+id/numRecordsButton"
-                android:layout_width="200dp"
+                android:layout_width="128dp"
                 android:layout_height="64dp"
                 android:text="@string/totalRecords"
                 android:layout_gravity="center_vertical"
@@ -67,11 +76,20 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">
+            <Button
+                android:id="@+id/deleteGreaterRecordsButton"
+                android:layout_height="64dp"
+                android:layout_width="96dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/deleteAbove"
+                android:layout_gravity="center"
+                android:textAllCaps="false"
+                android:onClick="deleteRecordsAbove" />
 
             <Button
                 android:id="@+id/queryRecordsButton"
                 android:layout_height="64dp"
-                android:layout_width="200dp"
+                android:layout_width="128dp"
                 android:text="@string/aboveRecords"
                 android:layout_gravity="center"
                 android:textAllCaps="false"
@@ -124,18 +142,17 @@
                 tools:ignore="TouchTargetSizeCheck" />
 
             <View
-                android:id="@+id/divider"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="?android:attr/listDivider" />
+                android:layout_width="16dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <Button
-                android:id="@+id/UseIndications"
+                android:id="@+id/useIndications"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text=" Use Indications"
+                android:textAllCaps="false"
+                android:text="@string/use_indicate"
                 tools:ignore="TouchTargetSizeCheck"
                 android:onClick="toggleIndications" />
 
@@ -144,7 +161,6 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:layout_marginBottom="16dp"
             android:background="@color/separatorColor" />
 
         <TextView
@@ -161,7 +177,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:orientation="horizontal">
 
         <Button
@@ -179,7 +194,7 @@
             android:layout_weight="1" />
 
         <Button
-            android:id="@+id/getRecordsAboveFour"
+            android:id="@+id/getRecordsAbove"
             android:layout_width="128dp"
             android:layout_height="64dp"
             android:text="@string/getRecordsAbove"
@@ -204,7 +219,7 @@
             android:progress="0"/>
         <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
         <View
-            android:layout_width="0dp"
+            android:layout_width="16dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
