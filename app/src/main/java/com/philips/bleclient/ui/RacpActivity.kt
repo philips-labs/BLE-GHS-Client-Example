@@ -27,6 +27,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     private val ghsServiceHandler get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
 
     private var isGetRecordsAll = false
+    private var useIndications = false
 
     private val racpLogView get() = findViewById<TextView>(R.id.racpLog)
     private val progressBarView get() = findViewById<ProgressBar>(R.id.obsSyncProgress)
@@ -112,6 +113,19 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getNumberOfRecordsGreaterThan(startRecordNumber)
         ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun toggleIndications(view: View) {
+        useIndications = !useIndications
+
+        if (useIndications) {
+            Timber.i("Using Indications for RACP")
+        } else {
+            Timber.i("Using Notificiations for RACP")
+        }
+        ghsServiceHandler?.racpHandler?.useIndicationsForRACP(useIndications)
+
     }
 
     @Suppress("UNUSED_PARAMETER")

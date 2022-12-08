@@ -219,6 +219,8 @@ class ServiceHandlerManager private constructor(context: Context) {
         @Volatile
         internal var instance: ServiceHandlerManager? = null
 
+        fun getInstance(): ServiceHandlerManager? { return instance }
+
         fun getInstance(context: Context): ServiceHandlerManager {
             return instance ?: synchronized(this) {
                 ServiceHandlerManager(context.applicationContext).also { instance = it }

@@ -1,5 +1,6 @@
 package com.philips.bleclient.service.ghs
 
+import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asHexString
 import com.philips.bleclient.getUInt16At
 import com.philips.bleclient.merge
@@ -10,6 +11,17 @@ import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
+
+    fun useIndicationsForRACP(indicate: Boolean){
+        val allPeripherals = ServiceHandlerManager.getInstance()?.getConnectedPeripherals()
+        allPeripherals?.forEach {
+            if (indicate) {
+                service.enableIndicate(it, GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID)
+            } else {
+                service.enableNotify(it, GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID)
+            }
+        }
+    }
 
     fun getNumberOfRecords() {
         racpLog("getNumberOfRecords...")

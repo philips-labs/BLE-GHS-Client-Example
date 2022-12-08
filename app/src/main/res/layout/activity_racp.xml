@@ -117,10 +117,27 @@
                 android:id="@+id/txtStartRecord"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
+                android:inputType="number"
                 android:text="5"
-                android:textSize="16sp"
                 android:textAlignment="textEnd"
-                android:inputType="number" />
+                android:textSize="16sp"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?android:attr/listDivider" />
+
+            <Button
+                android:id="@+id/UseIndications"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text=" Use Indications"
+                tools:ignore="TouchTargetSizeCheck"
+                android:onClick="toggleIndications" />
 
         </LinearLayout>
 
