@@ -16,6 +16,7 @@ import com.philips.bleclient.observations.SimpleNumericObservationValue
 import com.philips.bleclient.extensions.Flags
 import com.philips.bleclient.extensions.hasFlag
 import com.philips.bleclient.toUINT8
+import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.serialization.json.*
@@ -135,8 +136,22 @@ enum class ObservationHeaderFlags(override val bit: Long) : Flags {
 
 
 class ObservationFlagBitMask(value: Long) : BitMask(value) {
-
     val isObservationTypePresent get() = hasFlag(ObservationHeaderFlags.isObservationTypePresent)
+    val isTimestampPresent get() = hasFlag(ObservationHeaderFlags.isTimestampPresent)
+    val isMeasurementDurationPresent get() = hasFlag(ObservationHeaderFlags.isMeasurementDurationPresent)
+    val isMeasurementStatusPresent get() = hasFlag(ObservationHeaderFlags.isMeasurementStatusPresent)
+    val isObjectIdPresent get() = hasFlag(ObservationHeaderFlags.isObjectIdPresent)
+    val isPatientIdPresent get() = hasFlag(ObservationHeaderFlags.isPatientIdPresent)
+    val isSupplementalInformationPresent get() = hasFlag(ObservationHeaderFlags.isSupplementalInformationPresent)
+    val isDerivedFromPresent get() = hasFlag(ObservationHeaderFlags.isDerivedFromPresent)
+    val hasMember get() = hasFlag(ObservationHeaderFlags.hasMember)
+    val hasTLVPresent get() = hasFlag(ObservationHeaderFlags.hasTLVPresent)
+
+    companion object {
+        fun from(parser: BluetoothBytesParser): ObservationFlagBitMask {
+            return ObservationFlagBitMask(parser.getUInt16().toLong())
+        }
+    }
 }
 
 //enum class TimestampFlags(override val bit: Long) : Flags {

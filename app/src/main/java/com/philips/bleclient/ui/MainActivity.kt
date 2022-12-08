@@ -435,34 +435,55 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         findViewById<TextView>(R.id.patientId).text =  "Patient Id: ${observation.patientId.toString()}"
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.tempObservation).text =
-                    "Temp: ${floatValue} deg ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.tempObservation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "Temp: ${floatValue} deg ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "Temp Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.hrObservation).text =
-                    "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.hrObservation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "HR Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.spo2Observation).text =
-                    "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.spo2Observation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "SpO2 Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_PRESS_BLD_NONINV -> {
                 var valString = ""
                 var seperator = ""
-                (observation.value as CompoundObservationValue).values.forEach {
-                    valString = "$valString $seperator ${it.value}"
-                    seperator = "/"
+                val textView = findViewById<TextView>(R.id.bpObservation)
+                if (observation.value is CompoundObservationValue) {
+                    (observation.value as CompoundObservationValue).values.forEach {
+                        valString = "$valString $seperator ${it.value}"
+                        seperator = "/"
+                    }
+                    textView.text = "Blood pressure: $valString ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "Blood pressure Value is a ${observation.value?.javaClass}"
                 }
-                findViewById<TextView>(com.philips.bleclient.R.id.bpObservation).text =
-                    "Blood pressure: $valString ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PPG_TIME_PD_PP -> {
-                findViewById<TextView>(R.id.ppgObservationTitle).text = "PPG Waveform: ${observation.timestamp?.asDisplayString()}"
-                val samples = (observation.value as SampleArrayObservationValue).samples
-                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
+                val textView = findViewById<TextView>(R.id.ppgObservationTitle)
+                if (observation.value is SampleArrayObservationValue) {
+                    textView.text = "PPG Waveform: ${observation.timestamp?.asDisplayString()}"
+                    val samples = (observation.value as SampleArrayObservationValue).samples
+                    (findViewById<WaveformView>(R.id.ppgObservation)).setWaveform(samples)
+                } else {
+                    textView.text = "PPG Waveform Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.UNKNOWN -> {
                 ObservationLog.log("Received Unknown Observeration: $observation")
