@@ -39,9 +39,12 @@
     <string name="set_sts_bytes">Set ETS Bytes</string>
     <string name="reset_tick_counter">Reset tick counter</string>
     <string name="revert_url">Revert URL</string>
-    <string name="totalRecords">Total # records</string>
-    <string name="aboveRecords"># Records > ID </string>
+    <string name="totalRecords"># Recs</string>
+    <string name="aboveRecords"># Rec > ID </string>
+    <string name="deleteAll">Del All</string>
+    <string name="deleteAbove">Del > ID</string>
     <string name="getAllRecords">Get all records</string>
     <string name="getRecordsAbove">Get ID > </string>
     <string name="abort">Abort</string>
+    <string name="use_indicate">Use Indicate</string>
 </resources>

@@ -163,16 +163,14 @@ open class ServiceHandler {
     ) {
         val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
         if (characteristic != null) {
-            if (characteristic.isIndicate()) {
+//            if (characteristic.isIndicate()) {
                 if (!peripheral.writeDescriptor(characteristic.getDescriptor(CCC_DESCRIPTOR_UUID), enableIndications)) {
                     val message =
                         "Peripheral ${peripheral.name} enableIndicate failed for ${characteristic.uuid}"
-                    throw ServiceHandlerCharacteristicException(message)
                 }
-            } else {
-                val message = "Indications cannot be enabled for ${characteristic.uuid}"
-                throw ServiceHandlerCharacteristicException(message)
-            }
+//            } else {
+//                val message = "Indications cannot be enabled for ${characteristic.uuid}"
+//            }
         }
     }
 

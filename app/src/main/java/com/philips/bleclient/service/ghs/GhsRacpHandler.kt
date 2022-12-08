@@ -16,9 +16,9 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         val allPeripherals = ServiceHandlerManager.getInstance()?.getConnectedPeripherals()
         allPeripherals?.forEach {
             if (indicate) {
-                service.enableIndicate(it, GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID)
+                service.enableIndicate(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
             } else {
-                service.enableNotify(it, GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID)
+                service.enableNotify(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
             }
         }
     }
@@ -50,7 +50,28 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         )
     }
 
+    fun deleteAllRecords() {
+        racpLog("deleteAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_DELETE_STORED_RECORDS, OP_ALL_RECORDS)
+        )
+    }
+
+    fun deleteRecordsAbove(recordNumber: Int) {
+        racpLog("deleteRecordsAbove $recordNumber...")
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_DELETE_STORED_RECORDS,
+                OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
     fun getRecordsAbove(recordNumber: Int) {
+        racpLog("getRecordsAbove $recordNumber...")
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
@@ -72,6 +93,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: ${peripheral.address}")
         when(value.first()) {
             OP_CODE_RESPONSE_NUMBER_STORED_RECORDS -> handleResponseNumberStoredRecords(peripheral, value)
+            OP_CODE_DELETE_STORED_RECORDS -> handleResponseDeleteStoredRecords(peripheral, value)
             OP_CODE_RESPONSE_COMBINED_REPORT -> handleResponseCombinedReport(peripheral, value)
             OP_CODE_RESPONSE_CODE -> handleReponseCode(peripheral, value)
         }
@@ -114,6 +136,12 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     fun handleResponseNumberStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
         service.onNumberOfStoredRecordsResponse(peripheral.address, numberOfRecords)
+    }
+
+
+    fun handleResponseDeleteStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
+        val numberOfRecords = value.getUInt16At(2)
+        service.onDeleteStoredRecordsResponse(peripheral.address, numberOfRecords)
     }
 
     fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {

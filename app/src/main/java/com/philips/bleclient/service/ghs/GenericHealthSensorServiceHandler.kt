@@ -106,18 +106,28 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     fun getAllRecords() {
-        ObservationLog.log("RACP: Get all records sent")
         racpHandler.getAllRecords()
+        ObservationLog.log("RACP: Get all records sent")
     }
 
     fun getRecordsAbove(recordNumber: Int) {
-        ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
         racpHandler.getRecordsAbove(recordNumber)
+        ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
     }
 
     fun abortGetRecords() {
         ObservationLog.log("RACP: Aborting get records")
         racpHandler.abortGetRecords()
+    }
+
+    fun deleteAllRecords() {
+        ObservationLog.log("RACP: Delete all records sent")
+        racpHandler.deleteAllRecords()
+    }
+
+    fun deleteRecordsAbove(recordNumber: Int) {
+        racpHandler.deleteRecordsAbove(recordNumber)
+        ObservationLog.log("RACP: Delete all records greater than $recordNumber sent")
     }
 
     /*
@@ -127,6 +137,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     fun onNumberOfStoredRecordsResponse(deviceAddress: String, numberOfRecords: Int) {
         Timber.i("RACP Number of stored records: $numberOfRecords for peripheral: $deviceAddress")
         ObservationLog.log("RACP: Number of stored records $numberOfRecords ")
+        racpListeners.forEach { it.onNumberOfStoredRecordsResponse(deviceAddress, numberOfRecords) }
+    }
+
+    fun onDeleteStoredRecordsResponse(deviceAddress: String, numberOfRecords: Int) {
+        Timber.i("RACP Delete of stored records: $numberOfRecords for peripheral: $deviceAddress")
+        ObservationLog.log("RACP: Delete of stored records $numberOfRecords ")
         racpListeners.forEach { it.onNumberOfStoredRecordsResponse(deviceAddress, numberOfRecords) }
     }
 

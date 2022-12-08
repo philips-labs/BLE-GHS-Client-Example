@@ -98,7 +98,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
     private fun updateQueryButtons() {
         findViewById<Button>(R.id.queryRecordsButton).text = "${getString(R.string.aboveRecords)} $startRecordNumber"
-        findViewById<Button>(R.id.getRecordsAboveFour).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
+        findViewById<Button>(R.id.getRecordsAbove).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -106,6 +106,21 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         isGetRecordsAll = true
 //        ghsServiceHandlerManager?.getNumberOfRecords()
         ObservationSyncer.getNumberOfRecords()
+//        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteAllRecords(view: View) {
+        isGetRecordsAll = true
+        ObservationSyncer.deleteAllRecords()
+    }
+
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteRecordsAbove(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.deleteNumberOfRecordsGreaterThanId(startRecordNumber)
     }
 
     @Suppress("UNUSED_PARAMETER")
