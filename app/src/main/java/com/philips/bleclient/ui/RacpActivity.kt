@@ -137,9 +137,11 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         useIndications = !useIndications
 
         val notifyProperty = if (useIndications) {
+            ObservationLog.log("Using Indications for RACP")
             Timber.i("Using Indications for RACP")
             PROPERTY_INDICATE
         } else {
+            ObservationLog.log("Using Notificiations for RACP")
             Timber.i("Using Notificiations for RACP")
             PROPERTY_NOTIFY
         }
