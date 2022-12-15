@@ -1,5 +1,6 @@
 package com.philips.bleclient.service.ghs
 
+import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asHexString
 import com.philips.bleclient.getUInt16At
@@ -12,13 +13,14 @@ import timber.log.Timber
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
-    fun useIndicationsForRACP(indicate: Boolean){
-        val allPeripherals = ServiceHandlerManager.getInstance()?.getConnectedPeripherals()
-        allPeripherals?.forEach {
-            if (indicate) {
+    fun useIndicationsForRACP(indicate: Int){
+        service.getCurrentCentrals().forEach {
+            if ((indicate and BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
                 service.enableIndicate(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
-            } else {
+            } else if ((indicate and BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
                 service.enableNotify(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
+            } else {
+                Timber.i("ERROR: useIndicationsForRACP Invalid Property, must be PROPERTY_INDICATE or PROPERTY_NOTIFY")
             }
         }
     }
@@ -47,6 +49,22 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_ALL_RECORDS)
+        )
+    }
+
+    fun getFirstRecord() {
+        racpLog("getAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_COMBINED_REPORT, OP_FIRST_RECORD)
+        )
+    }
+
+    fun getLastRecord() {
+        racpLog("getAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_COMBINED_REPORT, OP_LAST_RECORD)
         )
     }
 
@@ -144,6 +162,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.onDeleteStoredRecordsResponse(peripheral.address, numberOfRecords)
     }
 
+    //TODO: THIS IS A UINT32... CHECK LATEST GHSS DOC AND OFFSET
     fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
         service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)

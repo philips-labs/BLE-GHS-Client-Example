@@ -1,5 +1,7 @@
 package com.philips.bleclient.ui
 
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -134,12 +136,14 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     fun toggleIndications(view: View) {
         useIndications = !useIndications
 
-        if (useIndications) {
+        val notifyProperty = if (useIndications) {
             Timber.i("Using Indications for RACP")
+            PROPERTY_INDICATE
         } else {
             Timber.i("Using Notificiations for RACP")
+            PROPERTY_NOTIFY
         }
-        ghsServiceHandler?.racpHandler?.useIndicationsForRACP(useIndications)
+        ghsServiceHandler?.racpHandler?.useIndicationsForRACP(notifyProperty)
 
     }
 
@@ -153,7 +157,8 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     fun getRecordsAbove(view: View) {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getRecordsAbove(startRecordNumber)
-        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+//        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+        ObservationSyncer.retrieveLastStoredObservation()
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -16,7 +16,7 @@ import java.util.*
 
 class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
-    private val peripherals = mutableSetOf<BluetoothPeripheral>()
+    private val peripherals = mutableListOf<BluetoothPeripheral>()
     private val listeners = mutableListOf<GenericHealthSensorHandlerListener>()
     private val racpListeners = mutableListOf<GenericHealthSensorHandlerRacpListener>()
 
@@ -105,9 +105,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.getNumberOfRecordsGreaterThan(recordNumber)
     }
 
+
     fun getAllRecords() {
         racpHandler.getAllRecords()
         ObservationLog.log("RACP: Get all records sent")
+    }
+
+    fun getFirstRecord() {
+        racpHandler.getFirstRecord()
+        ObservationLog.log("RACP: Get first record sent")
+    }
+
+    fun getLastRecord() {
+        racpHandler.getLastRecord()
+        ObservationLog.log("RACP: Get last record sent")
     }
 
     fun getRecordsAbove(recordNumber: Int) {
@@ -294,10 +305,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+        Timber.i("GHS Service Handler: Connected Peripheral ${peripheral.address}")
         peripherals.add(peripheral)
     }
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
+        Timber.i("GHS Service Handler: Disconnected Peripheral ${peripheral.address}")
         peripherals.remove(peripheral)
     }
 
@@ -321,7 +334,13 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     fun write(characteristicUUID: UUID, value: ByteArray) {
-        if (peripherals.size > 0) write(peripherals.first(), characteristicUUID, value)
+//        val connectedPeripherals = peripherals
+        val connectedPeripherals = getCurrentCentrals()
+        if (connectedPeripherals.isEmpty()) {
+            Timber.i("GHS Service Handler: No connected periperals connected to write characteristic $characteristicUUID")
+        } else {
+            write(connectedPeripherals.first(), characteristicUUID, value)
+        }
     }
 
     init {

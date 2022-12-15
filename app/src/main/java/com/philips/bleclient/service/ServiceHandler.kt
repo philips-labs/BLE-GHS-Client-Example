@@ -155,7 +155,7 @@ open class ServiceHandler {
     }
 
     private val CCC_DESCRIPTOR_UUID: UUID? = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-    private val enableIndications = byteArrayOf(2.toByte(), 0.toByte())
+    private val enableIndications = byteArrayOf(3.toByte(), 0.toByte())
 
     fun enableIndicate(
         peripheral: BluetoothPeripheral,
@@ -172,6 +172,10 @@ open class ServiceHandler {
 //                val message = "Indications cannot be enabled for ${characteristic.uuid}"
 //            }
         }
+    }
+
+    fun getCurrentCentrals(): List<BluetoothPeripheral> {
+        return ServiceHandlerManager.getInstance()?.getConnectedPeripherals() ?: listOf()
     }
 
     // Private methods

@@ -64,8 +64,10 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     }
 
     fun write(characteristicUUID: UUID, value: ByteArray) {
-        if (peripherals.isNotEmpty()) {
-            write(peripherals.first(), characteristicUUID, value)
+//        val connPeripherals = peripherals
+        val connPeripherals = getCurrentCentrals()
+        if (connPeripherals.isNotEmpty()) {
+            write(connPeripherals.first(), characteristicUUID, value)
         } else {
             Timber.e("Error on write characteristic uuid: $characteristicUUID - No peripherals connected")
         }

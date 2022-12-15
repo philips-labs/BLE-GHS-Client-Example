@@ -69,11 +69,18 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         ghsServiceHandler?.getRecordsAbove(recordId)
     }
 
-
     fun retrieveStoredObservations() {
         isRetrieving = true
         // Kick off by requesting number of records, then continue in response
         ghsServiceHandler?.getNumberOfRecords()
+    }
+
+    fun retrieveFirstStoredObservation() {
+        ghsServiceHandler?.getFirstRecord()
+    }
+
+    fun retrieveLastStoredObservation() {
+        ghsServiceHandler?.getLastRecord()
     }
 
     /*
