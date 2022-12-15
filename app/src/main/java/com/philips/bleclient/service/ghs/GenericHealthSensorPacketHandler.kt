@@ -75,12 +75,7 @@ fun ByteArray.concatBLESegment(byteArray: ByteArray): ByteArray {
 }
 
 fun ByteArray.expectedObservationLengthForBytes(isStored: Boolean): Int {
-    // Shifting to include the header bytes that are included in the array and the recordnumber
-    var offset = 1
-    var recordNumberLength = 0
-    if (isStored){
-        offset = 5
-        recordNumberLength = 4
-    }
-    return ((this[offset] and 0xFF).toUInt() + ((this[offset+1] and 0xFF).toUInt() shl 8)).toInt() + recordNumberLength
+    val lengthFieldOffset = if (isStored) 5 else 1
+    val recordNumberLength = if (isStored) 4 else 0
+    return ((this[lengthFieldOffset] and 0xFF).toUInt() + ((this[lengthFieldOffset+1] and 0xFF).toUInt() shl 8)).toInt() + recordNumberLength
 }
