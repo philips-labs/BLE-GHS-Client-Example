@@ -9,10 +9,7 @@ import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
@@ -134,7 +131,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
     @Suppress("UNUSED_PARAMETER")
     fun toggleIndications(view: View) {
-        useIndications = !useIndications
+        useIndications = (view as Switch).isChecked
 
         val notifyProperty = if (useIndications) {
             ObservationLog.log("Using Indications for RACP")

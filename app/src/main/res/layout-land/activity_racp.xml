@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.RacpActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.50"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/lblObservationStoreCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Stored observation record queries:"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/deleteAllRecordsButton"
+                    android:layout_width="96dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp"
+                    android:onClick="deleteAllRecords"
+                    android:text="@string/deleteAll"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/numRecordsButton"
+                    android:layout_width="128dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center_vertical"
+                    android:onClick="numberOfRecords"
+                    android:text="@string/totalRecords"
+                    android:textAllCaps="false" />
+
+                <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/txtObservationStoreCount"
+                    android:layout_width="96dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:layout_marginRight="32dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="Unknown"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/deleteGreaterRecordsButton"
+                    android:layout_width="96dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="8dp"
+                    android:onClick="deleteRecordsAbove"
+                    android:text="@string/deleteAbove"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/queryRecordsButton"
+                    android:layout_width="128dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:onClick="numberRecordsAbove"
+                    android:text="@string/aboveRecords"
+                    android:textAllCaps="false" />
+
+                <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/txtObservationGEStoreCount"
+                    android:layout_width="96dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:layout_marginRight="32dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="Unknown"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/lblQueryStartRecord"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginRight="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="Query record ID:"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/txtStartRecord"
+                    android:layout_width="64dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="5"
+                    android:textAlignment="textEnd"
+                    android:textSize="16sp"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <android.widget.Switch
+                    android:id="@+id/publicHapiSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:onClick="toggleIndications"
+                    android:text="@string/use_indicate" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/separatorColor" />
+
+            <TextView
+                android:id="@+id/lblGetObservationStore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="Stored observation record queries:"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/getAllRecordsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:onClick="getAllRecords"
+                    android:text="@string/getAllRecords"
+                    android:textAllCaps="false" />
+                <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/getRecordsAbove"
+                    android:layout_width="128dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="right"
+                    android:onClick="getRecordsAbove"
+                    android:text="@string/getRecordsAbove"
+                    android:textAllCaps="false" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="RACP Progress:"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/obsSyncProgress"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:progress="0" />
+                <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+                <View
+                    android:layout_width="24dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
+            <Button
+                android:id="@+id/abort"
+                android:layout_width="128dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start"
+                android:onClick="abort"
+                android:text="@string/abort"
+                android:textAllCaps="false" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/racpLog"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="0.50"
+            android:background="@color/black"
+            android:scrollbars="vertical"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

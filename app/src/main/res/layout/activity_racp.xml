@@ -129,7 +129,7 @@
                 android:textSize="16sp"
                 android:layout_marginRight="16dp"
                 android:gravity="center"
-                android:text="Start record:" />
+                android:text="Query record ID:" />
 
             <EditText
                 android:id="@+id/txtStartRecord"
@@ -146,15 +146,13 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <Button
-                android:id="@+id/useIndications"
+            <android.widget.Switch
+                android:id="@+id/publicHapiSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:textAllCaps="false"
-                android:text="@string/use_indicate"
-                tools:ignore="TouchTargetSizeCheck"
-                android:onClick="toggleIndications" />
+                android:layout_marginBottom="8dp"
+                android:onClick="toggleIndications"
+                android:text="@string/use_indicate" />
 
         </LinearLayout>
 

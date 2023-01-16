@@ -41,11 +41,11 @@
     <string name="reset_tick_counter">Reset tick counter</string>
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords"># Recs</string>
-    <string name="aboveRecords"># Rec > ID </string>
+    <string name="aboveRecords"># Rec > </string>
     <string name="deleteAll">Del All</string>
-    <string name="deleteAbove">Del > ID</string>
+    <string name="deleteAbove">Del > </string>
     <string name="getAllRecords">Get all records</string>
-    <string name="getRecordsAbove">Get ID > </string>
+    <string name="getRecordsAbove">Get > </string>
     <string name="abort">Abort</string>
     <string name="use_indicate">Use Indicate</string>
 </resources>

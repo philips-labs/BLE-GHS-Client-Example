@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        Timber.plant(AppLogTree())
         setContentView(R.layout.activity_main)
 
         setupFoundPeripheralsList()
@@ -225,6 +226,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun initGHSServiceHandler() {
         ghsServiceHandler = GenericHealthSensorServiceHandler()
         ghsServiceHandler!!.addListener(this)
+        ghsServiceHandler!!.addListener(GHSDeviceInfoMap)
         serviceHandlerManager?.addServiceHandler(ghsServiceHandler!!)
     }
 

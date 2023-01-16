@@ -48,8 +48,11 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
             peripheral?.let {
                 setupPeripheral(it)
                 title = "${it.name} information"
+                Timber.i("Device Info Screen: $deviceAddress\nSupported Observations:${GHSDeviceInfoMap.getSupportedObservationTypes(deviceAddress)}")
             }
         }
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         stsServiceHandler?.addListener(this)
 
@@ -146,7 +149,9 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     }
 
     private fun setupPeripheral(periph: BluetoothPeripheral) {
-        findViewById<TextView>(R.id.peripheralMacAddress).text = "MAC address: ${periph.address}"
+        findViewById<TextView>(R.id.peripheralMacAddress).text = "Device address: ${periph.address}"
+        findViewById<TextView>(R.id.supportedObservationTypes).text = "Supported Observations: ${GHSDeviceInfoMap.getSupportedObservationTypes(periph.address)}"
+
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -307,11 +307,13 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         Timber.i("GHS Service Handler: Connected Peripheral ${peripheral.address}")
         peripherals.add(peripheral)
+        listeners.forEach { it.onConnected(peripheral.address) }
     }
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
         Timber.i("GHS Service Handler: Disconnected Peripheral ${peripheral.address}")
         peripherals.remove(peripheral)
+        listeners.forEach { it.onDisconnected(peripheral.address) }
     }
 
     private fun handleObservationScheduledCharChanged(peripheral: BluetoothPeripheral, value: ByteArray) {

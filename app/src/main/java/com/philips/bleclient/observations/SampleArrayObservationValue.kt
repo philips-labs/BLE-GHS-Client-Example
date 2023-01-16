@@ -4,6 +4,7 @@
  */
 package com.philips.bleclient.observations
 
+import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.asHexString
 import com.philips.btserver.generichealthservice.UnitCode
 
@@ -32,6 +33,6 @@ class SampleArrayObservationValue(
     }
 
     override fun toString(): String {
-        return "SampleArrayObservationValue length: ${samples.size}  bytes: ${samples.asHexString()}"
+        return "SampleArrayObservationValue length: ${samples.size}  bytes: [${samples.asFormattedHexString()}]"
     }
 }
