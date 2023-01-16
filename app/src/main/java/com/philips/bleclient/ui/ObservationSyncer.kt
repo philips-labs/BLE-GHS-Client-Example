@@ -42,6 +42,17 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         }
     }
 
+
+    fun deleteAllRecords() {
+        isRetrieving = false
+        ghsServiceHandler?.deleteAllRecords()
+    }
+
+    fun deleteNumberOfRecordsGreaterThanId(startRecordNumber: Int) {
+        isRetrieving = false
+        ghsServiceHandler?.deleteRecordsAbove(startRecordNumber)
+    }
+
     fun getNumberOfRecords() {
         isRetrieving = false
         ghsServiceHandler?.getNumberOfRecords()
@@ -58,11 +69,18 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         ghsServiceHandler?.getRecordsAbove(recordId)
     }
 
-
     fun retrieveStoredObservations() {
         isRetrieving = true
         // Kick off by requesting number of records, then continue in response
         ghsServiceHandler?.getNumberOfRecords()
+    }
+
+    fun retrieveFirstStoredObservation() {
+        ghsServiceHandler?.getFirstRecord()
+    }
+
+    fun retrieveLastStoredObservation() {
+        ghsServiceHandler?.getLastRecord()
     }
 
     /*

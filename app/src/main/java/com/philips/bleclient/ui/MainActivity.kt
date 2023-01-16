@@ -29,12 +29,12 @@ import java.util.concurrent.Executors
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.user.UserDataServiceHandler
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
 class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
     private var stsServiceHandler: SimpleTimeServiceHandler? = null
+    private var udsServiceHandler: UserDataServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val ACCESS_LOCATION_REQUEST = 2
@@ -83,6 +84,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        Timber.plant(AppLogTree())
         setContentView(R.layout.activity_main)
 
         setupFoundPeripheralsList()
@@ -212,6 +214,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
         initGHSServiceHandler()
         initSTSServiceHandler()
+        initUDSServiceHandler()
         serviceHandlerManager?.let {
             it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
@@ -223,6 +226,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun initGHSServiceHandler() {
         ghsServiceHandler = GenericHealthSensorServiceHandler()
         ghsServiceHandler!!.addListener(this)
+        ghsServiceHandler!!.addListener(GHSDeviceInfoMap)
         serviceHandlerManager?.addServiceHandler(ghsServiceHandler!!)
     }
 
@@ -230,6 +234,12 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         stsServiceHandler = SimpleTimeServiceHandler()
 //        stsServiceHandler!!.addListener(this)
         serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
+    }
+
+    private fun initUDSServiceHandler() {
+        udsServiceHandler = UserDataServiceHandler()
+//        udsServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(udsServiceHandler!!)
     }
 
     private fun checkPermissions() {
@@ -424,36 +434,58 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     private fun updateObservationText(observation: Observation) {
+        findViewById<TextView>(R.id.patientId).text =  "Patient Id: ${observation.patientId.toString()}"
         when (observation.type) {
             ObservationType.MDC_TEMP_BODY -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(R.id.tempObservation).text =
-                    "Temp: ${floatValue} deg ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.tempObservation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "Temp: ${floatValue} deg ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "Temp Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_ECG_CARD_BEAT_RATE -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(com.philips.bleclient.R.id.hrObservation).text =
-                    "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.hrObservation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "HR: ${floatValue} bpm ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "HR Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_PULS_OXIM_SAT_O2 -> {
-                val floatValue = (observation.value as SimpleNumericObservationValue).value
-                findViewById<TextView>(com.philips.bleclient.R.id.spo2Observation).text =
-                    "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
+                val textView = findViewById<TextView>(R.id.spo2Observation)
+                if (observation.value is SimpleNumericObservationValue) {
+                    val floatValue = (observation.value as SimpleNumericObservationValue).value
+                    textView.text = "SpO2: ${floatValue}% ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "SpO2 Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.MDC_PRESS_BLD_NONINV -> {
                 var valString = ""
                 var seperator = ""
-                (observation.value as CompoundNumericValue).values.forEach {
-                    valString = "$valString $seperator ${it.value.toInt()}"
-                    seperator = "/"
+                val textView = findViewById<TextView>(R.id.bpObservation)
+                if (observation.value is CompoundObservationValue) {
+                    (observation.value as CompoundObservationValue).values.forEach {
+                        valString = "$valString $seperator ${it.value}"
+                        seperator = "/"
+                    }
+                    textView.text = "Blood pressure: $valString ${observation.timestamp?.asDisplayString()}"
+                } else {
+                    textView.text = "Blood pressure Value is a ${observation.value?.javaClass}"
                 }
-                findViewById<TextView>(com.philips.bleclient.R.id.bpObservation).text =
-                    "Blood pressure: $valString ${observation.timestamp?.asDisplayString()}"
             }
             ObservationType.MDC_PPG_TIME_PD_PP -> {
-                findViewById<TextView>(R.id.ppgObservationTitle).text = "PPG Waveform: ${observation.timestamp?.asDisplayString()}"
-                val samples = (observation.value as SampleArrayObservationValue).samples
-                (findViewById<TextView>(R.id.ppgObservation) as WaveformView).setWaveform(samples)
+                val textView = findViewById<TextView>(R.id.ppgObservationTitle)
+                if (observation.value is SampleArrayObservationValue) {
+                    textView.text = "PPG Waveform: ${observation.timestamp?.asDisplayString()}"
+                    val samples = (observation.value as SampleArrayObservationValue).samples
+                    (findViewById<WaveformView>(R.id.ppgObservation)).setWaveform(samples)
+                } else {
+                    textView.text = "PPG Waveform Value is a ${observation.value?.javaClass}"
+                }
             }
             ObservationType.UNKNOWN -> {
                 ObservationLog.log("Received Unknown Observeration: $observation")
@@ -510,6 +542,15 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     @Suppress("UNUSED_PARAMETER")
     fun openFhirSettings(view: View) {
         startActivity(Intent(this, FhirActivity::class.java))
+        overridePendingTransition(
+            R.anim.slide_from_right,
+            R.anim.slide_to_left
+        )
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun openUsers(view: View) {
+        startActivity(Intent(this, UsersActivity::class.java))
         overridePendingTransition(
             R.anim.slide_from_right,
             R.anim.slide_to_left

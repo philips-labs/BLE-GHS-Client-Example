@@ -16,7 +16,7 @@ import java.util.*
 
 class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
-    private val peripherals = mutableSetOf<BluetoothPeripheral>()
+    private val peripherals = mutableListOf<BluetoothPeripheral>()
     private val listeners = mutableListOf<GenericHealthSensorHandlerListener>()
     private val racpListeners = mutableListOf<GenericHealthSensorHandlerRacpListener>()
 
@@ -26,17 +26,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
 
-//    internal val ghsControlPointCharacteristic = BluetoothGattCharacteristic(
-//        GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
-//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ,
-//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-//    )
-//
-//    internal val racpCharacteristic = BluetoothGattCharacteristic(
-//        RACP_CHARACTERISTIC_UUID,
-//        BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_INDICATE,
-//        BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
-//    )
+    val observationScheduleDescriptorsInfo = mutableMapOf<String, MutableMap<ObservationType, BluetoothGattDescriptor>>()
 
     override val name: String
         get() = "GenericHealthSensorServiceHandler"
@@ -50,6 +40,11 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         enableAllNotifications(peripheral, characteristics)
         enableLiveObservations(peripheral)
         readFeatures(peripheral)
+        parseObservationScheduleDescriptors(peripheral)
+    }
+
+    private fun parseObservationScheduleDescriptors(peripheral: BluetoothPeripheral) {
+        getObservationScheduleDescriptors(peripheral)?.forEach { peripheral.readDescriptor(it) }
     }
 
     override fun onCharacteristicUpdate(
@@ -67,6 +62,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                 UNIQUE_DEVICE_ID_CHARACTERISTIC_UUID -> handleUniqueDeviceId(peripheral, value)
                 GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
                 RACP_CHARACTERISTIC_UUID -> racpHandler.handleBytes(peripheral, value)
+                OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID -> handleObservationScheduledCharChanged(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -109,19 +105,40 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.getNumberOfRecordsGreaterThan(recordNumber)
     }
 
+
     fun getAllRecords() {
-        ObservationLog.log("RACP: Get all records sent")
         racpHandler.getAllRecords()
+        ObservationLog.log("RACP: Get all records sent")
+    }
+
+    fun getFirstRecord() {
+        racpHandler.getFirstRecord()
+        ObservationLog.log("RACP: Get first record sent")
+    }
+
+    fun getLastRecord() {
+        racpHandler.getLastRecord()
+        ObservationLog.log("RACP: Get last record sent")
     }
 
     fun getRecordsAbove(recordNumber: Int) {
-        ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
         racpHandler.getRecordsAbove(recordNumber)
+        ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
     }
 
     fun abortGetRecords() {
         ObservationLog.log("RACP: Aborting get records")
         racpHandler.abortGetRecords()
+    }
+
+    fun deleteAllRecords() {
+        ObservationLog.log("RACP: Delete all records sent")
+        racpHandler.deleteAllRecords()
+    }
+
+    fun deleteRecordsAbove(recordNumber: Int) {
+        racpHandler.deleteRecordsAbove(recordNumber)
+        ObservationLog.log("RACP: Delete all records greater than $recordNumber sent")
     }
 
     /*
@@ -131,6 +148,12 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     fun onNumberOfStoredRecordsResponse(deviceAddress: String, numberOfRecords: Int) {
         Timber.i("RACP Number of stored records: $numberOfRecords for peripheral: $deviceAddress")
         ObservationLog.log("RACP: Number of stored records $numberOfRecords ")
+        racpListeners.forEach { it.onNumberOfStoredRecordsResponse(deviceAddress, numberOfRecords) }
+    }
+
+    fun onDeleteStoredRecordsResponse(deviceAddress: String, numberOfRecords: Int) {
+        Timber.i("RACP Delete of stored records: $numberOfRecords for peripheral: $deviceAddress")
+        ObservationLog.log("RACP: Delete of stored records $numberOfRecords ")
         racpListeners.forEach { it.onNumberOfStoredRecordsResponse(deviceAddress, numberOfRecords) }
     }
 
@@ -157,6 +180,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
      */
 
     fun receivedObservation(deviceAddress: String, observation: Observation) {
+        Timber.i("GHS Service Hander rececied Observation: $observation from: $deviceAddress")
         listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(observation)) }
     }
 
@@ -176,25 +200,90 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(STOP_SEND_LIVE_OBSERVATIONS))
     }
 
-    fun getObservationScheduleDescriptor(peripheral: BluetoothPeripheral, observationType: ObservationType): BluetoothGattDescriptor? {
+    fun debugObservationScheduleDescriptors(peripheral: BluetoothPeripheral) {
+        getObservationScheduleDescriptors(peripheral)?.forEach {
+            peripheral.readDescriptor(it)
+        }
+    }
+
+
+    fun getObservationScheduleDescriptors(peripheral: BluetoothPeripheral): List<BluetoothGattDescriptor>? {
         val observationScheduleDescriptors = peripheral.getCharacteristic(serviceUUID, GHS_FEATURES_CHARACTERISTIC_UUID)?.descriptors
         return observationScheduleDescriptors
             ?.filter { it.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID }
-            ?.firstOrNull()
     }
 
     fun writeObservationSchedule(peripheral: BluetoothPeripheral,
-                                 observationType: ObservationType,
                                  measurementPeriod: Float,
                                  updateInterval: Float) {
-        val descriptor = getObservationScheduleDescriptor(peripheral, observationType)
-        val parser = BluetoothBytesParser()
-        parser.setIntValue(observationType.value, BluetoothBytesParser.FORMAT_UINT32)
-        parser.setFloatValue(measurementPeriod, 3)
-        parser.setFloatValue(updateInterval, 3)
-        descriptor?.let { peripheral.writeDescriptor(it, parser.value) }
+        Timber.i("observationScheduleDescriptorsInfo for ${peripheral.address}: ${observationScheduleDescriptorsInfo[peripheral.address]?.keys}")
+        val info =  observationScheduleDescriptorsInfo.get(peripheral.address)
+        if (info == null) {
+            getObservationScheduleDescriptors(peripheral)
+            Timber.i("refreshed observationScheduleDescriptorsInfo: ${observationScheduleDescriptorsInfo[peripheral.address]?.keys}")
+        }
+        observationScheduleDescriptorsInfo.get(peripheral.address)?.forEach {
+            if (it.key != ObservationType.UNKNOWN) {
+                val parser = BluetoothBytesParser()
+                parser.setIntValue(it.key.value, BluetoothBytesParser.FORMAT_UINT32)
+                parser.setFloatValue(measurementPeriod, 3)
+                parser.setFloatValue(updateInterval, 3)
+                val result = peripheral.writeDescriptor(it.value, parser.value)
+                val debugString =
+                    "${if (result) "SUCCESS" else "FAILED"} write Observation Schedule type: ${it.key} period: $measurementPeriod interval: $updateInterval"
+                Timber.i(debugString)
+                ObservationLog.log(debugString)
+            } else {
+                Timber.i("No observation schedule to write yet...")
+            }
+        }
     }
 
+
+    fun saveObservationScheduleDescriptorInfo(
+        peripheral: BluetoothPeripheral,
+        descriptor: BluetoothGattDescriptor,
+        observationType: ObservationType
+    ) {
+        val descMap = observationScheduleDescriptorsInfo.getOrPut(peripheral.address) {
+            Timber.i("Creating new entry in observationScheduleDescriptorsInfo for peripheral: ${peripheral.address}")
+            mutableMapOf()
+        }
+        Timber.i("Add Observation Scheulde Changed Descriptor for type: $observationType")
+        descMap.put(observationType, descriptor)
+        observationScheduleDescriptorsInfo.put(peripheral.address, descMap)
+    }
+
+    override fun onDescriptorRead(
+        peripheral: BluetoothPeripheral,
+        value: ByteArray?,
+        descriptor: BluetoothGattDescriptor,
+        status: GattStatus
+    ) {
+        Timber.i("onDescriptorRead OBSERVATION_SCHEDULE_DESCRIPTOR_UUID value: ${value?.asHexString() ?: null.toString()}")
+        value?.let {
+            val obsType = readObservationScheduleChangedBytes(value, "onDescriptorRead")
+            saveObservationScheduleDescriptorInfo(peripheral, descriptor, obsType)
+        }
+        super.onDescriptorRead(peripheral, value, descriptor, status)
+    }
+
+    private fun readObservationScheduleChangedBytes(value: ByteArray, debugPrefix: String = ""): ObservationType {
+        if (value.size == 12) {
+            val parser = BluetoothBytesParser(value)
+            val obsType = ObservationType.fromValue(parser.getUInt32())
+            val measurementPeriod = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            val updateInterval = parser.getFloatValue(BluetoothBytesParser.FORMAT_FLOAT)
+            val debugString =
+                "$debugPrefix type: $obsType measurementPeriod: $measurementPeriod updateInterval: $updateInterval"
+            Timber.i(debugString)
+            ObservationLog.log(debugString)
+            return obsType
+        } else {
+            Timber.i("Invalid schedule descriptor")
+            return ObservationType.UNKNOWN
+        }
+    }
 
     override fun onDescriptorWrite(
         peripheral: BluetoothPeripheral,
@@ -204,6 +293,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     ) {
         if (descriptor.uuid == OBSERVATION_SCHEDULE_DESCRIPTOR_UUID) {
             Timber.i("onDescriptorWrite OBSERVATION_SCHEDULE_DESCRIPTOR_UUID value: ${value.asHexString()}")
+//            peripheral.readDescriptor(descriptor)
         } else {
             Timber.i("onDescriptorWrite uuid: ${descriptor.uuid} value: ${value.asHexString()}")
         }
@@ -215,11 +305,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+        Timber.i("GHS Service Handler: Connected Peripheral ${peripheral.address}")
         peripherals.add(peripheral)
+        listeners.forEach { it.onConnected(peripheral.address) }
     }
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
+        Timber.i("GHS Service Handler: Disconnected Peripheral ${peripheral.address}")
         peripherals.remove(peripheral)
+        listeners.forEach { it.onDisconnected(peripheral.address) }
+    }
+
+    private fun handleObservationScheduledCharChanged(peripheral: BluetoothPeripheral, value: ByteArray) {
+        Timber.i( "Observation Schedule Char Update bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        readObservationScheduleChangedBytes(value, "Observation schedule Char changed")
     }
 
     private fun handleUniqueDeviceId(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -231,13 +330,19 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
-        peripheral.getCharacteristic(GHS_FEATURES_CHARACTERISTIC_UUID, characteristicUUID)?.let {
+        peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
             val result = peripheral.readCharacteristic(it)
         }
     }
 
     fun write(characteristicUUID: UUID, value: ByteArray) {
-        if (peripherals.size > 0) write(peripherals.first(), characteristicUUID, value)
+//        val connectedPeripherals = peripherals
+        val connectedPeripherals = getCurrentCentrals()
+        if (connectedPeripherals.isEmpty()) {
+            Timber.i("GHS Service Handler: No connected periperals connected to write characteristic $characteristicUUID")
+        } else {
+            write(connectedPeripherals.first(), characteristicUUID, value)
+        }
     }
 
     init {
@@ -247,6 +352,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
             STORED_OBSERVATIONS_CHARACTERISTIC_UUID,
             GHS_FEATURES_CHARACTERISTIC_UUID,
             GHS_CONTROL_POINT_CHARACTERISTIC_UUID,
+            OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID,
             RACP_CHARACTERISTIC_UUID))
         ServiceHandlerManager.instance?.addListener(this)
     }

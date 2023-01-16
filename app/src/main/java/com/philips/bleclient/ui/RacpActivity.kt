@@ -1,5 +1,7 @@
 package com.philips.bleclient.ui
 
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
+import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -7,10 +9,7 @@ import android.text.method.ScrollingMovementMethod
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
@@ -24,9 +23,10 @@ import java.util.concurrent.TimeUnit
 
 class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
-    private val ghsServiceHandlerManager get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
+    private val ghsServiceHandler get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
 
     private var isGetRecordsAll = false
+    private var useIndications = false
 
     private val racpLogView get() = findViewById<TextView>(R.id.racpLog)
     private val progressBarView get() = findViewById<ProgressBar>(R.id.obsSyncProgress)
@@ -97,7 +97,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
     private fun updateQueryButtons() {
         findViewById<Button>(R.id.queryRecordsButton).text = "${getString(R.string.aboveRecords)} $startRecordNumber"
-        findViewById<Button>(R.id.getRecordsAboveFour).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
+        findViewById<Button>(R.id.getRecordsAbove).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -105,6 +105,21 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         isGetRecordsAll = true
 //        ghsServiceHandlerManager?.getNumberOfRecords()
         ObservationSyncer.getNumberOfRecords()
+//        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteAllRecords(view: View) {
+        isGetRecordsAll = true
+        ObservationSyncer.deleteAllRecords()
+    }
+
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteRecordsAbove(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.deleteNumberOfRecordsGreaterThanId(startRecordNumber)
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -112,6 +127,23 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getNumberOfRecordsGreaterThan(startRecordNumber)
         ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun toggleIndications(view: View) {
+        useIndications = (view as Switch).isChecked
+
+        val notifyProperty = if (useIndications) {
+            ObservationLog.log("Using Indications for RACP")
+            Timber.i("Using Indications for RACP")
+            PROPERTY_INDICATE
+        } else {
+            ObservationLog.log("Using Notificiations for RACP")
+            Timber.i("Using Notificiations for RACP")
+            PROPERTY_NOTIFY
+        }
+        ghsServiceHandler?.racpHandler?.useIndicationsForRACP(notifyProperty)
+
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -124,7 +156,8 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     fun getRecordsAbove(view: View) {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getRecordsAbove(startRecordNumber)
-        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+//        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+        ObservationSyncer.retrieveLastStoredObservation()
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -22,20 +22,20 @@
             android:id="@+id/observationsLog"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:scrollbars="vertical"
             android:background="@color/black"
             android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
-        <Button
-            android:id="@+id/parseTestObservation"
-            android:layout_width="wrap_content"
-            android:layout_height="64dp"
-            android:text="@string/parseTestObservation"
-            android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="parseTestObservation" />
+        <TextView
+            android:id="@+id/appLog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:scrollbars="vertical"
+            android:background="@color/black"
+            android:textColor="@color/white"
+            android:layout_marginBottom="16dp" />
         <Button
             android:id="@+id/clearLogButton"
             android:layout_width="wrap_content"

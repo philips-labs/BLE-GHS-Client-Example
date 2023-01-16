@@ -4,6 +4,7 @@
  */
 package com.philips.bleclient.observations
 
+import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.asHexString
 import com.philips.btserver.generichealthservice.UnitCode
 
@@ -11,8 +12,6 @@ class SampleArrayObservationValue(
     val samples: ByteArray,
     val scaleFactor: Float,
     val offset: Float,
-    val scaledMin: Int,
-    val scaledMax: Int,
     val samplePeriod: Float,
     val samplesPerPeriod: Int,
     val bytesPerSample: Int,
@@ -24,8 +23,6 @@ class SampleArrayObservationValue(
         samples,
         1.0f,
         0.0f,
-        samples.minOf { it }.toInt(),
-        samples.maxOf { it }.toInt(),
         1.0f,
         1,
         1,
@@ -36,6 +33,6 @@ class SampleArrayObservationValue(
     }
 
     override fun toString(): String {
-        return "SampleArrayObservationValue length: ${samples.size}  bytes: ${samples.asHexString()}"
+        return "SampleArrayObservationValue length: ${samples.size}  bytes: [${samples.asFormattedHexString()}]"
     }
 }

@@ -3,7 +3,7 @@ package com.philips.bleclient.extensions
 /*
  * Support for Flags in Kotlin (may want to move to a Flags.kt file
  */
-class BitMask(val value: Long)
+open class BitMask(val value: Long)
 
 interface Flags  {
     val bit: Long

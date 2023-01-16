@@ -1,17 +1,32 @@
 package com.philips.bleclient.service.ghs
 
+import android.bluetooth.BluetoothGattCharacteristic
+import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asHexString
 import com.philips.bleclient.getUInt16At
 import com.philips.bleclient.merge
 import com.philips.bleclient.ui.ObservationLog
+import com.philips.bleclient.ui.RacpLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
-import java.util.*
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
+    fun useIndicationsForRACP(indicate: Int){
+        service.getCurrentCentrals().forEach {
+            if ((indicate and BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
+                service.enableIndicate(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
+            } else if ((indicate and BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                service.enableNotify(it, GenericHealthSensorServiceHandler.STORED_OBSERVATIONS_CHARACTERISTIC_UUID)
+            } else {
+                Timber.i("ERROR: useIndicationsForRACP Invalid Property, must be PROPERTY_INDICATE or PROPERTY_NOTIFY")
+            }
+        }
+    }
+
     fun getNumberOfRecords() {
+        racpLog("getNumberOfRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_ALL_RECORDS)
@@ -30,13 +45,51 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getAllRecords() {
+        racpLog("getAllRecords...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_ALL_RECORDS)
         )
     }
 
+    fun getFirstRecord() {
+        racpLog("getAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_COMBINED_REPORT, OP_FIRST_RECORD)
+        )
+    }
+
+    fun getLastRecord() {
+        racpLog("getAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_COMBINED_REPORT, OP_LAST_RECORD)
+        )
+    }
+
+    fun deleteAllRecords() {
+        racpLog("deleteAllRecords...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_DELETE_STORED_RECORDS, OP_ALL_RECORDS)
+        )
+    }
+
+    fun deleteRecordsAbove(recordNumber: Int) {
+        racpLog("deleteRecordsAbove $recordNumber...")
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_DELETE_STORED_RECORDS,
+                OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
     fun getRecordsAbove(recordNumber: Int) {
+        racpLog("getRecordsAbove $recordNumber...")
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
@@ -58,20 +111,44 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         Timber.i("Received RACP Response Bytes: <${value.asHexString()}> for peripheral: ${peripheral.address}")
         when(value.first()) {
             OP_CODE_RESPONSE_NUMBER_STORED_RECORDS -> handleResponseNumberStoredRecords(peripheral, value)
+            OP_CODE_DELETE_STORED_RECORDS -> handleResponseDeleteStoredRecords(peripheral, value)
             OP_CODE_RESPONSE_COMBINED_REPORT -> handleResponseCombinedReport(peripheral, value)
             OP_CODE_RESPONSE_CODE -> handleReponseCode(peripheral, value)
         }
     }
 
-    // Sent by RACP Abort operation procedure (see GHS 3.4.3.4)
     fun handleReponseCode(peripheral: BluetoothPeripheral, value: ByteArray) {
-        // Set a boolean indicating the abort successed of failed (a fail could occur due to a ill-formed command)
-        if (value.racpSuccessResponse()) {
-            service.onRacpAbortCompleted(peripheral.address)
+        if (value.size != 4){
+            racpLog("Incorrect RACP response received.")
+//            ObservationLog.log("Incorrect RACP response received.")
         } else {
-            service.onRacpAbortError(peripheral.address, value.last())
+            when (value.last()){
+                RESPONSE_CODE_SUCCESS -> {
+                    racpLog("RESPONSE_CODE_SUCCESS received.")
+                    service.onRacpAbortCompleted(peripheral.address)
+                }
+                RESPONSE_CODE_NO_RECORDS -> {
+                    racpLog("RESPONSE_CODE_NO_RECORDS received.")
+                    handleResponseNoRecordsFound(peripheral)
+                }
+                RESPONSE_CODE_ABORT_UNSUCCESSFUL -> {
+                    racpLog("RESPONSE_CODE_ABORT_UNSUCCESSFUL received.")
+                    service.onRacpAbortError(peripheral.address, value.last())
+                }
+                RESPONSE_CODE_INVALID_OPERAND -> racpLog("RESPONSE_CODE_INVALID_OPERAND received.")
+                RESPONSE_CODE_INVALID_OPERATOR -> racpLog("RESPONSE_CODE_INVALID_OPERATOR received.")
+                RESPONSE_CODE_OPERAND_UNSUPPORTED -> racpLog("RESPONSE_CODE_OPERAND_UNSUPPORTED received.")
+                RESPONSE_CODE_OPERATOR_UNSUPPORTED -> racpLog("RESPONSE_CODE_OPERATOR_UNSUPPORTED received.")
+                RESPONSE_CODE_OP_CODE_UNSUPPORTED -> racpLog("RESPONSE_CODE_OP_CODE_UNSUPPORTED received.")
+                RESPONSE_CODE_PROCEDURE_NOT_COMPLETED -> racpLog("RESPONSE_CODE_PROCEDURE_NOT_COMPLETED received.")
+            }
         }
 
+    }
+
+    private fun racpLog(message: String) {
+        RacpLog.log(message)
+        Timber.i(message)
     }
 
     fun handleResponseNumberStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
@@ -79,8 +156,20 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.onNumberOfStoredRecordsResponse(peripheral.address, numberOfRecords)
     }
 
+
+    fun handleResponseDeleteStoredRecords(peripheral: BluetoothPeripheral, value: ByteArray) {
+        val numberOfRecords = value.getUInt16At(2)
+        service.onDeleteStoredRecordsResponse(peripheral.address, numberOfRecords)
+    }
+
+    //TODO: THIS IS A UINT32... CHECK LATEST GHSS DOC AND OFFSET
     fun handleResponseCombinedReport(peripheral: BluetoothPeripheral, value: ByteArray) {
         val numberOfRecords = value.getUInt16At(2)
+        service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)
+    }
+
+    fun handleResponseNoRecordsFound(peripheral: BluetoothPeripheral) {
+        val numberOfRecords = 0
         service.onNumberOfStoredRecordsRetrieved(peripheral.address, numberOfRecords)
     }
 
@@ -117,7 +206,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
          * Response Code values associated with Op Code 0x06
          */
         private const val RESPONSE_CODE_SUCCESS = 0x01.toByte()
-        private const val RESPONSE_CODE_OP_CODE_UNSUPPOERTED = 0x02.toByte()
+        private const val RESPONSE_CODE_OP_CODE_UNSUPPORTED = 0x02.toByte()
         private const val RESPONSE_CODE_INVALID_OPERATOR = 0x03.toByte()
         private const val RESPONSE_CODE_OPERATOR_UNSUPPORTED = 0x04.toByte()
         private const val RESPONSE_CODE_INVALID_OPERAND = 0x05.toByte()

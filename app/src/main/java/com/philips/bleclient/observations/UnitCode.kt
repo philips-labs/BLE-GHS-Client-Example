@@ -567,7 +567,7 @@ enum class UnitCode(val value: Int, val symbol: String, val description : String
 
         // A GHS Unit Code is the 16-bit value of the unit code assuming partition 4
         fun readFrom(parser: BluetoothBytesParser): UnitCode {
-            return fromGHSValue(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16))
+            return fromGHSValue(parser.getUInt16())
         }
 
     }

@@ -20,7 +20,7 @@ interface GenericHealthSensorHandlerListener {
      * @param deviceAddress Address of the device.
      * @param observations List of new recevied observations
      */
-    fun onReceivedObservations(deviceAddress: String, observations: List<Observation>)
+    fun onReceivedObservations(deviceAddress: String, observations: List<Observation>) {}
 
     /**
      * Called when the list of supported device specializations (supported types) have been received
@@ -29,7 +29,23 @@ interface GenericHealthSensorHandlerListener {
      * @param deviceAddress Address of the device.
      * @param observationTypes List of observations types the device supports
      */
-    fun onSupportedObservationTypes(deviceAddress: String, observationTypes: List<ObservationType>)
+    fun onSupportedObservationTypes(deviceAddress: String, observationTypes: List<ObservationType>) {}
+
+    /**
+     * Called when a GHS device connects
+     *
+     * @param deviceAddress Address of the device.
+     * @param observations List of new recevied observations
+     */
+    fun onConnected(deviceAddress: String) {}
+
+    /**
+     * Called when a GHS device disconnects
+     *
+     * @param deviceAddress Address of the device.
+     * @param observations List of new recevied observations
+     */
+    fun onDisconnected(deviceAddress: String) {}
 
 }
 

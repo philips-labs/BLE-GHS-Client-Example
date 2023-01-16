@@ -12,13 +12,6 @@ class GhsControlPointHandler(val service: GenericHealthSensorServiceHandler) {
     private val sentCommand: Byte? = null
     var isLiveObservationsEnabled = false
 
-    fun startLiveObservations() {
-    }
-
-    fun stopLiveObservations() {
-
-    }
-
     fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Received Control Point Response Bytes: <${value.asHexString()}> for peripheral: $peripheral")
         if (value.size > 0) {

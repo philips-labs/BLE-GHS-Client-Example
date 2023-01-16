@@ -7,7 +7,7 @@ package com.philips.btserver.generichealthservice
 import java.lang.IllegalArgumentException
 
 @Suppress("unused")
-enum class ObservationType(val value: Int) {
+enum class ObservationType(val value: Int, var shadowValue: Int = value) {
     MDC_ACCELERATION_INDEX(150612),
     MDC_ACOUSTIC_RESP_RATE(151650),
     MDC_AMOUNT_DRUG_REMAIN_CONTAINER(158013),
@@ -975,7 +975,9 @@ enum class ObservationType(val value: Int) {
                 for (type in values()) {
                     if (type.value == value) return@let type
                 }
-                return@let UNKNOWN
+                val new = UNKNOWN
+                new.shadowValue = value
+                return@let new
             } ?: UNKNOWN
         }
 

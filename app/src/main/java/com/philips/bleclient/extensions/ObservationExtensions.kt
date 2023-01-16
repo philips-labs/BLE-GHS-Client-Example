@@ -6,6 +6,7 @@ package com.philips.bleclient.util
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.philips.bleclient.extensions.BitMask
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.observations.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
 import com.philips.bleclient.observations.Observation.Companion.MDC_SYSTEM_URN_STRING
@@ -13,7 +14,9 @@ import com.philips.bleclient.observations.ObservationValue
 import com.philips.bleclient.observations.SampleArrayObservationValue
 import com.philips.bleclient.observations.SimpleNumericObservationValue
 import com.philips.bleclient.extensions.Flags
+import com.philips.bleclient.extensions.hasFlag
 import com.philips.bleclient.toUINT8
+import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.serialization.json.*
@@ -131,6 +134,26 @@ enum class ObservationHeaderFlags(override val bit: Long) : Flags {
     hasTLVPresent(1 shl 9);
 }
 
+
+class ObservationFlagBitMask(value: Long) : BitMask(value) {
+    val isObservationTypePresent get() = hasFlag(ObservationHeaderFlags.isObservationTypePresent)
+    val isTimestampPresent get() = hasFlag(ObservationHeaderFlags.isTimestampPresent)
+    val isMeasurementDurationPresent get() = hasFlag(ObservationHeaderFlags.isMeasurementDurationPresent)
+    val isMeasurementStatusPresent get() = hasFlag(ObservationHeaderFlags.isMeasurementStatusPresent)
+    val isObjectIdPresent get() = hasFlag(ObservationHeaderFlags.isObjectIdPresent)
+    val isPatientIdPresent get() = hasFlag(ObservationHeaderFlags.isPatientIdPresent)
+    val isSupplementalInformationPresent get() = hasFlag(ObservationHeaderFlags.isSupplementalInformationPresent)
+    val isDerivedFromPresent get() = hasFlag(ObservationHeaderFlags.isDerivedFromPresent)
+    val hasMember get() = hasFlag(ObservationHeaderFlags.hasMember)
+    val hasTLVPresent get() = hasFlag(ObservationHeaderFlags.hasTLVPresent)
+
+    companion object {
+        fun from(parser: BluetoothBytesParser): ObservationFlagBitMask {
+            return ObservationFlagBitMask(parser.getUInt16().toLong())
+        }
+    }
+}
+
 //enum class TimestampFlags(override val bit: Long) : Flags {
 //    isTickCounter(1 shl 0),
 //    isUTC(1 shl 1),
@@ -157,11 +180,10 @@ enum class ObservationClass(val value: UByte) {
     SimpleDiscreet(0x01.toUByte()),
     String(0x02.toUByte()),
     RealTimeSampleArray(0x03.toUByte()),
-    CompoundNumeric(0x04.toUByte()),
+    CompoundObservation(0x04.toUByte()),
     CompoundDiscreteEvent(0x05.toUByte()),
     CompoundState(0x06.toUByte()),
-    CompoundObservation(0x07.toUByte()),
-    TLVEncoded(0x08.toUByte()),
+    TLVEncoded(0x07.toUByte()),
     ObservationBundle(0xFF.toUByte()),  // 0xFF
     Unknown(0xF0.toUByte());
 

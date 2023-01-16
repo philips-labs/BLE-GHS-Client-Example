@@ -161,8 +161,8 @@ fun Date.asGHSBytes(): ByteArray {
 
 fun Long.asGHSTimeValue(): ByteArray {
     val millParser = BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN)
-    millParser.setLong(this)
-    return millParser.value.copyOfRange(0, 6)
+    millParser.setLong(this, BluetoothBytesParser.FORMAT_UINT48)
+    return millParser.value
 }
 
 fun Long.asGHSTicks(flags: BitMask): ByteArray {
@@ -252,11 +252,11 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
 
     val millParser = BluetoothBytesParser(ByteOrder.LITTLE_ENDIAN)
     // millParser.setLong(scaledTicks)
-    millParser.setLong(0L)
+    millParser.setLong(0L, BluetoothBytesParser.FORMAT_UINT48)
 
     return listOf(
         byteArrayOf(timestampFlags.value.toByte()),
-        millParser.value.copyOfRange(0, 6),
+        millParser.value,
         byteArrayOf(Timesource.currentSource.value.toByte(), offsetUnits.toByte())
     ).merge()
 

@@ -6,7 +6,7 @@ import okhttp3.internal.and
 import timber.log.Timber
 import java.lang.RuntimeException
 
-class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketListener) {
+class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketListener, val isStored: Boolean) {
 
     private var packetBytesMap = mutableMapOf<String, ByteArray>()
 
@@ -29,8 +29,9 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
     fun isDeviceReceiveComplete(bytes: ByteArray): Boolean {
         // Need to have class byte and 2 length bytes at a minimum to get those values
         if (bytes.size < 3) return false
-        val expectedLength = bytes.expectedPacketLengthForBytes() + 3 // add 2 for length bytes themselves and 1 for the class
-        val complete = bytes.size == expectedLength
+        val expectedLength = bytes.expectedObservationLengthForBytes(isStored)
+        val complete : Boolean = bytes.size == expectedLength
+
         if (!complete) {
             Timber.e("ERROR: Data length not expected length ${bytes.size} expected: $expectedLength")
         }
@@ -73,7 +74,8 @@ fun ByteArray.concatBLESegment(byteArray: ByteArray): ByteArray {
     return listOf(this, byteArray.withoutSegmentHeader()).merge()
 }
 
-fun ByteArray.expectedPacketLengthForBytes(): Int {
-    // Adding 2 to include the header bytes that are included in the array
-    return ((this[1] and 0xFF).toUInt() + ((this[2] and 0xFF).toUInt() shl 8)).toInt()
+fun ByteArray.expectedObservationLengthForBytes(isStored: Boolean): Int {
+    val lengthFieldOffset = if (isStored) 5 else 1
+    val recordNumberLength = if (isStored) 4 else 0
+    return ((this[lengthFieldOffset] and 0xFF).toUInt() + ((this[lengthFieldOffset+1] and 0xFF).toUInt() shl 8)).toInt() + recordNumberLength
 }

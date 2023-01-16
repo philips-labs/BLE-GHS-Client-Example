@@ -6,7 +6,6 @@ package com.philips.bleclient
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -51,18 +50,9 @@ open class ServiceHandler {
         status: GattStatus
     ) {
         if (status == GattStatus.SUCCESS) {
-            Timber.i(
-                "SUCCESS: Writing <%s> to <%s>",
-                BluetoothBytesParser.bytes2String(value),
-                characteristic.uuid
-            )
+            Timber.i("SUCCESS: Writing <${value.asFormattedHexString()}> to <${characteristic.uuid}>")
         } else {
-            Timber.i(
-                "ERROR: Failed writing <%s> to <%s> (%s)",
-                BluetoothBytesParser.bytes2String(value),
-                characteristic.uuid,
-                status
-            )
+            Timber.i("ERROR: writing <${value.asFormattedHexString()}> to <${characteristic.uuid}> ($status)")
         }
     }
 
@@ -138,9 +128,20 @@ open class ServiceHandler {
         }
     }
 
-    // Private methods
-
-    private fun enableNotify(
+     fun enableNotify(
+        peripheral: BluetoothPeripheral,
+        characteristicUUID: UUID
+    ) {
+         val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
+         if (characteristic != null) {
+            enableNotify(peripheral, characteristic)
+         } else {
+             val message =
+                 "Peripheral ${peripheral.name} setNotify failed for missing ${characteristicUUID}"
+             throw ServiceHandlerCharacteristicException(message)
+         }
+    }
+    fun enableNotify(
         peripheral: BluetoothPeripheral,
         characteristic: BluetoothGattCharacteristic
     ) {
@@ -152,6 +153,32 @@ open class ServiceHandler {
             }
         }
     }
+
+    private val CCC_DESCRIPTOR_UUID: UUID? = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    private val enableIndications = byteArrayOf(3.toByte(), 0.toByte())
+
+    fun enableIndicate(
+        peripheral: BluetoothPeripheral,
+        characteristicUUID: UUID
+    ) {
+        val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
+        if (characteristic != null) {
+//            if (characteristic.isIndicate()) {
+                if (!peripheral.writeDescriptor(characteristic.getDescriptor(CCC_DESCRIPTOR_UUID), enableIndications)) {
+                    val message =
+                        "Peripheral ${peripheral.name} enableIndicate failed for ${characteristic.uuid}"
+                }
+//            } else {
+//                val message = "Indications cannot be enabled for ${characteristic.uuid}"
+//            }
+        }
+    }
+
+    fun getCurrentCentrals(): List<BluetoothPeripheral> {
+        return ServiceHandlerManager.getInstance()?.getConnectedPeripherals() ?: listOf()
+    }
+
+    // Private methods
 
     private fun checkAndReadCharacteristic(
         peripheral: BluetoothPeripheral,

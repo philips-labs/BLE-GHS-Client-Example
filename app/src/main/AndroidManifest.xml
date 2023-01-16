@@ -24,6 +24,8 @@
             android:name=".ui.RacpActivity"
             android:exported="false" />
         <activity android:name=".ui.PeripheralInfoActivity" />
+        <activity android:name=".ui.UsersActivity"
+            android:exported="false"  />
         <activity android:name=".ui.FhirActivity" />
         <activity android:name=".ui.ObservationLogActivity" />
         <activity
