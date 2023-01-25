@@ -15,6 +15,7 @@ import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
+import com.philips.bleclient.service.dis.DisInfoMap
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
 import com.philips.btserver.generichealthservice.ObservationType
@@ -151,7 +152,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private fun setupPeripheral(periph: BluetoothPeripheral) {
         findViewById<TextView>(R.id.peripheralMacAddress).text = "Device address: ${periph.address}"
         findViewById<TextView>(R.id.supportedObservationTypes).text = "Supported Observations: ${GHSDeviceInfoMap.getSupportedObservationTypes(periph.address)}"
-
+        findViewById<TextView>(R.id.disInfoView).text = DisInfoMap.getInfo(periph.address)
     }
 
     @Suppress("UNUSED_PARAMETER")

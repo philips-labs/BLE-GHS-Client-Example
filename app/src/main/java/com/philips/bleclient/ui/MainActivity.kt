@@ -33,6 +33,8 @@ import androidx.core.app.ActivityCompat
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
+import com.philips.bleclient.service.dis.DisServiceHandler
+import com.philips.bleclient.service.dis.DisServiceListener
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
 
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
     private var stsServiceHandler: SimpleTimeServiceHandler? = null
     private var udsServiceHandler: UserDataServiceHandler? = null
+    private var disServiceHandler: DisServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val ACCESS_LOCATION_REQUEST = 2
@@ -78,6 +81,11 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         enableBluetoothRequest.launch(enableBtIntent)
     }
+
+//    override fun onConnected(peripheral: BluetoothPeripheral) {
+//        ghsServiceHandler?.onConnectedPeripheral(peripheral)
+//        disServiceHandler?.onConnectedPeripheral(peripheral)
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -215,12 +223,19 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         initGHSServiceHandler()
         initSTSServiceHandler()
         initUDSServiceHandler()
+        initDISServiceHandler()
         serviceHandlerManager?.let {
-            it.addServiceHandler(ghsServiceHandler!!)
+            //it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
             setScanning(false)
         }
         ObservationSyncer.connect()
+    }
+
+    private fun initDISServiceHandler() {
+        disServiceHandler = DisServiceHandler()
+        //disServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(disServiceHandler!!)
     }
 
     private fun initGHSServiceHandler() {

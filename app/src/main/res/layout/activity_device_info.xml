@@ -34,13 +34,13 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
-            android:textSize="16sp"
-            android:text="Device address:" />
+            android:text="Observation types:"
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/disconnectButton"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="48dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
@@ -61,7 +61,7 @@
                 <Button
                     android:id="@+id/btnGetStsBytes"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="48dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
@@ -92,7 +92,7 @@
                 <Button
                     android:id="@+id/btnSetStsBytes"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="8dp"
@@ -103,7 +103,7 @@
                 <Button
                     android:id="@+id/enableLiveObservations"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
@@ -118,7 +118,7 @@
                 <Button
                     android:id="@+id/disableLiveObservations"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
@@ -133,7 +133,7 @@
                 <Button
                     android:id="@+id/writeObservationSchedule"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
@@ -148,7 +148,7 @@
                 <Button
                     android:id="@+id/readObservationSchedule"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="16dp"
@@ -159,6 +159,12 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent" />
+
+                <TextView
+                    android:id="@+id/disInfoView"
+                    android:layout_width="match_parent"
+                    android:layout_height="121dp"
+                    android:text="Device Information" />
             </LinearLayout>
         </ScrollView>
 

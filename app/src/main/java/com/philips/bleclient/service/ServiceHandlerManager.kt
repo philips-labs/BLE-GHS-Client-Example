@@ -11,6 +11,14 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import com.philips.bleclient.service.dis.DisServiceHandler
+import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
+import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.user.UserDataServiceHandler
+import com.philips.bleclient.service.user.UserDataServiceHandlerListener
+import com.philips.bleclient.ui.ObservationLog.log
+import com.philips.bleclient.ui.RacpLog
+import com.philips.bleclient.ui.isBonded
 import com.welie.blessed.*
 import timber.log.Timber
 import java.util.*
@@ -23,6 +31,29 @@ interface ServiceHandlerManagerListener {
 }
 
 class ServiceHandlerManager private constructor(context: Context) {
+
+    private fun racpLog(message: String) {
+        RacpLog.log(message)
+        Timber.i(message)
+    }
+
+    private val  GATT_UUID = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb")
+    private val GAP_UUID = UUID.fromString("00001801-0000-1000-8000-00805f9b34fb")
+    private val RCS_UUID = UUID.fromString("00001829-0000-1000-8000-00805f9b34fb")
+
+    private fun serviceUUIDtoString(uuid: UUID) : String {
+        return when(uuid){
+            GenericHealthSensorServiceHandler.SERVICE_UUID -> "GHSS"
+            SimpleTimeServiceHandler.SERVICE_UUID -> "ETS"
+            UserDataServiceHandler.SERVICE_UUID -> "UDS"
+            GATT_UUID -> "GATT"
+            GAP_UUID -> "GAP"
+            DisServiceHandler.SERVICE_UUID -> "DIS"
+            RCS_UUID -> "RCS"
+            else -> uuid.toString()
+        }
+    }
+
     var central: BluetoothCentralManager
     private val handler = Handler(Looper.getMainLooper())
     private val discoveredPeripherals = mutableSetOf<BluetoothPeripheral>()
@@ -32,7 +63,9 @@ class ServiceHandlerManager private constructor(context: Context) {
         object : BluetoothPeripheralCallback() {
 
             override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
-                peripheral.services.forEach { service ->
+                peripheral.services.forEach {
+                        service ->
+                    racpLog("Service found: " + serviceUUIDtoString(service.uuid))
                     serviceHandlers[service.uuid]?.onCharacteristicsDiscovered(
                         peripheral,
                         service.characteristics
@@ -155,7 +188,12 @@ class ServiceHandlerManager private constructor(context: Context) {
     }
 
     fun bond(peripheral: BluetoothPeripheral) {
-        central.createBond(peripheral, peripheralCallback)
+        if( !peripheral.isBonded()) {
+            central.createBond(peripheral, peripheralCallback)
+        } else {
+            Timber.i("Already bonded with: %s", peripheral.name)
+            central.connectPeripheral(peripheral, peripheralCallback)
+        }
     }
 
     fun unbond(peripheral: BluetoothPeripheral) {
@@ -209,6 +247,7 @@ class ServiceHandlerManager private constructor(context: Context) {
 
     fun addServiceHandler(serviceHandler: ServiceHandler) {
         serviceHandlers[serviceHandler.serviceUUID] = serviceHandler
+        Timber.i("Service handler added for:" + serviceUUIDtoString(serviceHandler.serviceUUID))
     }
 
     fun serviceHandlerForUUID(serviceUUID: UUID): ServiceHandler? {
