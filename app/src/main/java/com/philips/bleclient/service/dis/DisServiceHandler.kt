@@ -4,8 +4,12 @@ import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.ServiceHandlerManagerListener
+import com.philips.bleclient.extensions.BitMask
+import com.philips.bleclient.extensions.Flags
+import com.philips.bleclient.extensions.hasFlag
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT64
+import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import timber.log.Timber
@@ -13,10 +17,13 @@ import java.nio.ByteOrder
 import java.util.*
 import java.util.UUID.*
 
+
 class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     private val listeners = mutableListOf<DisServiceListener>()
     private val peripherals = mutableListOf<BluetoothPeripheral>()
+
+    private val stringInfoItem = setOf<DisInfoItem>(DisInfoItem.MANUFACTURER_NAME, DisInfoItem.MODEL_NUMBER, DisInfoItem.SERIAL_NUMBER, DisInfoItem.SOFTWARE_REVISION, DisInfoItem.HARDWARE_REVISION, DisInfoItem.FIRMWARE_REVISION)
 
     override fun onCharacteristicsDiscovered(
         peripheral: BluetoothPeripheral,
@@ -25,6 +32,13 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         Timber.i("Characteristics discovered: ${characteristics.size}")
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         readDeviceInformation(peripheral)
+    }
+
+    enum class UDIFlags(override val bit: Long) : Flags {
+        label((1 shl 0).toLong()),
+        deviceIdentifier((1 shl 1).toLong()),
+        issuer((1 shl 2).toLong()),
+        authority((1 shl 3).toLong())
     }
 
     override fun onCharacteristicUpdate(
@@ -36,33 +50,45 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         super.onCharacteristicUpdate(peripheral, value, characteristic, status)
         val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
         if (status == GattStatus.SUCCESS) {
+            for (disItem in stringInfoItem) {
+                if (characteristic.uuid == disItem.value){
+                    val itemValue = parser.getStringValue();
+                    Timber.i(disItem.name + ":" + itemValue)
+                    DisInfoMap.setDeviceInfoValue(peripheral, disItem, itemValue)
+                    return
+                }
+            }
             when (characteristic.uuid) {
-                MANUFACTURER_NAME_STRING_CHARACTERISTIC_UUID -> {
-                    val name = parser.getStringValue();
-                    Timber.i("Manufacturer name read:" + name)
-                    DisInfoMap.setManufacturerName(peripheral, name)
-                }
-                MODEL_NUMBER_STRING_CHARACTERISTIC_UUID -> {
-                    val name = parser.getStringValue();
-                    Timber.i("Model number read:" + name)
-                    DisInfoMap.setModelNumber(peripheral, name)
-                }
-                SERIAL_NUMBER_STRING_CHARACTERISTIC_UUID -> {
-                    val name = parser.getStringValue();
-                    Timber.i("Serial number read:" + name)
-                    DisInfoMap.setSerialNumber(peripheral, name)
-                }
-                SYSTEM_ID_STRING_CHARACTERISTIC_UUID -> {
+                DisInfoItem.SYSTEM_ID.value -> {
                     val sysId = parser.getLongValue(FORMAT_UINT64);
                     Timber.i("System ID read:" + sysId)
-                    DisInfoMap.setSystemId(peripheral, sysId.toString())
+                    DisInfoMap.setDeviceInfoValue(peripheral, DisInfoItem.SYSTEM_ID, sysId.toString())
                 }
-                UDI_STRING_CHARACTERISTIC_UUID -> {
-                    val name = parser.getStringValue();
-                    Timber.i("UDI read:" + name)
-                    DisInfoMap.setUDI(peripheral, name)
+                DisInfoItem.UDI.value -> {
+                    val flags : Long = parser.getByteArray(1)[0].toLong()
+                    val udiBytes = parser.getByteArray(value.size - 1);
+                    Timber.i("UDI read:" + String(udiBytes))
+                    var prevIndex : Int = 0
+                    val udiElements = mutableListOf<String>()
+                    for(i in 1..(udiBytes.size-1) ){
+                        if (udiBytes[i] == 0.toByte()) {
+                            udiElements.add(String(udiBytes.copyOfRange(prevIndex,i), Charsets.UTF_8))
+                            prevIndex = i+1
+                        }
+                    }
+                    var udiString : String = ""
+                    var index = 0
+                    for( flag in UDIFlags.values()){
+                        if (flags and flag.bit != 0L) {
+                            udiString = udiString + flag.name + ": " + udiElements[index] + " "
+                            Timber.i(flag.name + ": " + udiElements[index])
+                            index++
+                        }
+                    }
+                    //udi.replace(0.toChar(),'\n')
+                    DisInfoMap.setDeviceInfoValue(peripheral, DisInfoItem.UDI, udiString + "\n")
                 }
-                else -> Timber.i("DIS characteristic read - UUID:" + characteristic.uuid + " value:" + value.toString())
+                else -> Timber.i("Unknown DIS characteristic read - UUID:" + characteristic.uuid + " value:" + value.toString())
             }
         } else {
             Timber.i("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -70,32 +96,15 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     }
 
     fun readDeviceInformation(peripheral: BluetoothPeripheral){
-        supportedCharacteristics.forEach { uuid ->
-            val characteristic = peripheral.getCharacteristic(SERVICE_UUID, uuid)
+        for(disItem in DisInfoItem.values()){
+            val characteristic = peripheral.getCharacteristic(SERVICE_UUID, disItem.value)
             if (characteristic != null) {
-                when (uuid) {
-                    MANUFACTURER_NAME_STRING_CHARACTERISTIC_UUID -> {
-                        timber.log.Timber.i("Reading Manufacturer name")
-                    }
-                    MODEL_NUMBER_STRING_CHARACTERISTIC_UUID -> {
-                        timber.log.Timber.i("Reading Model number")
-                    }
-                    SERIAL_NUMBER_STRING_CHARACTERISTIC_UUID -> {
-                        timber.log.Timber.i("Reading Serial number")
-                    }
-                    SYSTEM_ID_STRING_CHARACTERISTIC_UUID -> {
-                        timber.log.Timber.i("Reading System ID")
-                    }
-                    UDI_STRING_CHARACTERISTIC_UUID -> {
-                        timber.log.Timber.i("Reading UDI")
-                    }
-                    else -> {
-                        timber.log.Timber.i("Reading characteristic with UUID:$uuid")
-                    }
-                }
+                timber.log.Timber.i( "Reading ${disItem.name}" )
                 if (!peripheral.readCharacteristic(characteristic)){
                     timber.log.Timber.i("Read failed!")
                 }
+            } else {
+                // timber.log.Timber.i("No need to read ${disItem.name}")
             }
         }
     }
@@ -125,13 +134,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     init {
         serviceUUID = SERVICE_UUID
-        supportedCharacteristics.addAll(arrayOf(
-            MANUFACTURER_NAME_STRING_CHARACTERISTIC_UUID,
-            MODEL_NUMBER_STRING_CHARACTERISTIC_UUID,
-            SERIAL_NUMBER_STRING_CHARACTERISTIC_UUID,
-            SYSTEM_ID_STRING_CHARACTERISTIC_UUID,
-            UDI_STRING_CHARACTERISTIC_UUID
-        ))
+        supportedCharacteristics.addAll(DisInfoItem.values().map { it.value })
         ServiceHandlerManager.instance?.addListener(this)
         addListener(DisInfoMap)
     }
@@ -141,14 +144,5 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         // Assigned GATT Service UUID Allocated for DIS
         val SERVICE_UUID: UUID = fromString("0000180a-0000-1000-8000-00805f9b34fb")
 
-        val MANUFACTURER_NAME_STRING_CHARACTERISTIC_UUID: UUID =    fromString("00002A29-0000-1000-8000-00805f9b34fb")
-        val MODEL_NUMBER_STRING_CHARACTERISTIC_UUID: UUID =         fromString("000002A24-0000-1000-8000-00805f9b34fb")
-        val SERIAL_NUMBER_STRING_CHARACTERISTIC_UUID: UUID =        fromString("000002A25-0000-1000-8000-00805f9b34fb")
-        val HARDWARE_REVISION_STRING_CHARACTERISTIC_UUID: UUID =    fromString("000002A27-0000-1000-8000-00805f9b34fb")
-        val FIRMWARE_REVISION_STRING_CHARACTERISTIC_UUID: UUID =    fromString("000002A26-0000-1000-8000-00805f9b34fb")
-        val SOFTWARE_REVISION_STRING_CHARACTERISTIC_UUID: UUID =    fromString("000002A28-0000-1000-8000-00805f9b34fb")
-        val SYSTEM_ID_STRING_CHARACTERISTIC_UUID: UUID =            fromString("000002A23-0000-1000-8000-00805f9b34fb")
-        val PNP_ID_STRING_CHARACTERISTIC_UUID: UUID =               fromString("000002A50-0000-1000-8000-00805f9b34fb")
-        val UDI_STRING_CHARACTERISTIC_UUID: UUID =                  fromString("000007F3A-0000-1000-8000-00805f9b34fb")
     }
 }
