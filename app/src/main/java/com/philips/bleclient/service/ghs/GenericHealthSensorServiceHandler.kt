@@ -25,6 +25,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     var controlPointHandler = GhsControlPointHandler(this)
     var racpHandler = GhsRacpHandler(this)
     var featuresHandler = GhsFeaturesHandler(this)
+    var securityLevelsHandler = GhsSecurityLevelsHandler(this)
 
     val observationScheduleDescriptorsInfo = mutableMapOf<String, MutableMap<ObservationType, BluetoothGattDescriptor>>()
 
@@ -36,6 +37,8 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         characteristics: List<BluetoothGattCharacteristic>
     ) {
         Timber.i("Characteristics discovered: ${characteristics.size}")
+        readSecurityLevels(peripheral)
+        // to do: check if current level is sufficient
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         enableAllNotifications(peripheral, characteristics)
         enableLiveObservations(peripheral)
@@ -63,11 +66,13 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                 GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
                 RACP_CHARACTERISTIC_UUID -> racpHandler.handleBytes(peripheral, value)
                 OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID -> handleObservationScheduledCharChanged(peripheral, value)
+                LE_GATT_SECURITY_LEVELS_UUID -> securityLevelsHandler.handleBytes(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
         }
     }
+
 
     /*
      * GenericHealthSensorHandler Listener methods (add/remove)
@@ -329,6 +334,10 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         read(peripheral, GHS_FEATURES_CHARACTERISTIC_UUID)
     }
 
+    private fun readSecurityLevels(peripheral: BluetoothPeripheral) {
+        read(peripheral, LE_GATT_SECURITY_LEVELS_UUID)
+    }
+
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
         peripheral.getCharacteristic(SERVICE_UUID, characteristicUUID)?.let {
             val result = peripheral.readCharacteristic(it)
@@ -393,6 +402,9 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
         val VALID_RANGE_AND_ACCURACY_DESCRIPTOR_UUID =
             UUID.fromString("00007f34-0000-1000-8000-00805f9b34fb")
+
+        val LE_GATT_SECURITY_LEVELS_UUID =
+            UUID.fromString("00002BF5-0000-1000-8000-00805f9b34fb")
 
         val instance: GenericHealthSensorServiceHandler? get() {
             return ServiceHandlerManager.instance?.serviceHandlerForUUID(SERVICE_UUID)?.let { it as GenericHealthSensorServiceHandler }
