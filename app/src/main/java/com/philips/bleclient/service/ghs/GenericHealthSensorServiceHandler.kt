@@ -63,6 +63,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                 GHS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
                 RACP_CHARACTERISTIC_UUID -> racpHandler.handleBytes(peripheral, value)
                 OBSERVATION_SCHEDULE_CHANGED_CHARACTERISTIC_UUID -> handleObservationScheduledCharChanged(peripheral, value)
+                LE_GATT_SECURITY_LEVELS_UUID -> handleSecurityLevel(peripheral, value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -391,6 +392,9 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
         val VALID_RANGE_AND_ACCURACY_DESCRIPTOR_UUID =
             UUID.fromString("00007f34-0000-1000-8000-00805f9b34fb")
+
+        val LE_GATT_SECURITY_LEVELS_UUID =
+            UUID.fromString("00002BF5-0000-1000-8000-00805f9b34fb")
 
         val instance: GenericHealthSensorServiceHandler? get() {
             return ServiceHandlerManager.instance?.serviceHandlerForUUID(SERVICE_UUID)?.let { it as GenericHealthSensorServiceHandler }
