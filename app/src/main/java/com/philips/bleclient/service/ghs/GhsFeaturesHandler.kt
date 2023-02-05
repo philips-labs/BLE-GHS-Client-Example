@@ -12,7 +12,7 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
 
     fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         // Handle case where features hasn't been set up on the server (shouldn't happen, but safety)
-        if (value.size > 2) {
+        if (value.size > 1) {
             Timber.i( "Features characteristic update bytes: <${value.asFormattedHexString()}> for peripheral: ${peripheral.address}")
             val parser = BluetoothBytesParser(value, 0, ByteOrder.LITTLE_ENDIAN)
             val featuresFlags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
@@ -46,8 +46,15 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
         val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         Timber.i( "Number of device specializations: $numberOfDeviceSpecializations")
         repeat(numberOfDeviceSpecializations) {
-            val deviceSpecBytes = parser.getByteArray(3)
-            Timber.i("Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
+            val bl = parser.bytesLength()
+            Timber.i("offset = ${parser.offset} it = $it bytesLength = $bl")
+            if (parser.offset + 3 <= parser.bytesLength()){
+                val deviceSpecBytes = parser.getByteArray(3)
+                Timber.i("Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
+            } else {
+                Timber.i("Features characteristic > ATT_MTU - 3; performing a full read is needed.")
+                return
+            }
         }
     }
 

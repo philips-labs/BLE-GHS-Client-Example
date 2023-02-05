@@ -176,14 +176,14 @@ enum class MeasurementStatusFlags(override val bit: Long) : Flags {
 }
 
 enum class ObservationClass(val value: UByte) {
-    SimpleNumeric(0x00.toUByte()),
-    SimpleDiscreet(0x01.toUByte()),
-    String(0x02.toUByte()),
-    RealTimeSampleArray(0x03.toUByte()),
-    CompoundObservation(0x04.toUByte()),
+    SimpleNumeric(0x01.toUByte()),
+    SimpleDiscreet(0x02.toUByte()),
+    String(0x03.toUByte()),
+    RealTimeSampleArray(0x04.toUByte()),
     CompoundDiscreteEvent(0x05.toUByte()),
     CompoundState(0x06.toUByte()),
-    TLVEncoded(0x07.toUByte()),
+    CompoundObservation(0x07.toUByte()),
+    TLVEncoded(0x08.toUByte()),
     ObservationBundle(0xFF.toUByte()),  // 0xFF
     Unknown(0xF0.toUByte());
 
