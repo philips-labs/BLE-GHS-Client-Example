@@ -23,6 +23,7 @@
     <string name="new_user">New user</string>
     <string name="set_user">Set current user</string>
     <string name="delete_user">Delete user</string>
+    <string name="delete_user_data">Delete current user data</string>
     <string name="read_current_user">Read current user</string>
     <string name="no_observation">No observations received</string>
     <string name="no_temp_observation">No temperature received</string>
@@ -48,4 +49,5 @@
     <string name="getRecordsAbove">Get > </string>
     <string name="abort">Abort</string>
     <string name="use_indicate">Use Indicate</string>
+    <string name="use_date">Date query</string>
 </resources>

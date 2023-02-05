@@ -1,6 +1,7 @@
 package com.philips.bleclient.service.user
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.le.ScanResult
 import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.ServiceHandlerManagerListener
@@ -13,6 +14,7 @@ import java.util.*
  * Listener interface for User Data Service
  */
 interface UserDataServiceHandlerListener {
+    fun onReceiveCurrentUserIndex(userIndex: Int) {}
 }
 
 class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
@@ -53,6 +55,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     private fun currentUserIndex(userIndex: Byte) {
         Timber.i("Current User Index is: $userIndex")
+        listeners.forEach { it.onReceiveCurrentUserIndex(userIndex.toInt()) }
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
@@ -90,6 +93,10 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         controlPointHandler.deleteUser(userIndex)
     }
 
+    fun deleteUserData() {
+        controlPointHandler.deleteUserData()
+    }
+
     fun getUserIndex() {
         if (peripherals.isNotEmpty()) {
             read(peripherals.first(), USER_INDEX_CHARACTERISTIC_UUID)
@@ -99,7 +106,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     /*
      * ServiceHandlerManagerListener methods
      */
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {}
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         peripherals.add(peripheral)

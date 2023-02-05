@@ -10,6 +10,7 @@ import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanResult
 import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -359,7 +360,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
      * ServiceHandlerManagerListener interface methods
      */
 
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
         if (!(connectedPeripheralArrayAdapter?.includes(peripheral) ?: true)) {
             foundPeripheralArrayAdapter?.add(peripheral)
         }

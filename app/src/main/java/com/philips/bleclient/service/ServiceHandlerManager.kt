@@ -24,7 +24,7 @@ import timber.log.Timber
 import java.util.*
 
 interface ServiceHandlerManagerListener {
-    fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral)
+    fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult)
     fun onConnectedPeripheral(peripheral: BluetoothPeripheral)
     fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
     }
@@ -164,10 +164,9 @@ class ServiceHandlerManager private constructor(context: Context) {
                 peripheral: BluetoothPeripheral,
                 scanResult: ScanResult
             ) {
-
                 if (discoveredPeripherals.add(peripheral)) {
-                    Timber.i("Found peripheral '%s'", peripheral.name)
-                    listeners.forEach { it.onDiscoveredPeripheral(peripheral) }
+                    Timber.i("Found peripheral ${peripheral.name} scan record: ${scanResult.scanRecord}", )
+                    listeners.forEach { it.onDiscoveredPeripheral(peripheral, scanResult) }
                 }
             }
 

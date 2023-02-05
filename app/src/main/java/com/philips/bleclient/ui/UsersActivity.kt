@@ -16,8 +16,9 @@ import com.philips.bleclient.BR
 import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.service.user.UserDataServiceHandler
+import com.philips.bleclient.service.user.UserDataServiceHandlerListener
 
-class UsersActivity : AppCompatActivity() {
+class UsersActivity : AppCompatActivity(), UserDataServiceHandlerListener {
 
     private val ghsServiceHandler get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
     private val usersLogView get() = findViewById<TextView>(R.id.usersLog)
@@ -38,6 +39,7 @@ class UsersActivity : AppCompatActivity() {
             it.setTitle(R.string.title_activity_users)
             it.setDisplayHomeAsUpEnabled(true)
         }
+        UserDataServiceHandler.instance?.addListener(this)
         //ObservationSyncer.addListener(this)
         // Make the observation log scrollable
         usersLogView.setMovementMethod(ScrollingMovementMethod())
@@ -69,6 +71,10 @@ class UsersActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         return true
+    }
+
+    override fun onReceiveCurrentUserIndex(userIndex: Int) {
+        UsersLog.log("Current user index is $userIndex")
     }
 
     private fun setupUserIndexField() {
@@ -117,6 +123,12 @@ class UsersActivity : AppCompatActivity() {
             UsersLog.log("Delete user $currentUserIndex")
         }
         UserDataServiceHandler.instance?.deleteUser(currentUserIndex)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteUserData(view: View) {
+        UsersLog.log("Delete user data $currentUserIndex")
+        UserDataServiceHandler.instance?.deleteUserData()
     }
 
     @Suppress("UNUSED_PARAMETER")
