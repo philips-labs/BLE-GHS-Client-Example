@@ -354,6 +354,11 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         }
     }
 
+    fun sendInvalidCommand(p: BluetoothPeripheral) {
+        write(p, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(INVALID_GHSCP_COMMAND))
+
+    }
+
     init {
         serviceUUID = SERVICE_UUID
         supportedCharacteristics.addAll(arrayOf(
@@ -415,6 +420,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
          */
         private const val START_SEND_LIVE_OBSERVATIONS = 0x01.toByte()
         private const val STOP_SEND_LIVE_OBSERVATIONS = 0x02.toByte()
+        private const val INVALID_GHSCP_COMMAND = 0x03.toByte()
         private const val CONTROL_POINT_SUCCESS = 0x80.toByte()
         private const val CONTROL_POINT_SERVER_BUSY = 0x81.toByte()
         private const val CONTROL_POINT_ERROR_LIVE_OBSERVATIONS = 0x82.toByte()

@@ -173,6 +173,11 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     }
 
     @Suppress("UNUSED_PARAMETER")
+    fun sendInvalidCommand(view: View) {
+        ghsServiceHandler?.let { peripheral?.let { p -> it.sendInvalidCommand(p) } }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
     fun disableLiveObservations(view: View) {
         ghsServiceHandler?.let { peripheral?.let { p -> it.disableLiveObservations(p) } }
     }
