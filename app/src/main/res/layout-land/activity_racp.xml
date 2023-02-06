@@ -130,36 +130,39 @@
                     android:id="@+id/lblQueryStartRecord"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginRight="16dp"
+                    android:layout_marginEnd="16dp"
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
-                    android:text="Query record ID:"
+                    android:text="Query rec #:"
                     android:textSize="16sp" />
 
                 <EditText
                     android:id="@+id/txtStartRecord"
-                    android:layout_width="64dp"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
                     android:inputType="number"
                     android:text="5"
                     android:textAlignment="textEnd"
                     android:textSize="16sp"
                     tools:ignore="TouchTargetSizeCheck" />
 
-                <View
-                    android:layout_width="16dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
                 <android.widget.Switch
-                    android:id="@+id/publicHapiSwitch"
+                    android:id="@+id/useDateSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:onClick="toggleIndications"
-                    android:text="@string/use_indicate" />
+                    android:onClick="toggleDateQuery"
+                    android:text="@string/use_date" />
 
             </LinearLayout>
+
+            <android.widget.Switch
+                android:id="@+id/useIndicateSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="toggleIndications"
+                android:text="@string/use_indicate" />
 
             <View
                 android:layout_width="match_parent"

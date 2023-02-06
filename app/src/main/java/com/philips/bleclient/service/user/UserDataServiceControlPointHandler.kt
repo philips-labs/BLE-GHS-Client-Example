@@ -90,6 +90,14 @@ class UserDataServiceControlPointHandler(val service: UserDataServiceHandler) {
         service.write(UserDataServiceHandler.UDS_CONTROL_POINT_CHARACTERISTIC_UUID, sendBytes)
     }
 
+    fun deleteUserData() {
+        val parser = BluetoothBytesParser()
+        parser.setUInt8(UserDataControlPointOpCode.DeleteUserData.value.toInt())
+        val sendBytes = parser.value
+        Timber.i("Writing delete current user data command bytes: ${sendBytes.asFormattedHexString()}")
+        service.write(UserDataServiceHandler.UDS_CONTROL_POINT_CHARACTERISTIC_UUID, sendBytes)
+    }
+
     fun deleteAllUsers() { deleteUser(0xFF) }
 
     private fun newUserRegistered(value: ByteArray) {

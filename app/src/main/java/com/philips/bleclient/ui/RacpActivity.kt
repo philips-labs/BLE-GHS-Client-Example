@@ -1,5 +1,7 @@
 package com.philips.bleclient.ui
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE
 import android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY
 import android.os.Bundle
@@ -17,6 +19,7 @@ import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.observations.Observation
 import timber.log.Timber
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -28,8 +31,12 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     private var isGetRecordsAll = false
     private var useIndications = false
 
+    private var queryByDate = false
+
     private val racpLogView get() = findViewById<TextView>(R.id.racpLog)
     private val progressBarView get() = findViewById<ProgressBar>(R.id.obsSyncProgress)
+
+    private val queryCalendar = Calendar.getInstance()
 
     private var startRecordNumber = 5
         set(value) {
@@ -54,6 +61,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         // Make the observation log scrollable
         racpLogView.setMovementMethod(ScrollingMovementMethod())
         setupRecordEntryField()
+        setupDatePicker()
     }
 
     override fun onResume() {
@@ -95,6 +103,50 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         })
     }
 
+    lateinit var dateEdt: EditText
+    lateinit var timeEdt: EditText
+
+    private fun setupDatePicker() {
+        dateEdt = findViewById(R.id.idEdtDate)
+        dateEdt.setOnClickListener {
+            val year = queryCalendar.get(Calendar.YEAR)
+            val month = queryCalendar.get(Calendar.MONTH)
+            val day = queryCalendar.get(Calendar.DAY_OF_MONTH)
+            val datePickerDialog = DatePickerDialog(
+                this,
+                { view, year, monthOfYear, dayOfMonth ->
+                    queryCalendar.set(Calendar.YEAR, year)
+                    queryCalendar.set(Calendar.MONTH, monthOfYear)
+                    queryCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    val dat = (dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + year)
+                    dateEdt.setText(dat)
+                },
+                year,
+                month,
+                day
+            )
+            datePickerDialog.show()
+        }
+        timeEdt = findViewById(R.id.idEdtTime)
+        timeEdt.setOnClickListener {
+            val hour = queryCalendar.get(Calendar.HOUR_OF_DAY)
+            val minute = queryCalendar.get(Calendar.MINUTE)
+            val timePickerDialog = TimePickerDialog(
+                this,
+                { view, hr, min ->
+                    queryCalendar.set(Calendar.HOUR, hr)
+                    queryCalendar.set(Calendar.MINUTE, min)
+                    val dat = (hr.toString() + ":" + (min + 1).toString())
+                    timeEdt.setText(dat)
+                },
+                hour,
+                minute,
+                true
+            )
+            timePickerDialog.show()
+        }
+    }
+
     private fun updateQueryButtons() {
         findViewById<Button>(R.id.queryRecordsButton).text = "${getString(R.string.aboveRecords)} $startRecordNumber"
         findViewById<Button>(R.id.getRecordsAbove).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
@@ -126,7 +178,11 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     fun numberRecordsAbove(view: View) {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getNumberOfRecordsGreaterThan(startRecordNumber)
-        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+        if (queryByDate) {
+            ObservationSyncer.getNumberOfRecordsGreaterThanDate(queryCalendar.time)
+        } else {
+            ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+        }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -144,6 +200,21 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         }
         ghsServiceHandler?.racpHandler?.useIndicationsForRACP(notifyProperty)
 
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun toggleDateQuery(view: View) {
+        queryByDate = (view as Switch).isChecked
+        updateDatePicker()
+    }
+
+    private fun updateDatePicker() {
+        val dateVisibility = if (queryByDate) View.VISIBLE else View.GONE
+        val recNumVisibility = if (queryByDate) View.GONE else View.VISIBLE
+        findViewById<TextView>(R.id.lblQueryStartRecord).visibility = recNumVisibility
+        findViewById<EditText>(R.id.txtStartRecord).visibility = recNumVisibility
+        findViewById<EditText>(R.id.idEdtDate).visibility = dateVisibility
+        findViewById<EditText>(R.id.idEdtTime).visibility = dateVisibility
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -3,6 +3,7 @@ package com.philips.bleclient.service.ghs
 import android.bluetooth.BluetoothGattCharacteristic
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asHexString
+import com.philips.bleclient.extensions.asGHSBytes
 import com.philips.bleclient.getUInt16At
 import com.philips.bleclient.merge
 import com.philips.bleclient.ui.ObservationLog
@@ -10,6 +11,7 @@ import com.philips.bleclient.ui.RacpLog
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import timber.log.Timber
+import java.util.*
 
 class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
 
@@ -36,6 +38,17 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_NUMBER_STORED_RECORDS,
+                OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
+    fun getNumberOfRecordsGreaterThan(date: Date) {
+        val parser = BluetoothBytesParser()
+//        parser.setIntValue(date.asGHSBytes(), BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
             byteArrayOf(
                 OP_CODE_NUMBER_STORED_RECORDS,

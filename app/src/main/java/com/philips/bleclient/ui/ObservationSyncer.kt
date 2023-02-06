@@ -5,6 +5,7 @@ import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.service.ghs.GenericHealthSensorHandlerRacpListener
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import timber.log.Timber
+import java.util.*
 
 
 interface ObservationSyncerListener {
@@ -61,6 +62,12 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
     fun getNumberOfRecordsGreaterThanId(startRecordNumber: Int) {
         isRetrieving = false
         ghsServiceHandler?.getNumberOfRecordsGreaterThan(startRecordNumber)
+    }
+
+
+    fun getNumberOfRecordsGreaterThanDate(date: Date) {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsGreaterThan(date)
     }
 
     fun retrieveStoredObservationsAboveId(recordId: Int) {

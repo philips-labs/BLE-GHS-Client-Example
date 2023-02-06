@@ -32,7 +32,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:orientation="horizontal">
             <Button
                 android:id="@+id/deleteAllRecordsButton"
@@ -74,7 +73,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:orientation="horizontal">
             <Button
                 android:id="@+id/deleteGreaterRecordsButton"
@@ -114,11 +112,9 @@
 
         </LinearLayout>
 
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:orientation="horizontal">
 
             <TextView
@@ -127,34 +123,69 @@
                 android:layout_height="match_parent"
                 android:fontFamily="sans-serif-medium"
                 android:textSize="16sp"
-                android:layout_marginRight="16dp"
+                android:layout_marginEnd="8dp"
                 android:gravity="center"
-                android:text="Query record ID:" />
+                android:text="Query rec #:" />
 
             <EditText
                 android:id="@+id/txtStartRecord"
-                android:layout_width="64dp"
+                android:layout_width="48dp"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
                 android:inputType="number"
                 android:text="5"
                 android:textAlignment="textEnd"
                 android:textSize="16sp"
                 tools:ignore="TouchTargetSizeCheck" />
 
-            <View
-                android:layout_width="16dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+            <EditText
+                android:id="@+id/idEdtDate"
+                android:visibility="gone"
+                android:layout_width="96dp"
+                android:textSize="10sp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="Enter date" />
+
+            <EditText
+                android:id="@+id/idEdtTime"
+                android:visibility="gone"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="Enter time" />
 
             <android.widget.Switch
-                android:id="@+id/publicHapiSwitch"
+                android:id="@+id/useDateSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:onClick="toggleIndications"
-                android:text="@string/use_indicate" />
+                android:onClick="toggleDateQuery"
+                android:text="@string/use_date" />
 
         </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <android.widget.Switch
+            android:id="@+id/useIndicateSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="toggleIndications"
+            android:text="@string/use_indicate" />
+
+    </LinearLayout>
 
         <View
             android:layout_width="match_parent"

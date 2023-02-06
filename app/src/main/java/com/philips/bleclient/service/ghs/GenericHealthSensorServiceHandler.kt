@@ -6,6 +6,7 @@ package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.le.ScanResult
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
@@ -110,6 +111,10 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.getNumberOfRecordsGreaterThan(recordNumber)
     }
 
+    fun getNumberOfRecordsGreaterThan(date: Date) {
+        ObservationLog.log("RACP: Get number of records greater than date $date sent")
+        racpHandler.getNumberOfRecordsGreaterThan(date)
+    }
 
     fun getAllRecords() {
         racpHandler.getAllRecords()
@@ -307,7 +312,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     /*
      * ServiceHandlerManagerListener methods
      */
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {}
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         Timber.i("GHS Service Handler: Connected Peripheral ${peripheral.address}")

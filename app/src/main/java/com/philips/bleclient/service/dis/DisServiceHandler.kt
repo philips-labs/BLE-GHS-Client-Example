@@ -1,6 +1,7 @@
 package com.philips.bleclient.service.dis
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.le.ScanResult
 import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.ServiceHandlerManagerListener
@@ -109,7 +110,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         }
     }
 
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
         // nothing to do here
     }
 

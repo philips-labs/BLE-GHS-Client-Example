@@ -6,6 +6,7 @@
 package com.philips.bleclient.service.sts
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.le.ScanResult
 import com.philips.bleclient.*
 import com.philips.bleclient.extensions.*
 import com.welie.blessed.BluetoothPeripheral
@@ -71,7 +72,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
     /*
      * ServiceHandlerManagerListener methods
      */
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral) {}
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {}
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         peripherals.add(peripheral)
