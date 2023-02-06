@@ -41,7 +41,7 @@ class ServiceHandlerManager private constructor(context: Context) {
     private val GAP_UUID = UUID.fromString("00001801-0000-1000-8000-00805f9b34fb")
     private val RCS_UUID = UUID.fromString("00001829-0000-1000-8000-00805f9b34fb")
 
-    private fun serviceUUIDtoString(uuid: UUID) : String {
+    public fun serviceUUIDtoString(uuid: UUID) : String {
         return when(uuid){
             GenericHealthSensorServiceHandler.SERVICE_UUID -> "GHSS"
             SimpleTimeServiceHandler.SERVICE_UUID -> "ETS"

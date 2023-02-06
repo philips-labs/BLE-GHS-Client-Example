@@ -10,6 +10,7 @@ import android.bluetooth.le.ScanResult
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.ui.ObservationLog
+import com.philips.bleclient.ui.RacpLog
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.*
 import timber.log.Timber
@@ -309,10 +310,82 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         }
     }
 
+    fun ByteArray.toHex(): String = joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }
+
     /*
      * ServiceHandlerManagerListener methods
      */
-    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {}
+    override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        Timber.i("GHS Service Handler - parsing advertising & scan response data:")
+        var advLogMessage  = "Adv.Data:"
+        val sr = scanResult.scanRecord;
+        if( sr != null){
+            val serviceUUIDs = sr.serviceUuids
+            if( serviceUUIDs != null){
+                var serviceUUIDsString = "Service UUIDs:"
+                for (uuid in serviceUUIDs) {
+                    serviceUUIDsString += " " + ServiceHandlerManager.getInstance()?.serviceUUIDtoString(uuid.uuid)
+                }
+                Timber.i(serviceUUIDsString)
+                advLogMessage += serviceUUIDsString + ";"
+            } else {
+                Timber.i("No service UUIDs advertised.")
+            }
+
+            val serviceDataCollection = sr.getServiceData()
+            if (serviceDataCollection != null){
+                Timber.i("Service Data:")
+                advLogMessage += "AD:"
+                for(pu in serviceDataCollection.keys) {
+                    val serviceName = ServiceHandlerManager.getInstance()?.serviceUUIDtoString(pu.uuid)
+                    Timber.i(serviceName + " advertisement data:" + serviceDataCollection.get(pu)?.toHex())
+                    if (pu.uuid == GenericHealthSensorServiceHandler.SERVICE_UUID) {
+                        val bytes = serviceDataCollection.get(pu)
+                        if (bytes != null) {
+                            val specCount = bytes.toUByteArray().first().toInt()
+                            var advspecs = "$specCount specs:"
+                            for (i in 0..specCount-1){
+                                advspecs += byteArrayOf(bytes[2*i+2], bytes[2*i+1]).toHex() + ";"
+                            }
+                            Timber.i(advspecs)
+                            advLogMessage += advLogMessage + advspecs + ";"
+                            val userOffset = 2*specCount+1
+                            if (bytes.size > userOffset) {
+                                val userCount = bytes.toUByteArray()[userOffset].toInt()
+                                if(userCount > 0) {
+                                    var userList = "$userCount users with new data:"
+                                    for (i in 0..userCount - 1) {
+                                        userList += byteArrayOf(bytes[userOffset + 1 + i]).toHex() + ";"
+                                    }
+                                    Timber.i(userList)
+                                    advLogMessage += userList
+                                } else {
+                                    Timber.i("No users with new data.")
+                                }
+                            } else {
+                                Timber.i("UDS not supported.")
+                            }
+                        } else {
+                            Timber.i(serviceName + "Oops - empty GHSS Service AD Data")
+                        }
+                    }
+                    RacpLog.log(advLogMessage)
+                }
+            } else {
+                Timber.i("No Service AD present.")
+            }
+
+            val localName = sr.deviceName
+            if(localName != null) {
+                Timber.i("Local name:" + localName)
+            } else {
+                Timber.i("No local name present.")
+            }
+
+        } else{
+            Timber.i("No scan record found....")
+        }
+    }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         Timber.i("GHS Service Handler: Connected Peripheral ${peripheral.address}")
