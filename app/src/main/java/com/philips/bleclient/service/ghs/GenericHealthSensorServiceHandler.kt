@@ -191,7 +191,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
      */
 
     fun receivedObservation(deviceAddress: String, observation: Observation) {
-        Timber.i("GHS Service Hander rececied Observation: $observation from: $deviceAddress")
+        Timber.i("GHS Service Hander received Observation: $observation from: $deviceAddress")
         listeners.forEach { it.onReceivedObservations(deviceAddress, listOf(observation)) }
     }
 

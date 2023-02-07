@@ -4,6 +4,7 @@
  */
 package com.philips.bleclient.observations
 
+import com.philips.bleclient.asHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.util.ObservationClass
 import com.philips.bleclient.util.ObservationFlagBitMask
@@ -32,6 +33,7 @@ open class Observation {
     var measurementDuration: Int? = null
     var patientId: Int? = null
     var specializationCodes: Array<Int>? = null
+    var supplementalInformation: List<Int>? = null
 
     constructor(
         id: Int?,
@@ -40,7 +42,8 @@ open class Observation {
         valuePrecision: Int,
         unitCode: UnitCode,
         timestamp: LocalDateTime?,
-        patientId: Int?
+        patientId: Int?,
+        //supplementalInfo: List<Int>?
     ) {
         this.handle = id
         this.type = type
@@ -50,6 +53,7 @@ open class Observation {
         this.unitCode = unitCode
         this.timestamp = timestamp
         this.patientId = patientId
+        //this.supplementalInformation = supplementalInfo
     }
 
     constructor(
@@ -166,6 +170,7 @@ open class Observation {
             val observationType = getObservationTypeIfPresent(flags, parser)
             val timestamp =
                 getTimestampIfPresent(flags, parser)?.let { attributesMap.put("timestamp", it); it }
+            val measurementDuration = getDurationIfPresent(flags, parser)
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
             val objectId =
                 getObjectIdIfPresent(flags, parser)?.let { attributesMap.put("objectId", it); it }
@@ -222,15 +227,16 @@ open class Observation {
             // TODO DRY This with bundle observations
             val observationType = getObservationTypeIfPresent(flags, parser)
             val timestamp = getTimestampIfPresent(flags, parser)
+            val measurementDuration = getDurationIfPresent(flags, parser)
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
             val objectId = getObjectIdIfPresent(flags, parser)
             val patientId = getPatientIdIfPresent(flags, parser)
             val supplementalInfo = getSupplementalInfoIfPresent(flags, parser)
             // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
             // so for now just check if present and throw and exception if set
-            getDerivedFromIfPresent(flags, parser)
-            getHasMemberIfPresent(flags, parser)
-            getTLVsIfPresent(flags, parser)
+            val derivedFrom = getDerivedFromIfPresent(flags, parser)
+            val hasMembers = getHasMemberIfPresent(flags, parser)
+            val tlvs = getTLVsIfPresent(flags, parser)
 
             val observationValue = ObservationValue.from(observationClass, parser)
             return Observation(
@@ -318,7 +324,7 @@ open class Observation {
             parser: BluetoothBytesParser
         ): Int? {
             return if (observationFlags.isObjectIdPresent) {
-                parser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)
+                parser.uInt32
             } else {
                 null
             }
@@ -350,7 +356,8 @@ open class Observation {
             var codes: MutableList<Int>? = null
             // TODO Grab Supplemental Information (var # bytes)
             if (observationFlags.isSupplementalInformationPresent) {
-                val count = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+                val count = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte().toInt()
+                Timber.i("Supplemental info count = $count")
                 codes = mutableListOf()
                 repeat(count) { codes.add(parser.getIntValue(BluetoothBytesParser.FORMAT_SINT32)) }
             }
@@ -364,14 +371,19 @@ open class Observation {
         private fun getDerivedFromIfPresent(
             observationFlags: ObservationFlagBitMask,
             parser: BluetoothBytesParser
-        ) {
+        ): MutableList<Int>? {
+            var derivedFrom: MutableList<Int>? = null
             if (observationFlags.isDerivedFromPresent) {
+                derivedFrom = mutableListOf()
                 val count = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte().toInt()
+                Timber.i("Derived from count = $count")
                 repeat(count) {
                     val objId = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
+                    derivedFrom.add(objId)
                     Timber.i("Derived from object id: $objId")
                 }
             }
+            return derivedFrom
         }
 
         /*
@@ -380,10 +392,19 @@ open class Observation {
          * session and references the individual heart rate measurements taken during the session. The Has Member
          * field contains the references to the other Observations that are a member of this group of Observations.
          */
-        private fun getHasMemberIfPresent(observationFlags: ObservationFlagBitMask, parser: BluetoothBytesParser) {
+        private fun getHasMemberIfPresent(observationFlags: ObservationFlagBitMask, parser: BluetoothBytesParser) : MutableList<Int>? {
+            var hasMember: MutableList<Int>? = null
             if (observationFlags.hasMember) {
-                throw RuntimeException("Observation with Has Member Flag Unsupported")
+                hasMember = mutableListOf()
+                val count = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte().toInt()
+                Timber.i("Has member count = $count")
+                repeat(count) {
+                    val objId = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
+                    hasMember.add(objId)
+                    Timber.i("Has member object id: $objId")
+                }
             }
+            return hasMember
         }
 
         /*
@@ -394,7 +415,15 @@ open class Observation {
          */
         private fun getTLVsIfPresent(observationFlags: ObservationFlagBitMask, parser: BluetoothBytesParser) {
             if (observationFlags.hasTLVPresent) {
-                throw RuntimeException("Observation with Has TLVs Flag Unsupported")
+                val count = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte().toInt()
+                Timber.i("Number of TLVs = $count")
+                repeat(count) {
+                    val tlvType = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT32)
+                    val tlvLength = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+                    val tlvFormatType = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toUByte().toInt()
+                    val bytes = parser.getByteArray(tlvLength)
+                    Timber.i("Type: $tlvType Length: $tlvLength Format: $tlvFormatType ${bytes.asHexString()}")
+                }
             }
         }
 
@@ -437,6 +466,7 @@ open class Observation {
         }
 
         fun fromBytes(ghsFixedFormatBytes: ByteArray): Observation? {
+            Timber.i("Construction observation from ${ghsFixedFormatBytes.size} bytes.")
             return getObservationFrom(
                 BluetoothBytesParser(ghsFixedFormatBytes, 0, ByteOrder.LITTLE_ENDIAN),
                 ghsFixedFormatBytes.size
