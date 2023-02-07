@@ -6,6 +6,7 @@ package com.philips.bleclient
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import com.philips.bleclient.ui.AppLog
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import com.welie.blessed.WriteType
@@ -35,7 +36,7 @@ open class ServiceHandler {
     ) {
         if (status == GattStatus.SUCCESS) {
             val isNotifying = peripheral.isNotifying(characteristic)
-            Timber.i("SUCCESS: Notify set to '%s' for %s", isNotifying, characteristic.uuid)
+            Timber.i("SUCCESS: Notify/indicating set to '%s' for %s", isNotifying, characteristic.uuid)
         } else {
             Timber.e(
                 "ERROR: Changing notification state failed for %s (%s)", characteristic.uuid, status
@@ -155,23 +156,27 @@ open class ServiceHandler {
     }
 
     private val CCC_DESCRIPTOR_UUID: UUID? = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-    private val enableIndications = byteArrayOf(3.toByte(), 0.toByte())
+    private val enableIndicationsAndNotifications = byteArrayOf(3.toByte(), 0.toByte())
+    private val enableIndications = byteArrayOf(2.toByte(), 0.toByte())
 
     fun enableIndicate(
         peripheral: BluetoothPeripheral,
         characteristicUUID: UUID
     ) {
         val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
+        var message = "Enabling indications for $characteristicUUID by writing to CCCD."
         if (characteristic != null) {
-//            if (characteristic.isIndicate()) {
+            if (characteristic.isIndicate()) {
                 if (!peripheral.writeDescriptor(characteristic.getDescriptor(CCC_DESCRIPTOR_UUID), enableIndications)) {
-                    val message =
+                     message =
                         "Peripheral ${peripheral.name} enableIndicate failed for ${characteristic.uuid}"
                 }
-//            } else {
-//                val message = "Indications cannot be enabled for ${characteristic.uuid}"
-//            }
+            } else {
+                message = "Indications cannot be enabled for ${characteristic.uuid}"
+            }
         }
+        Timber.i(message)
+        AppLog.log(message)
     }
 
     fun getCurrentCentrals(): List<BluetoothPeripheral> {

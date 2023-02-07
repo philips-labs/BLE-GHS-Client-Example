@@ -36,6 +36,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
+        racpLog("getAllRecords > $recordNumber")
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
@@ -47,6 +48,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getNumberOfRecordsGreaterThan(date: Date) {
+        racpLog("getAllRecords after $date")
         val parser = BluetoothBytesParser()
 //        parser.setIntValue(date.asGHSBytes(), BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
@@ -66,7 +68,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getFirstRecord() {
-        racpLog("getAllRecords...")
+        racpLog("getFirstRecord...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_FIRST_RECORD)

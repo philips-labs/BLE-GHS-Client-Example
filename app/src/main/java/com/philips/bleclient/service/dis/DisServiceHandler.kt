@@ -116,7 +116,9 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
         Timber.i("DIS Service Handler: Connected Peripheral ${peripheral.address}")
-        peripherals.add(peripheral)
+        if (!peripherals.contains(peripheral)) {
+            peripherals.add(peripheral)
+        }
         listeners.forEach { it.onConnected(peripheral.address) }
     }
 
