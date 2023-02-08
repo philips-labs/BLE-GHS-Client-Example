@@ -38,7 +38,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
         Timber.i("Characteristics discovered: ${characteristics.size}")
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         // enableAllNotificationsAndRead(peripheral, characteristics)
-        // enableAllNotifications(peripheral, characteristics)
+        enableAllNotifications(peripheral, characteristics)
     }
 
     //    @ExperimentalStdlibApi
