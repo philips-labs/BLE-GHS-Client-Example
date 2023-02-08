@@ -437,6 +437,18 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
     }
 
+    fun useIndicationsForLive(indicate: Int) {
+        getCurrentCentrals().forEach {
+            if ((indicate and BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
+                enableIndicate(it, GenericHealthSensorServiceHandler.OBSERVATION_CHARACTERISTIC_UUID)
+            } else if ((indicate and BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                enableNotify(it, GenericHealthSensorServiceHandler.OBSERVATION_CHARACTERISTIC_UUID)
+            } else {
+                Timber.i("ERROR: useIndicationsForLive Invalid Property, must be PROPERTY_INDICATE or PROPERTY_NOTIFY")
+            }
+        }
+    }
+
     init {
         serviceUUID = SERVICE_UUID
         supportedCharacteristics.addAll(arrayOf(

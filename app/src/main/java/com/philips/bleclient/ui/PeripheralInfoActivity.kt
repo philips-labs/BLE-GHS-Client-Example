@@ -4,6 +4,7 @@
  */
 package com.philips.bleclient.ui
 
+import android.bluetooth.BluetoothGattCharacteristic
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -28,6 +29,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
     private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
+    private var useIndicationsForLiveData = false
 
     private enum class TimeType {
         LOCAL_TIME,
@@ -206,6 +208,23 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
         ghsServiceHandler?.let {
             peripheral?.let { p -> it.debugObservationScheduleDescriptors(p) }
         }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun toggleIndicationsLive(view: View) {
+        useIndicationsForLiveData = (view as Switch).isChecked
+
+        val notifyProperty = if (useIndicationsForLiveData) {
+            ObservationLog.log("Using Indications for Live Data")
+            Timber.i("Using Indications for Live Data")
+            BluetoothGattCharacteristic.PROPERTY_INDICATE
+        } else {
+            ObservationLog.log("Using Notificiations for Live Data")
+            Timber.i("Using Notificiations for Data")
+            BluetoothGattCharacteristic.PROPERTY_NOTIFY
+        }
+        ghsServiceHandler?.useIndicationsForLive(notifyProperty)
+
     }
 
     /*

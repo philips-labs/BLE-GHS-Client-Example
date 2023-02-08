@@ -175,11 +175,19 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent" />
 
+                <Switch
+                    android:id="@+id/useIndicationsForLive"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="toggleIndicationsLive"
+                    android:text="Use indications for Live Obs" />
+
                 <TextView
                     android:id="@+id/disInfoView"
                     android:layout_width="match_parent"
                     android:layout_height="121dp"
-                    android:text="Device Information" />
+                    android:text="Device Information"
+                    android:textColor="#757575" />
             </LinearLayout>
         </ScrollView>
 
