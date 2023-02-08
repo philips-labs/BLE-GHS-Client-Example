@@ -10,7 +10,9 @@
     <string name="show_racp">RACP</string>
     <string name="users">Users</string>
     <string name="received_observations">Received observations:</string>
-    <string name="clear_log">Clear observation log</string>
+    <string name="clear_log">Clear logs</string>
+    <string name="scroll_app_log">Scroll App</string>
+    <string name="scroll_obs_log">Scroll Obs</string>
     <string name="parseTestObservation">Parse test observation</string>
     <string name="fhir_server">FHIR</string>
     <string name="sts">STS</string>

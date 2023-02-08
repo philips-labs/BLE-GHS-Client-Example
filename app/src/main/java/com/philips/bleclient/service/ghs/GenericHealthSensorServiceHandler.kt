@@ -6,6 +6,7 @@ package com.philips.bleclient.service.ghs
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
@@ -16,6 +17,7 @@ import com.welie.blessed.*
 import timber.log.Timber
 import java.util.*
 
+@OptIn(ExperimentalUnsignedTypes::class)
 class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     private val peripherals = mutableListOf<BluetoothPeripheral>()
@@ -317,74 +319,64 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
      */
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
         Timber.i("GHS Service Handler - parsing advertising & scan response data:")
-        var advLogMessage  = "Adv.Data:"
-        val sr = scanResult.scanRecord;
-        if( sr != null){
-            val serviceUUIDs = sr.serviceUuids
-            if( serviceUUIDs != null){
-                var serviceUUIDsString = "Service UUIDs:"
-                for (uuid in serviceUUIDs) {
-                    serviceUUIDsString += " " + ServiceHandlerManager.getInstance()?.serviceUUIDtoString(uuid.uuid)
-                }
-                Timber.i(serviceUUIDsString)
-                advLogMessage += serviceUUIDsString + ";"
-            } else {
-                Timber.i("No service UUIDs advertised.")
-            }
+        scanResult.scanRecord?.let { handleScanRecord(it) } ?: Timber.i("No scan record found....")
+    }
 
-            val serviceDataCollection = sr.getServiceData()
-            if (serviceDataCollection != null){
-                Timber.i("Service Data:")
-                advLogMessage += "AD:"
-                for(pu in serviceDataCollection.keys) {
-                    val serviceName = ServiceHandlerManager.getInstance()?.serviceUUIDtoString(pu.uuid)
-                    Timber.i(serviceName + " advertisement data:" + serviceDataCollection.get(pu)?.toHex())
-                    if (pu.uuid == GenericHealthSensorServiceHandler.SERVICE_UUID) {
-                        val bytes = serviceDataCollection.get(pu)
-                        if (bytes != null) {
-                            val specCount = bytes.toUByteArray().first().toInt()
-                            var advspecs = "$specCount specs:"
-                            for (i in 0..specCount-1){
-                                advspecs += byteArrayOf(bytes[2*i+2], bytes[2*i+1]).toHex() + ";"
-                            }
-                            Timber.i(advspecs)
-                            advLogMessage += advLogMessage + advspecs + ";"
-                            val userOffset = 2*specCount+1
-                            if (bytes.size > userOffset) {
-                                val userCount = bytes.toUByteArray()[userOffset].toInt()
-                                if(userCount > 0) {
-                                    var userList = "$userCount users with new data:"
-                                    for (i in 0..userCount - 1) {
-                                        userList += byteArrayOf(bytes[userOffset + 1 + i]).toHex() + ";"
-                                    }
-                                    Timber.i(userList)
-                                    advLogMessage += userList
-                                } else {
-                                    Timber.i("No users with new data.")
-                                }
+    fun ScanRecord.serviceUuidsString(): String {
+        return this.serviceUuids?.let {
+            it.joinToString { ServiceHandlerManager.getInstance()?.serviceUUIDtoString(it.uuid).toString() }
+        } ?: "No service UUIDs advertised."
+    }
+
+    private fun handleScanRecord(scanRecord: ScanRecord) {
+        Timber.i("Local name ${scanRecord.deviceName ?: "not present"}")
+        RacpLog.log("Adv.Data:")
+        val serviceUUIDsString = "Advertised Service UUIDs: ${scanRecord.serviceUuidsString()}"
+        RacpLog.log(serviceUUIDsString)
+        Timber.i(serviceUUIDsString)
+        handleServiceRecord(scanRecord)
+    }
+
+    private fun handleServiceRecord(serviceRecord: ScanRecord) {
+        var advLogMessage = ""
+        val serviceDataCollection = serviceRecord.getServiceData()
+        if (serviceDataCollection != null){
+            Timber.i("Service Data:")
+            advLogMessage += "AD:"
+            for(pu in serviceDataCollection.keys) {
+                val serviceName = ServiceHandlerManager.getInstance()?.serviceUUIDtoString(pu.uuid)
+                Timber.i(serviceName + " advertisement data:" + serviceDataCollection.get(pu)?.toHex())
+                if (pu.uuid == SERVICE_UUID) {
+                    val bytes = serviceDataCollection.get(pu)
+                    if (bytes != null) {
+                        val specCount = bytes.toUByteArray().first().toInt()
+                        var advspecs = "$specCount specializations:"
+                        repeat(specCount - 1) { advspecs += "${byteArrayOf(bytes[2*it+2], bytes[2*it+1]).toHex()}; " }
+                        Timber.i(advspecs)
+                        advLogMessage += advLogMessage + advspecs + ";"
+                        val userOffset = 2*specCount+1
+                        if (bytes.size > userOffset) {
+                            val userCount = bytes.toUByteArray()[userOffset].toInt()
+                            if(userCount > 0) {
+                                var userList = "$userCount users with new data:"
+                                repeat(userCount - 1) { userList += "${byteArrayOf(bytes[userOffset + 1 + it]).toHex()}; " }
+                                Timber.i(userList)
+                                advLogMessage += userList
                             } else {
-                                Timber.i("UDS not supported.")
+                                Timber.i("No users with new data.")
                             }
                         } else {
-                            Timber.i(serviceName + "Oops - empty GHSS Service AD Data")
+                            Timber.i("UDS not supported.")
                         }
+                    } else {
+                        Timber.i(serviceName + "Oops - empty GHSS Service AD Data")
                     }
-                    RacpLog.log(advLogMessage)
                 }
-            } else {
-                Timber.i("No Service AD present.")
             }
-
-            val localName = sr.deviceName
-            if(localName != null) {
-                Timber.i("Local name:" + localName)
-            } else {
-                Timber.i("No local name present.")
-            }
-
-        } else{
-            Timber.i("No scan record found....")
+        } else {
+            Timber.i("No Service AD present.")
         }
+        RacpLog.log(advLogMessage)
     }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {

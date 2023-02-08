@@ -17,6 +17,7 @@ import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.service.user.UserDataServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandlerListener
+import timber.log.Timber
 
 class UsersActivity : AppCompatActivity(), UserDataServiceHandlerListener {
 
@@ -133,7 +134,12 @@ class UsersActivity : AppCompatActivity(), UserDataServiceHandlerListener {
 
     @Suppress("UNUSED_PARAMETER")
     fun readCurrentUser(view: View) {
-        UserDataServiceHandler.instance?.getUserIndex()
+        UserDataServiceHandler.instance?.getUserIndex() ?:  Timber.i("No UserDataServiceHandler instance")
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun readCurrentUserFirstName(view: View) {
+        UserDataServiceHandler.instance?.getFirstName()
     }
 
     private fun updateLogView() {

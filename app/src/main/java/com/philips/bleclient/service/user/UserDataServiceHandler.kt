@@ -5,6 +5,7 @@ import android.bluetooth.le.ScanResult
 import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.ServiceHandlerManagerListener
+import com.philips.bleclient.asFormattedHexString
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import timber.log.Timber
@@ -47,6 +48,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
             when (characteristic.uuid) {
                 USER_INDEX_CHARACTERISTIC_UUID -> currentUserIndex(value.first())
                 UDS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
+                UDS_FIRST_NAME_CHARACTERISTIC_UUID -> currentFirstName(value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -56,6 +58,11 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     private fun currentUserIndex(userIndex: Byte) {
         Timber.i("Current User Index is: $userIndex")
         listeners.forEach { it.onReceiveCurrentUserIndex(userIndex.toInt()) }
+    }
+
+
+    private fun currentFirstName(bytes: ByteArray) {
+        Timber.i("Current User First Name is: ${bytes.asFormattedHexString()}")
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
@@ -100,6 +107,12 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     fun getUserIndex() {
         if (peripherals.isNotEmpty()) {
             read(peripherals.first(), USER_INDEX_CHARACTERISTIC_UUID)
+        }
+    }
+
+    fun getFirstName() {
+        if (peripherals.isNotEmpty()) {
+            read(peripherals.first(), UDS_FIRST_NAME_CHARACTERISTIC_UUID)
         }
     }
 

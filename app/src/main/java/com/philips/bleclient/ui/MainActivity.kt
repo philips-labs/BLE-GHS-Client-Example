@@ -370,6 +370,9 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         ObservationLog.log("Connected: ${peripheral.name}")
         foundPeripheralArrayAdapter?.remove(peripheral)
         connectedPeripheralArrayAdapter?.add(peripheral)
+        //        ghsServiceHandler?.onConnectedPeripheral(peripheral)
+//        disServiceHandler?.onConnectedPeripheral(peripheral)
+
     }
 
     override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral) {
