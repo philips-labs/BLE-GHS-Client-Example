@@ -55,6 +55,15 @@ class ObservationLogActivity : AppCompatActivity() {
         ObservationLog.clear()
     }
 
+
+    fun scrollObservationLog(view: View) {
+        findViewById<TextView>(R.id.observationsLog).scrollToBottom()
+    }
+
+    fun scrollAppLog(view: View) {
+        findViewById<TextView>(R.id.appLog).scrollToBottom()
+    }
+
     private fun updateLogView() {
         findViewById<TextView>(R.id.observationsLog).setText(ObservationLog.log)
         findViewById<TextView>(R.id.appLog).setText(AppLog.log)
