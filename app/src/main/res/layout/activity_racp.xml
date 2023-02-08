@@ -168,7 +168,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:onClick="toggleDateQuery"
-                android:text="@string/use_date" />
+                android:text="@string/use_date"
+                tools:ignore="TouchTargetSizeCheck" />
 
         </LinearLayout>
 
@@ -183,7 +184,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="toggleIndications"
-            android:text="@string/use_indicate" />
+            android:text="@string/use_indicate"
+            tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
 
@@ -208,28 +210,45 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+
         <Button
             android:id="@+id/getAllRecordsButton"
             android:layout_width="wrap_content"
-            android:layout_height="64dp"
-            android:text="@string/getAllRecords"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAllCaps="false"
-            android:onClick="getAllRecords" />
-        <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:onClick="getAllRecords"
+            android:text="@string/getAllRecords"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/getFirstButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:onClick="getFirstRecord"
+            android:text="First"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/getLastButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:onClick="getLastRecord"
+            android:text="Last"
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/getRecordsAbove"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="getRecordsAbove"
             android:text="@string/getRecordsAbove"
-            android:layout_gravity="right"
-            android:textAllCaps="false"
-            android:onClick="getRecordsAbove" />
+            android:textAllCaps="false" />
 
     </LinearLayout>
 
@@ -254,12 +273,12 @@
 
         <Button
             android:id="@+id/abort"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:text="@string/abort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:textAllCaps="false"
-            android:onClick="abort" />
+            android:onClick="abort"
+            android:text="@string/abort"
+            android:textAllCaps="false" />
 
     </LinearLayout>
 

@@ -224,11 +224,22 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     }
 
     @Suppress("UNUSED_PARAMETER")
+    fun getFirstRecord(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.retrieveFirstStoredObservation()
+    }
+
+    fun getLastRecord(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.retrieveLastStoredObservation()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
     fun getRecordsAbove(view: View) {
         isGetRecordsAll = false
 //        ghsServiceHandlerManager?.getRecordsAbove(startRecordNumber)
-//        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
-        ObservationSyncer.retrieveLastStoredObservation()
+        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+//        ObservationSyncer.retrieveStoredObservations()
     }
 
     @Suppress("UNUSED_PARAMETER")

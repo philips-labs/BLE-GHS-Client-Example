@@ -76,7 +76,7 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
     }
 
     fun getLastRecord() {
-        racpLog("getAllRecords...")
+        racpLog("getLastRecord...")
         service.write(
             GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
             byteArrayOf(OP_CODE_COMBINED_REPORT, OP_LAST_RECORD)
