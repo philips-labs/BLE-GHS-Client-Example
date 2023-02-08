@@ -108,7 +108,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
     private fun setupDatePicker() {
         dateEdt = findViewById(R.id.idEdtDate)
-        dateEdt.setOnClickListener {
+        dateEdt?.setOnClickListener {
             val year = queryCalendar.get(Calendar.YEAR)
             val month = queryCalendar.get(Calendar.MONTH)
             val day = queryCalendar.get(Calendar.DAY_OF_MONTH)
@@ -128,7 +128,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
             datePickerDialog.show()
         }
         timeEdt = findViewById(R.id.idEdtTime)
-        timeEdt.setOnClickListener {
+        timeEdt?.setOnClickListener {
             val hour = queryCalendar.get(Calendar.HOUR_OF_DAY)
             val minute = queryCalendar.get(Calendar.MINUTE)
             val timePickerDialog = TimePickerDialog(
