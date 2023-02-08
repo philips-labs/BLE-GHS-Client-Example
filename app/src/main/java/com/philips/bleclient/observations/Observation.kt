@@ -30,7 +30,8 @@ open class Observation {
      * For example, developer may want to have a current patent id in the app and can set
      * observations created to have the pateint id of the user
      */
-    var measurementDuration: Int? = null
+    var measurementDuration: Float? = null
+    var measurementStatus: BitMask? = null
     var patientId: Int? = null
     var specializationCodes: Array<Int>? = null
     var supplementalInformation: List<Int>? = null
@@ -170,18 +171,14 @@ open class Observation {
             val observationType = getObservationTypeIfPresent(flags, parser)
             val timestamp =
                 getTimestampIfPresent(flags, parser)?.let { attributesMap.put("timestamp", it); it }
-            val measurementDuration = getDurationIfPresent(flags, parser)
-            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
+            val measurementDuration = getDurationIfPresent(flags, parser)?.let { attributesMap.put("measurementDuration", it); it }
+            val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)?.let { attributesMap.put("measurementStatus", it); it }
             val objectId =
                 getObjectIdIfPresent(flags, parser)?.let { attributesMap.put("objectId", it); it }
             val patientId = getPatientIdIfPresent(flags, parser)
             patientId?.let { attributesMap.put("patientId", it) }
-            getSupplementalInfoIfPresent(flags, parser)?.let {
-                attributesMap.put(
-                    "supplementalInfo",
-                    it
-                )
-            }
+            val supplementalInformation = getSupplementalInfoIfPresent(flags, parser)?.let { attributesMap.put("supplementalInfo", it); it }
+
             // Not dealing with Derived From, Has Member or TLVs present flags. If present this will go bad,
             // so for now just check if present and throw and exception if set
             getDerivedFromIfPresent(flags, parser)
@@ -190,13 +187,17 @@ open class Observation {
 
             val bundledObservations = getBundledObservations(parser)
             disaggragateBundledObservationValues(bundledObservations, attributesMap)
-            return Observation(
+            val obs =  Observation(
                 objectId ?: 0,
                 observationType,
                 bundledObservations,
                 timestamp,
                 patientId
             )
+            obs.measurementDuration = measurementDuration
+            obs.measurementStatus = measurementStatus
+            obs.supplementalInformation = supplementalInformation
+            return obs
         }
 
         private fun getBundledObservations(parser: BluetoothBytesParser): List<Observation> {
