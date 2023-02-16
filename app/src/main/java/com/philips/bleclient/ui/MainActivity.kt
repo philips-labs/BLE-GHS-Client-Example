@@ -36,6 +36,7 @@ import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
 import com.philips.bleclient.service.dis.DisServiceHandler
 import com.philips.bleclient.service.dis.DisServiceListener
+import com.philips.bleclient.service.ghs.DeviceSpecialization
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
 
@@ -415,6 +416,13 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         allTypes.forEach {
             setVisibilityForObservationType(it, false)
         }
+    }
+
+    override fun onSupportedDeviceSpecializations(
+        deviceAddress: String,
+        deviceSpecializations: List<DeviceSpecialization>
+    ) {
+        TODO("Not yet implemented")
     }
 
     private fun processReceviedObservation(observation: Observation) {

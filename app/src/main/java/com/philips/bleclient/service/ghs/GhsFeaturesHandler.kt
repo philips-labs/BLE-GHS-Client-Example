@@ -21,7 +21,7 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
                 Timber.i( "Features characteristic update received obs types: <$it>")
                 service.receivedSupportedTypes(peripheral.address, it)
                 // Only flag is for Supported Device Specializations field present
-                if (featuresFlags > 0) { getFeaturesDeviceSpecializations(parser) }
+                if (featuresFlags > 0) { service.receiveSupportedDeviceSpecializations(peripheral.address, getFeaturesDeviceSpecializations(parser)) }
             }
         } else {
             Timber.i( "Error in features characteristic bytes: ${value.asFormattedHexString()}")
@@ -42,20 +42,25 @@ class GhsFeaturesHandler(val service: GenericHealthSensorServiceHandler) {
         }
     }
 
-    private fun getFeaturesDeviceSpecializations(parser: BluetoothBytesParser) {
+    private fun getFeaturesDeviceSpecializations(parser: BluetoothBytesParser) : List<DeviceSpecialization> {
         val numberOfDeviceSpecializations = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
         Timber.i( "Number of device specializations: $numberOfDeviceSpecializations")
+        var specList = mutableListOf<DeviceSpecialization>()
         repeat(numberOfDeviceSpecializations) {
             val bl = parser.bytesLength()
             Timber.i("offset = ${parser.offset} it = $it bytesLength = $bl")
             if (parser.offset + 3 <= parser.bytesLength()){
-                val deviceSpecBytes = parser.getByteArray(3)
-                Timber.i("Device specialization #${it + 1}: 00 08 ${deviceSpecBytes[1].asHexString()} ${deviceSpecBytes[0].asHexString()} ver: ${deviceSpecBytes[2]}")
+                val deviceSpecTypeBytes = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16)
+                val devSpec = DeviceSpecialization.fromValue(deviceSpecTypeBytes + 0x80000)
+                val deviceSpecVersion = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8)
+                specList.add(devSpec)
+                Timber.i("Device specialization #${it + 1}: $devSpec version: $deviceSpecVersion")
             } else {
                 Timber.i("Features characteristic > ATT_MTU - 3; performing a full read is needed.")
-                return
+                return specList
             }
         }
+        return specList
     }
 
 }

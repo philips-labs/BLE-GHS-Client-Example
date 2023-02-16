@@ -5,7 +5,9 @@
 package com.philips.bleclient.service.ghs
 
 import com.philips.bleclient.observations.Observation
+import com.philips.bleclient.ui.GHSDeviceInfoMap
 import com.philips.bleclient.ui.ObservationLog
+import com.philips.bleclient.ui.PeripheralInfoActivity
 import com.philips.btserver.generichealthservice.ObservationType
 import timber.log.Timber
 
@@ -47,6 +49,14 @@ interface GenericHealthSensorHandlerListener {
      */
     fun onDisconnected(deviceAddress: String) {}
 
+    fun onsupportedDeviceSpecializations(deviceAddress: String, supportedDevSpecs: List<DeviceSpecialization>) {
+        GHSDeviceInfoMap.onSupportedDeviceSpecializations(deviceAddress, supportedDevSpecs)
+    }
+
+    fun onSupportedDeviceSpecializations(
+        deviceAddress: String,
+        deviceSpecializations: List<DeviceSpecialization>
+    )
 }
 
 /**

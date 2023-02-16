@@ -205,6 +205,10 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         listeners.forEach { it.onSupportedObservationTypes(deviceAddress, supportedTypes) }
     }
 
+    fun receiveSupportedDeviceSpecializations(deviceAddress: String, supportedDevSpecs: List<DeviceSpecialization>) {
+        listeners.forEach { it.onsupportedDeviceSpecializations(deviceAddress, supportedDevSpecs) }
+    }
+
     fun enableLiveObservations(peripheral: BluetoothPeripheral) {
         write(peripheral, GHS_CONTROL_POINT_CHARACTERISTIC_UUID, byteArrayOf(START_SEND_LIVE_OBSERVATIONS))
     }
