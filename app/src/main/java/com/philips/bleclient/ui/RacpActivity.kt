@@ -58,10 +58,11 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
             it.setDisplayHomeAsUpEnabled(true)
         }
         ObservationSyncer.addListener(this)
+        setupRecordEntryField()
+        findViewById<Switch>(R.id.useDateSwitch).visibility = View.INVISIBLE
+        setupDatePicker()
         // Make the observation log scrollable
         racpLogView.setMovementMethod(ScrollingMovementMethod())
-        setupRecordEntryField()
-        setupDatePicker()
     }
 
     override fun onResume() {
@@ -107,19 +108,21 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     lateinit var timeEdt: EditText
 
     private fun setupDatePicker() {
-        dateEdt = findViewById(R.id.idEdtDate)
-        dateEdt?.setOnClickListener {
+        val dv = findViewById<EditText>(R.id.txtDate)
+        val sr = findViewById<EditText>(R.id.txtStartRecord)
+        dateEdt = dv
+        dateEdt.setOnClickListener {
             val year = queryCalendar.get(Calendar.YEAR)
             val month = queryCalendar.get(Calendar.MONTH)
             val day = queryCalendar.get(Calendar.DAY_OF_MONTH)
             val datePickerDialog = DatePickerDialog(
                 this,
-                { view, year, monthOfYear, dayOfMonth ->
-                    queryCalendar.set(Calendar.YEAR, year)
+                { view, newYear, monthOfYear, dayOfMonth ->
+                    queryCalendar.set(Calendar.YEAR, newYear)
                     queryCalendar.set(Calendar.MONTH, monthOfYear)
                     queryCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                    val dat = (dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + year)
-                    dateEdt.setText(dat)
+                    val dat = (dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + newYear)
+                    dateEdt?.setText(dat)
                 },
                 year,
                 month,
@@ -127,8 +130,8 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
             )
             datePickerDialog.show()
         }
-        timeEdt = findViewById(R.id.idEdtTime)
-        timeEdt?.setOnClickListener {
+        timeEdt = findViewById(R.id.txtTime)
+        timeEdt.setOnClickListener {
             val hour = queryCalendar.get(Calendar.HOUR_OF_DAY)
             val minute = queryCalendar.get(Calendar.MINUTE)
             val timePickerDialog = TimePickerDialog(
@@ -209,12 +212,12 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     }
 
     private fun updateDatePicker() {
-        val dateVisibility = if (queryByDate) View.VISIBLE else View.GONE
-        val recNumVisibility = if (queryByDate) View.GONE else View.VISIBLE
+        val dateVisibility = if (queryByDate) View.VISIBLE else View.INVISIBLE
+        val recNumVisibility = if (queryByDate) View.INVISIBLE else View.VISIBLE
         findViewById<TextView>(R.id.lblQueryStartRecord).visibility = recNumVisibility
         findViewById<EditText>(R.id.txtStartRecord).visibility = recNumVisibility
-        findViewById<EditText>(R.id.idEdtDate).visibility = dateVisibility
-        findViewById<EditText>(R.id.idEdtTime).visibility = dateVisibility
+        findViewById<EditText>(R.id.txtDate).visibility = dateVisibility
+        findViewById<EditText>(R.id.txtTime).visibility = dateVisibility
     }
 
     @Suppress("UNUSED_PARAMETER")
