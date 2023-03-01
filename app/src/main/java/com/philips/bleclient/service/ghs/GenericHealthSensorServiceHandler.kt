@@ -10,8 +10,8 @@ import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.Observation
+import com.philips.bleclient.ui.AppLog
 import com.philips.bleclient.ui.ObservationLog
-import com.philips.bleclient.ui.RacpLog
 import com.philips.btserver.generichealthservice.ObservationType
 import com.welie.blessed.*
 import timber.log.Timber
@@ -266,7 +266,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
             Timber.i("Creating new entry in observationScheduleDescriptorsInfo for peripheral: ${peripheral.address}")
             mutableMapOf()
         }
-        Timber.i("Add Observation Scheulde Changed Descriptor for type: $observationType")
+        Timber.i("Add Observation Schedule Descriptor for type: $observationType")
         descMap.put(observationType, descriptor)
         observationScheduleDescriptorsInfo.put(peripheral.address, descMap)
     }
@@ -334,9 +334,9 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
 
     private fun handleScanRecord(scanRecord: ScanRecord) {
         Timber.i("Local name ${scanRecord.deviceName ?: "not present"}")
-        RacpLog.log("Adv.Data:")
+        AppLog.log("Adv.Data:")
         val serviceUUIDsString = "Advertised Service UUIDs: ${scanRecord.serviceUuidsString()}"
-        RacpLog.log(serviceUUIDsString)
+        AppLog.log(serviceUUIDsString)
         Timber.i(serviceUUIDsString)
         handleServiceRecord(scanRecord)
     }
@@ -354,16 +354,20 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                     val bytes = serviceDataCollection.get(pu)
                     if (bytes != null) {
                         val specCount = bytes.toUByteArray().first().toInt()
-                        var advspecs = "$specCount specializations:"
-                        repeat(specCount - 1) { advspecs += "${byteArrayOf(bytes[2*it+2], bytes[2*it+1]).toHex()}; " }
+                        var advspecs = "$specCount specialization(s):"
+                        repeat(specCount) {
+                            val devspec = 0x80000 + bytes[2*it+2]*256 + bytes[2*it+1]
+                            val devspecName = DeviceSpecialization.fromValue(devspec)
+                            advspecs += "${byteArrayOf(bytes[2*it+2], bytes[2*it+1]).toHex()} ($devspecName, $devspec); "
+                        }
                         Timber.i(advspecs)
-                        advLogMessage += advLogMessage + advspecs + ";"
+                        advLogMessage += advspecs + ";"
                         val userOffset = 2*specCount+1
                         if (bytes.size > userOffset) {
                             val userCount = bytes.toUByteArray()[userOffset].toInt()
                             if(userCount > 0) {
-                                var userList = "$userCount users with new data:"
-                                repeat(userCount - 1) { userList += "${byteArrayOf(bytes[userOffset + 1 + it]).toHex()}; " }
+                                var userList = "$userCount user(s) with new data:"
+                                repeat(userCount) { userList += "${byteArrayOf(bytes[userOffset + 1 + it]).toHex()}; " }
                                 Timber.i(userList)
                                 advLogMessage += userList
                             } else {
@@ -380,7 +384,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         } else {
             Timber.i("No Service AD present.")
         }
-        RacpLog.log(advLogMessage)
+        ObservationLog.log(advLogMessage)
     }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {

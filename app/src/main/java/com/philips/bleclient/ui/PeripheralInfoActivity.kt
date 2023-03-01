@@ -22,6 +22,7 @@ import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
 import timber.log.Timber
+import kotlin.random.Random
 
 
 class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerListener {
@@ -197,9 +198,13 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     fun writeObservationSchedule(view: View) {
         ghsServiceHandler?.let {
             peripheral?.let {
-                p -> it.writeObservationSchedule(p, 1f, 1f)
+                p -> it.writeObservationSchedule(p, Random.nextInt(10)+1f, Random.nextInt(10)*2f + 1)
             }
         }
+    }
+
+    fun randomMeasurementPeriod() : Float {
+        return Random.nextFloat() * 10
     }
 
     @Suppress("UNUSED_PARAMETER")

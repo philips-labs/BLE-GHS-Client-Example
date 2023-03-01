@@ -139,7 +139,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         serviceUUID = SERVICE_UUID
         supportedCharacteristics.addAll(DisInfoItem.values().map { it.value })
         ServiceHandlerManager.instance?.addListener(this)
-        addListener(DisInfoMap)
+        //addListener(DisInfoMap)
     }
 
     companion object {
