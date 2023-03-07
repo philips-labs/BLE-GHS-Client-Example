@@ -22,9 +22,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginBottom="8dp"
         android:orientation="horizontal">
         <TextView
@@ -33,7 +30,6 @@
             android:layout_height="match_parent"
             android:fontFamily="sans-serif-medium"
             android:textSize="12sp"
-            android:layout_marginStart="16dp"
             android:gravity="center"
             android:text="User:" />
 
@@ -46,12 +42,12 @@
 
         <EditText
             android:id="@+id/txtUserIndex"
-            android:layout_width="64dp"
+            android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="1"
             android:textSize="12sp"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="4dp"
             android:textAlignment="textEnd"
             android:inputType="number"
             android:maxLength="3" />
@@ -68,53 +64,108 @@
 
         <EditText
             android:id="@+id/txtConsentCode"
-            android:layout_width="64dp"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="1234"
             android:textSize="12sp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:textAlignment="textEnd"
             android:inputType="number"
             android:maxLength="4" />
 
+        <TextView
+            android:id="@+id/lblDbInc"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="12sp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:text="DB Inc:" />
+
+        <EditText
+            android:id="@+id/txtDbInc"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="1"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:textAlignment="textEnd"
+            android:inputType="number"
+            android:maxLength="4" />
+
+        <TextView
+            android:id="@+id/lblText"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:gravity="center"
+            android:text="Text:" />
+
+        <EditText
+            android:id="@+id/txtText"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:textAlignment="textEnd"
+            android:maxLength="8" />
 
     </LinearLayout>
 
-    <Button
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+
+        <Button
             android:id="@+id/btnNewUser"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/new_user"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:onClick="newUser" />
 
         <Button
-            android:id="@+id/setUser"
-            android:layout_height="48dp"
-            android:layout_width="match_parent"
-            android:text="@string/set_user"
-            android:textAllCaps="false"
-            android:layout_marginBottom="8dp"
-            android:onClick="setUser" />
-
-        <Button
             android:id="@+id/deleteUser"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:text="@string/delete_user"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="8dp"
             android:textAllCaps="false"
             android:onClick="deleteUser" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/setUser"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:text="@string/set_user"
+            android:textAllCaps="false"
+            android:layout_marginEnd="16dp"
+            android:onClick="setUser" />
+        <Button
+            android:id="@+id/readCurrentUser"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="@string/read_current_user"
+            android:textAllCaps="false"
+            android:onClick="readCurrentUser" />
+
+    </LinearLayout>
+
 
         <Button
             android:id="@+id/deleteUserData"
@@ -129,31 +180,74 @@
             android:textAllCaps="false"
             android:onClick="deleteUserData" />
 
-        <Button
-            android:id="@+id/readCurrentUser"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/read_current_user"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="16dp"
-            android:textAllCaps="false"
-            android:onClick="readCurrentUser" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal">
 
         <Button
-            android:id="@+id/readFirstName"
-            android:layout_width="match_parent"
+            android:id="@+id/readDatabaseChangeInc"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:text="Read user first name"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="16dp"
+            android:text="Read DB Inc"
+            android:layout_marginEnd="16dp"
+            android:textAllCaps="false"
+            android:onClick="readDatabaseChangeInc" />
+
+        <Button
+            android:id="@+id/writeDatabaseChangeInc"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Write DB Inc"
+            android:textAllCaps="false"
+            android:onClick="writeDatabaseChangeInc" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/readFirstName"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            android:text="Read first name"
             android:textAllCaps="false"
             android:onClick="readCurrentUserFirstName" />
+        <Button
+            android:id="@+id/writeFirstName"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Write first name"
+            android:textAllCaps="false"
+            android:onClick="writeCurrentUserFirstName" />
+    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/readLastName"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:text="Read last name"
+                android:textAllCaps="false"
+                android:onClick="readCurrentUserLastName" />
+            <Button
+                android:id="@+id/writeLastName"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Write last name"
+                android:textAllCaps="false"
+                android:onClick="writeCurrentUserLastName" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/usersLog"

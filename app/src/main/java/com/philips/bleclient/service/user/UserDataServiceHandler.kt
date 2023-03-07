@@ -6,6 +6,7 @@ import com.philips.bleclient.ServiceHandler
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.ServiceHandlerManagerListener
 import com.philips.bleclient.asFormattedHexString
+import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.GattStatus
 import timber.log.Timber
@@ -23,6 +24,8 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     private val listeners = mutableListOf<UserDataServiceHandlerListener>()
 
     var controlPointHandler = UserDataServiceControlPointHandler(this)
+
+    var currentUserIndex: Int = 0xFF
 
     override val name: String
         get() = "UserDataServiceHandler"
@@ -48,7 +51,9 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
             when (characteristic.uuid) {
                 USER_INDEX_CHARACTERISTIC_UUID -> currentUserIndex(value.first())
                 UDS_CONTROL_POINT_CHARACTERISTIC_UUID -> controlPointHandler.handleBytes(peripheral, value)
+                UDS_DATABASE_CHANGE_INCREMENT_UUID -> databaseIncrementChanged(value)
                 UDS_FIRST_NAME_CHARACTERISTIC_UUID -> currentFirstName(value)
+                UDS_LAST_NAME_CHARACTERISTIC_UUID -> currentLastName(value)
             }
         } else {
             Timber.e("Error in onCharacteristicUpdate()  for peripheral: $peripheral characteristic: <${characteristic.uuid}> error: ${status}")
@@ -56,13 +61,23 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     }
 
     private fun currentUserIndex(userIndex: Byte) {
+        currentUserIndex = userIndex.toInt()
         Timber.i("Current User Index is: $userIndex")
         listeners.forEach { it.onReceiveCurrentUserIndex(userIndex.toInt()) }
     }
 
+    private fun databaseIncrementChanged(bytes: ByteArray) {
+        val dbVersion = BluetoothBytesParser(bytes).sInt32
+        Timber.i("Current database increment for current user $currentUserIndex is $dbVersion")
+    }
 
     private fun currentFirstName(bytes: ByteArray) {
-        Timber.i("Current User First Name is: ${bytes.asFormattedHexString()}")
+        Timber.i("Current User First Name is: ${String(bytes)}")
+    }
+
+
+    private fun currentLastName(bytes: ByteArray) {
+        Timber.i("Current User Last Name is: ${String(bytes)}")
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {
@@ -116,6 +131,43 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         }
     }
 
+    fun getLastName() {
+        if (peripherals.isNotEmpty()) {
+            read(peripherals.first(), UDS_LAST_NAME_CHARACTERISTIC_UUID)
+        }
+    }
+
+    fun setFirstName(firstName: String) {
+        if (peripherals.isNotEmpty()) {
+            val parser = BluetoothBytesParser()
+            parser.setString(firstName)
+            write(peripherals.first(), UDS_FIRST_NAME_CHARACTERISTIC_UUID, parser.value)
+        }
+    }
+
+    fun setLastName(firstName: String) {
+        if (peripherals.isNotEmpty()) {
+            val parser = BluetoothBytesParser()
+            parser.setString(firstName)
+            write(peripherals.first(), UDS_LAST_NAME_CHARACTERISTIC_UUID, parser.value)
+        }
+    }
+
+    fun getDatabaseChangeInc() {
+        if (peripherals.isNotEmpty()) {
+            read(peripherals.first(), UDS_DATABASE_CHANGE_INCREMENT_UUID)
+        }
+    }
+
+
+    fun setDatabaseChangeInc(value: Int) {
+        if (peripherals.isNotEmpty()) {
+            val parser = BluetoothBytesParser()
+            parser.uInt32 = value
+            write(peripherals.first(), UDS_DATABASE_CHANGE_INCREMENT_UUID, parser.value)
+        }
+    }
+
     /*
      * ServiceHandlerManagerListener methods
      */
@@ -148,7 +200,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
     init {
         serviceUUID = SERVICE_UUID
         supportedCharacteristics.addAll(arrayOf(
-            USER_DATABASE_CHANGE_INCREMENT,
+            UDS_DATABASE_CHANGE_INCREMENT_UUID,
             USER_INDEX_CHARACTERISTIC_UUID,
             UDS_CONTROL_POINT_CHARACTERISTIC_UUID,
             UDS_AGE_CHARACTERISTIC_UUID,
@@ -160,7 +212,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     companion object {
         val SERVICE_UUID = UUID.fromString("0000181C-0000-1000-8000-00805f9b34fb")
-        val USER_DATABASE_CHANGE_INCREMENT = UUID.fromString("00002a99-0000-1000-8000-00805f9b34fb")
+        val UDS_DATABASE_CHANGE_INCREMENT_UUID = UUID.fromString("00002a99-0000-1000-8000-00805f9b34fb")
         val USER_INDEX_CHARACTERISTIC_UUID = UUID.fromString("00002a9a-0000-1000-8000-00805f9b34fb")
         val UDS_CONTROL_POINT_CHARACTERISTIC_UUID = UUID.fromString("00002a9f-0000-1000-8000-00805f9b34fb")
 

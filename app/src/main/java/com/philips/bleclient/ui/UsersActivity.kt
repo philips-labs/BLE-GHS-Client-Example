@@ -10,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import com.philips.bleclient.BR
@@ -140,6 +141,48 @@ class UsersActivity : AppCompatActivity(), UserDataServiceHandlerListener {
     @Suppress("UNUSED_PARAMETER")
     fun readCurrentUserFirstName(view: View) {
         UserDataServiceHandler.instance?.getFirstName()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun readCurrentUserLastName(view: View) {
+        UserDataServiceHandler.instance?.getLastName()
+    }
+
+    private val textFieldValue get() = findViewById<EditText>(R.id.txtText).text.toString()
+    private val dbIncValue get() = findViewById<EditText>(R.id.txtDbInc).text.toString().toInt()
+
+    private fun doTextFieldEmptyMessage() {
+        Toast.makeText(applicationContext, "Text field is empty", Toast.LENGTH_SHORT).show()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun writeCurrentUserFirstName(view: View) {
+        if (textFieldValue.isEmpty()) {
+            doTextFieldEmptyMessage()
+        } else {
+            UserDataServiceHandler.instance?.setFirstName(textFieldValue)
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun writeCurrentUserLastName(view: View) {
+        if (textFieldValue.isEmpty()) {
+            doTextFieldEmptyMessage()
+        } else {
+            UserDataServiceHandler.instance?.setLastName(textFieldValue)
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun readDatabaseChangeInc(view: View) {
+        UserDataServiceHandler.instance?.getDatabaseChangeInc()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun writeDatabaseChangeInc(view: View) {
+        val dbInc = dbIncValue
+        UsersLog.log("Write Db Change Increment current user $currentUserIndex inc value: $dbIncValue")
+        UserDataServiceHandler.instance?.setDatabaseChangeInc(dbInc)
     }
 
     private fun updateLogView() {
