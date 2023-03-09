@@ -25,7 +25,7 @@ class StsActivity : AppCompatActivity() {
         }
 
         supportActionBar?.let {
-            it.title = "Simple Time Service"
+            it.title = "Elapsed Time Service"
             it.setDisplayHomeAsUpEnabled(true)
         }
     }

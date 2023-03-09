@@ -153,7 +153,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 
     private fun setupPeripheral(periph: BluetoothPeripheral) {
         findViewById<TextView>(R.id.peripheralMacAddress).text = "Device address: ${periph.address}"
-        findViewById<TextView>(R.id.supportedObservationTypes).text = "Supported Observations: ${GHSDeviceInfoMap.getSupportedObservationTypes(periph.address)} device specializations: ${GHSDeviceInfoMap.getSupportedSpecializations(periph.address)}"
+        findViewById<TextView>(R.id.supportedObservationTypes).text = "Supported Observations: ${GHSDeviceInfoMap.getSupportedObservationTypes(periph.address)}\nDevice Specializations: ${GHSDeviceInfoMap.getSupportedSpecializations(periph.address)}"
         findViewById<TextView>(R.id.disInfoView).text = DisInfoMap.getInfo(periph.address)
     }
 
