@@ -87,6 +87,48 @@
                     android:maxLength="4" />
 
 
+                <TextView
+                    android:id="@+id/lblDbInc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="12sp"
+                    android:layout_marginStart="8dp"
+                    android:gravity="center"
+                    android:text="DB Inc:" />
+
+                <EditText
+                    android:id="@+id/txtDbInc"
+                    android:layout_width="32dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="1"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp"
+                    android:textAlignment="textEnd"
+                    android:inputType="number"
+                    android:maxLength="4" />
+
+                <TextView
+                    android:id="@+id/lblText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp"
+                    android:gravity="center"
+                    android:text="Text:" />
+
+                <EditText
+                    android:id="@+id/txtText"
+                    android:layout_width="32dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="12sp"
+                    android:layout_marginStart="4dp"
+                    android:textAlignment="textEnd"
+                    android:maxLength="8" />
+
             </LinearLayout>
 
             <Button
