@@ -231,18 +231,20 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 
     }
 
+    private val logView get() = findViewById<TextView>(R.id.deviceInfoLog)
+
     /*
      * SimpleTimeServiceHandlerListener methods
      */
     override fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {
-        Timber.i("STS Bytes: ${bytes.asFormattedHexString()}")
-        if (BitMask(bytes.first().toLong()).hasFlag(TimestampFlags.isTickCounter)) {
-            Timber.i("STS Date (Ticks so should be null): ${bytes.parseSTSDate()}")
+        var logString = "Received ETS Bytes: ${bytes.asFormattedHexString()}\n"
+        logString += if (BitMask(bytes.first().toLong()).hasFlag(TimestampFlags.isTickCounter)) {
+            "ETS Date (Ticks so should be null): ${bytes.parseSTSDate()}"
         } else {
-            val stsDate = "Read STS Characteristic Date: ${bytes.parseSTSDate()}"
-            Timber.i(stsDate)
-            ObservationLog.log(stsDate)
+            "ETS Date: ${bytes.parseSTSDate()}"
         }
+        Timber.i(logString)
+        logView.text = "${logView.text} + $logString\n"
     }
 
 }
