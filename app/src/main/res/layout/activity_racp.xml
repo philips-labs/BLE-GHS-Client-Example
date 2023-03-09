@@ -36,7 +36,7 @@
             <Button
                 android:id="@+id/deleteAllRecordsButton"
                 android:layout_width="96dp"
-                android:layout_height="64dp"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="@string/deleteAll"
                 android:layout_gravity="center_vertical"
@@ -45,7 +45,7 @@
             <Button
                 android:id="@+id/numRecordsButton"
                 android:layout_width="128dp"
-                android:layout_height="64dp"
+                android:layout_height="wrap_content"
                 android:text="@string/totalRecords"
                 android:layout_gravity="center_vertical"
                 android:textAllCaps="false"
@@ -76,7 +76,7 @@
             android:orientation="horizontal">
             <Button
                 android:id="@+id/deleteGreaterRecordsButton"
-                android:layout_height="64dp"
+                android:layout_height="wrap_content"
                 android:layout_width="96dp"
                 android:layout_marginEnd="8dp"
                 android:text="@string/deleteAbove"
@@ -86,7 +86,7 @@
 
             <Button
                 android:id="@+id/queryRecordsButton"
-                android:layout_height="64dp"
+                android:layout_height="wrap_content"
                 android:layout_width="128dp"
                 android:text="@string/aboveRecords"
                 android:layout_gravity="center"
@@ -111,6 +111,34 @@
                 android:text="Unknown" />
 
         </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/deleteFirstRecordButton"
+            android:layout_height="wrap_content"
+            android:layout_width="128dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/deleteFirst"
+            android:layout_gravity="center"
+            android:textAllCaps="false"
+            android:onClick="deleteFirstRecord" />
+
+
+        <Button
+            android:id="@+id/deleteLastRecordButton"
+            android:layout_height="wrap_content"
+            android:layout_width="128dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/deleteLast"
+            android:layout_gravity="center"
+            android:textAllCaps="false"
+            android:onClick="deleteLastRecord" />
+
+    </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

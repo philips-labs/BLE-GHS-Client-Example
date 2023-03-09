@@ -170,11 +170,22 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         ObservationSyncer.deleteAllRecords()
     }
 
-
     @Suppress("UNUSED_PARAMETER")
     fun deleteRecordsAbove(view: View) {
         isGetRecordsAll = false
         ObservationSyncer.deleteNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteFirstRecord(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.deleteFirstRecord()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteLastRecord(view: View) {
+        isGetRecordsAll = false
+        ObservationSyncer.deleteLastRecord()
     }
 
     @Suppress("UNUSED_PARAMETER")

@@ -149,6 +149,16 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.deleteAllRecords()
     }
 
+    fun deleteFirstRecord() {
+        ObservationLog.log("RACP: Delete first record sent")
+        racpHandler.deleteFirstRecord()
+    }
+
+    fun deleteLastRecord() {
+        ObservationLog.log("RACP: Delete last record sent")
+        racpHandler.deleteLastRecord()
+    }
+
     fun deleteRecordsAbove(recordNumber: Int) {
         racpHandler.deleteRecordsAbove(recordNumber)
         ObservationLog.log("RACP: Delete all records greater than $recordNumber sent")

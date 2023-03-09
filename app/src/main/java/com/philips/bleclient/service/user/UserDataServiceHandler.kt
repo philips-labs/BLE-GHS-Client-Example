@@ -17,6 +17,8 @@ import java.util.*
  */
 interface UserDataServiceHandlerListener {
     fun onReceiveCurrentUserIndex(userIndex: Int) {}
+    fun onReceiveCurrentUserFirstName(firstName: String) {}
+    fun onReceiveCurrentUserLastName(lastName: String) {}
 }
 
 class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
@@ -25,7 +27,7 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     var controlPointHandler = UserDataServiceControlPointHandler(this)
 
-    var currentUserIndex: Int = 0xFF
+    var userIndex: Int = 0xFF
 
     override val name: String
         get() = "UserDataServiceHandler"
@@ -60,24 +62,28 @@ class UserDataServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         }
     }
 
-    private fun currentUserIndex(userIndex: Byte) {
-        currentUserIndex = userIndex.toInt()
+    private fun currentUserIndex(index: Byte) {
+        userIndex = index.toInt()
         Timber.i("Current User Index is: $userIndex")
-        listeners.forEach { it.onReceiveCurrentUserIndex(userIndex.toInt()) }
+        listeners.forEach { it.onReceiveCurrentUserIndex(userIndex) }
     }
 
     private fun databaseIncrementChanged(bytes: ByteArray) {
         val dbVersion = BluetoothBytesParser(bytes).sInt32
-        Timber.i("Current database increment for current user $currentUserIndex is $dbVersion")
+        Timber.i("Current database increment for current user $userIndex is $dbVersion")
     }
 
     private fun currentFirstName(bytes: ByteArray) {
-        Timber.i("Current User First Name is: ${String(bytes)}")
+        val firstName = String(bytes)
+        Timber.i("Current User First Name is: $firstName")
+        listeners.forEach { it.onReceiveCurrentUserFirstName(firstName) }
     }
 
 
     private fun currentLastName(bytes: ByteArray) {
-        Timber.i("Current User Last Name is: ${String(bytes)}")
+        val lastName = String(bytes)
+        Timber.i("Current User Last Name is: $lastName")
+        listeners.forEach { it.onReceiveCurrentUserLastName(lastName) }
     }
 
     private fun read(peripheral: BluetoothPeripheral, characteristicUUID: UUID) {

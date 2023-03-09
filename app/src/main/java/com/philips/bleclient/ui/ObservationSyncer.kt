@@ -43,10 +43,20 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         }
     }
 
-
     fun deleteAllRecords() {
         isRetrieving = false
         ghsServiceHandler?.deleteAllRecords()
+    }
+
+    fun deleteFirstRecord() {
+        isRetrieving = false
+        ghsServiceHandler?.deleteFirstRecord()
+    }
+
+
+    fun deleteLastRecord() {
+        isRetrieving = false
+        ghsServiceHandler?.deleteLastRecord()
     }
 
     fun deleteNumberOfRecordsGreaterThanId(startRecordNumber: Int) {

@@ -91,6 +91,22 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         )
     }
 
+    fun deleteFirstRecord() {
+        racpLog("deleteFirstRecord...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_DELETE_STORED_RECORDS, OP_FIRST_RECORD)
+        )
+    }
+
+    fun deleteLastRecord() {
+        racpLog("deleteFirstRecord...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_DELETE_STORED_RECORDS, OP_LAST_RECORD)
+        )
+    }
+
     fun deleteRecordsAbove(recordNumber: Int) {
         racpLog("deleteRecordsAbove $recordNumber...")
         val parser = BluetoothBytesParser()
