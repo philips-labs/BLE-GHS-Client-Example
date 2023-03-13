@@ -240,15 +240,11 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private val logView get() = findViewById<TextView>(R.id.deviceInfoLog)
 
     /*
-     * SimpleTimeServiceHandlerListener methods
+     * ElapsedTimeServiceHandlerListener methods
      */
     override fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {
         var logString = "Received ETS Bytes: ${bytes.asFormattedHexString()}\n"
-        logString += if (BitMask(bytes.first().toLong()).hasFlag(TimestampFlags.isTickCounter)) {
-            "ETS Date (Ticks so should be null): ${bytes.parseSTSDate()}"
-        } else {
-            "ETS Date: ${bytes.parseSTSDate()}"
-        }
+        logString += bytes.etsDateInfoString()
         Timber.i(logString)
         logView.text = "${logView.text} + $logString\n"
     }
