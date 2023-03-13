@@ -16,4 +16,5 @@ interface SimpleTimeServiceHandlerListener {
 
     fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {}
 
+
 }

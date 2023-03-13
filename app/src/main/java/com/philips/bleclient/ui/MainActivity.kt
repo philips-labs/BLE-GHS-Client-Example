@@ -37,6 +37,7 @@ import com.philips.bleclient.extensions.asDisplayString
 import com.philips.bleclient.service.dis.DisServiceHandler
 import com.philips.bleclient.service.dis.DisServiceListener
 import com.philips.bleclient.service.ghs.DeviceSpecialization
+import com.philips.bleclient.service.rcs.RCSServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
 
@@ -54,6 +55,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private var stsServiceHandler: SimpleTimeServiceHandler? = null
     private var udsServiceHandler: UserDataServiceHandler? = null
     private var disServiceHandler: DisServiceHandler? = null
+    private var rcsServiceHandler: RCSServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
     private val ACCESS_LOCATION_REQUEST = 2
@@ -226,6 +228,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         initSTSServiceHandler()
         initUDSServiceHandler()
         initDISServiceHandler()
+        initRCSServiceHandler()
         serviceHandlerManager?.let {
             //it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
@@ -252,6 +255,12 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 //        stsServiceHandler!!.addListener(this)
         serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
     }
+
+    private fun initRCSServiceHandler() {
+        rcsServiceHandler = RCSServiceHandler()
+        serviceHandlerManager?.addServiceHandler(rcsServiceHandler!!)
+    }
+
 
     private fun initUDSServiceHandler() {
         udsServiceHandler = UserDataServiceHandler()

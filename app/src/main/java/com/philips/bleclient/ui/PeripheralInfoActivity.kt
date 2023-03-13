@@ -18,9 +18,11 @@ import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.service.dis.DisInfoMap
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
+import com.philips.bleclient.service.rcs.RCSServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
+import kotlinx.coroutines.delay
 import timber.log.Timber
 import kotlin.random.Random
 
@@ -29,6 +31,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
     private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
+    private var rcsServiceHandler = ServiceHandlerManager.getInstance(this).getRcsServiceHandler()
     private var useIndicationsForLiveData = false
 
     private enum class TimeType {
@@ -158,12 +161,15 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun disconnectPeripheral(view: View) {
+    suspend fun disconnectPeripheral(view: View) {
 //        peripheral?.let {
 //            if(it.isBonded()) {
 //                ServiceHandlerManager.getInstance(applicationContext).unbond(it)
 //            }
 //            it.cancelConnection()
+//        }
+//        if (peripheral !=null) {
+//            rcsServiceHandler?.enableDisconnect(peripheral!!)
 //        }
         peripheral?.cancelConnection()
         goBack()
@@ -251,6 +257,10 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 
 fun ServiceHandlerManager.getGhsServiceHandler(): GenericHealthSensorServiceHandler? {
     return serviceHandlerForUUID(GenericHealthSensorServiceHandler.SERVICE_UUID)?.let {it as GenericHealthSensorServiceHandler}
+}
+
+fun ServiceHandlerManager.getRcsServiceHandler(): RCSServiceHandler? {
+    return serviceHandlerForUUID(RCSServiceHandler.RCS_SERVICE_UUID)?.let {it as RCSServiceHandler }
 }
 
 fun BluetoothPeripheral.isBonded(): Boolean { return !(bondState == BondState.NONE) }
