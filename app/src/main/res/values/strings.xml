@@ -23,10 +23,10 @@
     <string name="title_activity_racp">RACP Details</string>
     <string name="title_activity_users">Users</string>
     <string name="new_user">New user</string>
-    <string name="set_user">Set current user</string>
-    <string name="delete_user">Delete user</string>
-    <string name="delete_user_data">Delete current user data</string>
-    <string name="read_current_user">Read current user</string>
+    <string name="set_user">Set current</string>
+    <string name="delete_user">Delete current</string>
+    <string name="delete_user_data">Delete current data</string>
+    <string name="read_current_user">Read current</string>
     <string name="no_observation">No observations received</string>
     <string name="no_temp_observation">No temperature received</string>
     <string name="no_hr_observation">No heart rate received</string>
