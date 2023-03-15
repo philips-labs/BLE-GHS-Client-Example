@@ -13,6 +13,7 @@ import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
 import com.welie.blessed.BluetoothBytesParser
 import kotlinx.datetime.LocalDateTime
+import okhttp3.internal.toHexString
 import timber.log.Timber
 import java.nio.ByteOrder
 
@@ -35,6 +36,7 @@ open class Observation {
     var patientId: Int? = null
     var specializationCodes: Array<Int>? = null
     var supplementalInformation: List<Int>? = null
+    var isCurrentTimeline = true
 
     constructor(
         id: Int?,
@@ -146,7 +148,7 @@ open class Observation {
     }
 
     override fun toString(): String {
-        return "Observation: ${type.name} $value time: $timestamp"
+        return "Observation: ${type.name} $value time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
     }
 
     companion object {
@@ -170,7 +172,10 @@ open class Observation {
             val attributesMap = mutableMapOf<String, Any>()
             val observationType = getObservationTypeIfPresent(flags, parser)
             val timestamp =
-                getTimestampIfPresent(flags, parser)?.let { attributesMap.put("timestamp", it); it }
+                getTimestampIfPresent(flags, parser).let {
+                    it.first?.let { attributesMap.put("timestamp", it) }
+                    attributesMap.put("isCurrentTimeline", it.second)
+                    it.first }
             val measurementDuration = getDurationIfPresent(flags, parser)?.let { attributesMap.put("measurementDuration", it); it }
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)?.let { attributesMap.put("measurementStatus", it); it }
             val objectId =
@@ -227,7 +232,9 @@ open class Observation {
         ): Observation {
             // TODO DRY This with bundle observations
             val observationType = getObservationTypeIfPresent(flags, parser)
-            val timestamp = getTimestampIfPresent(flags, parser)
+            val timestampPair = getTimestampIfPresent(flags, parser)
+            val timestamp = timestampPair.first
+            val isCurrentTimeline = timestampPair.second
             val measurementDuration = getDurationIfPresent(flags, parser)
             val measurementStatus = getMeasurmentStatusIfPresent(flags, parser)
             val objectId = getObjectIdIfPresent(flags, parser)
@@ -240,7 +247,7 @@ open class Observation {
             val tlvs = getTLVsIfPresent(flags, parser)
 
             val observationValue = ObservationValue.from(observationClass, parser)
-            return Observation(
+            val obs = Observation(
                 objectId ?: 0,
                 observationType,
                 observationValue,
@@ -248,6 +255,8 @@ open class Observation {
                 timestamp,
                 patientId
             )
+            obs.isCurrentTimeline = isCurrentTimeline
+            return obs
         }
 
         /*
@@ -284,12 +293,14 @@ open class Observation {
         private fun getTimestampIfPresent(
             observationFlags: ObservationFlagBitMask,
             parser: BluetoothBytesParser
-        ): LocalDateTime? {
+        ): Pair<LocalDateTime?, Boolean> {
             var timestamp: LocalDateTime? = null
             var timecounter: Long? = null
+            var isCurrentTimeline = true
             if (observationFlags.isTimestampPresent) {
                 val timestampFlags =
                     BitMask(parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8).toLong())
+                Timber.i("Read Observation Timestamp Flags: ${timestampFlags.value.toHexString()}")
                 if (timestampFlags.hasFlag(TimestampFlags.isTickCounter)) {
                     // TODO What sort of "time" represents the tick counter... or we need to handle returning a counter
                 } else {
@@ -298,8 +309,10 @@ open class Observation {
                     val timeOffset = parser.getIntValue(BluetoothBytesParser.FORMAT_SINT8)
                     timestamp = timecounter.asKotlinLocalDateTime(timestampFlags, timeOffset)
                 }
+
+                isCurrentTimeline = timestampFlags hasFlag TimestampFlags.isCurrentTimeline
             }
-            return timestamp
+            return Pair(timestamp, isCurrentTimeline)
         }
 
         /*
