@@ -49,7 +49,7 @@
     <string name="deleteAbove">Del >= </string>
     <string name="deleteFirst">Del First</string>
     <string name="deleteLast">Del Last </string>
-    <string name="getAllRecords">Get all</string>
+    <string name="getAllRecords">All</string>
     <string name="getRecordsAbove">>= </string>
     <string name="abort">Abort</string>
     <string name="use_indicate">Use Indicate</string>
