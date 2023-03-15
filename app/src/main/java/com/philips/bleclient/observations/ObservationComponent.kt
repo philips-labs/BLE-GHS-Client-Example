@@ -21,6 +21,6 @@ enum class ObservationComponentValueType(val value: UByte) {
 
 class ObservationComponent(val type: ObservationType, val value: ObservationValue) {
     override fun toString(): String {
-        return "ObservationComponent type: $type value: $value"
+        return "ObservationComponent type: $type type value: ${type.value} component value: $value"
     }
 }
