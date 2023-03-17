@@ -34,6 +34,7 @@ import androidx.core.app.ActivityCompat
 import com.philips.bleclient.*
 import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
+import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisServiceHandler
 import com.philips.bleclient.service.dis.DisServiceListener
 import com.philips.bleclient.service.ghs.DeviceSpecialization
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private var stsServiceHandler: SimpleTimeServiceHandler? = null
     private var udsServiceHandler: UserDataServiceHandler? = null
     private var disServiceHandler: DisServiceHandler? = null
+    private var basServiceHandler: BasServiceHandler? = null
     private var rcsServiceHandler: RCSServiceHandler? = null
     private var serviceHandlerManager: ServiceHandlerManager? = null
 
@@ -229,6 +231,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         initUDSServiceHandler()
         initDISServiceHandler()
         initRCSServiceHandler()
+        initBASSServiceHandler()
         serviceHandlerManager?.let {
             //it.addServiceHandler(ghsServiceHandler!!)
             it.addListener(this)
@@ -241,6 +244,12 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         disServiceHandler = DisServiceHandler()
         //disServiceHandler!!.addListener(this)
         serviceHandlerManager?.addServiceHandler(disServiceHandler!!)
+    }
+
+    private fun initBASSServiceHandler() {
+        basServiceHandler = BasServiceHandler()
+        //disServiceHandler!!.addListener(this)
+        serviceHandlerManager?.addServiceHandler(basServiceHandler!!)
     }
 
     private fun initGHSServiceHandler() {

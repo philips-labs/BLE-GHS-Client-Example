@@ -8,6 +8,7 @@ import com.philips.bleclient.ServiceHandlerManagerListener
 import com.philips.bleclient.extensions.BitMask
 import com.philips.bleclient.extensions.Flags
 import com.philips.bleclient.extensions.hasFlag
+import com.philips.bleclient.service.bas.BasServiceHandler
 import com.welie.blessed.BluetoothBytesParser
 import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT64
 import com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8
@@ -87,7 +88,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
                         }
                     }
                     //udi.replace(0.toChar(),'\n')
-                    DisInfoMap.setDeviceInfoValue(peripheral, DisInfoItem.UDI, udiString + "\n")
+                    DisInfoMap.setDeviceInfoValue(peripheral, DisInfoItem.UDI, udiString)
                 }
                 else -> Timber.i("Unknown DIS characteristic read - UUID:" + characteristic.uuid + " value:" + value.toString())
             }
@@ -137,7 +138,17 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
 
     init {
         serviceUUID = SERVICE_UUID
-        supportedCharacteristics.addAll(DisInfoItem.values().map { it.value })
+        //supportedCharacteristics.addAll(DisInfoItem.values().map { it.value })
+        supportedCharacteristics.add(DisInfoItem.UDI.value)
+        supportedCharacteristics.add(DisInfoItem.SYSTEM_ID.value)
+        supportedCharacteristics.add(DisInfoItem.SERIAL_NUMBER.value)
+        supportedCharacteristics.add(DisInfoItem.FIRMWARE_REVISION.value)
+        supportedCharacteristics.add(DisInfoItem.HARDWARE_REVISION.value)
+        supportedCharacteristics.add(DisInfoItem.SOFTWARE_REVISION.value)
+        supportedCharacteristics.add(DisInfoItem.MODEL_NUMBER.value)
+        supportedCharacteristics.add(DisInfoItem.PNP_ID.value)
+        supportedCharacteristics.add(DisInfoItem.MANUFACTURER_NAME.value)
+
         ServiceHandlerManager.instance?.addListener(this)
         //addListener(DisInfoMap)
     }
