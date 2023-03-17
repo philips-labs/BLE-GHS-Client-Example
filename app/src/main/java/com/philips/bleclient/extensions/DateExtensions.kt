@@ -206,9 +206,11 @@ fun ByteArray.parseETSDate(): Date? {
         null
     } else {
         val scaledTicks = etsFlags().convertY2KScaledToUTCEpochMillis(etsTicksValue())
-        Date(scaledTicks + etsTimezoneOffset())
+        //val tzOffset = etsTimezoneOffset()
+        Date(scaledTicks)
     }
 }
+
 
 fun ByteArray.etsDateInfoString(): String {
     val etsFlags = etsFlags()
@@ -224,7 +226,8 @@ fun ByteArray.etsDateInfoString(): String {
         infoString += "Timesource: $timeSource offset (15min): ${this[8]} time counter is ${if (milliScale.toInt() == 1) "seconds" else "milliseconds"}\n"
         val scaledTicks = etsFlags.convertY2KScaledToUTCEpochMillis(ticks)
         infoString += "UTC Epoch Millis:$scaledTicks Offset: $offset\n"
-        "ETS Date: ${parseETSDate()}\n"
+        infoString += "ETS Date: ${parseETSDate()}\n"
+        infoString += "ETS TimeZone 15min offset: ${etsTimezoneOffset() / MILLIS_IN_15_MINUTES}"
         infoString
     }
 }

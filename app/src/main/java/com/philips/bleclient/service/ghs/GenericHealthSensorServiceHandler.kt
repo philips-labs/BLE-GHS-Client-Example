@@ -45,7 +45,9 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         // to do: check if current level is sufficient
         super.onCharacteristicsDiscovered(peripheral, characteristics)
         enableAllNotifications(peripheral, characteristics)
-        //enableLiveObservations(peripheral)
+        // Do not enable live observations on connect! So we can do manually
+        // enableLiveObservations(peripheral)
+
         readFeatures(peripheral)
         parseObservationScheduleDescriptors(peripheral)
     }

@@ -95,7 +95,8 @@ abstract class ObservationValue {
                 values.add(observationComponent)
             }
             val cov = CompoundObservationValue(values)
-            Timber.i("cov: $cov")
+
+            Timber.i("CompoundObservationValue: $cov")
             return cov
         }
 
