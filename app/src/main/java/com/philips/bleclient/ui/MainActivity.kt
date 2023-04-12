@@ -241,40 +241,50 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     }
 
     private fun initDISServiceHandler() {
-        disServiceHandler = DisServiceHandler()
-        //disServiceHandler!!.addListener(this)
-        serviceHandlerManager?.addServiceHandler(disServiceHandler!!)
+        if (disServiceHandler == null) {
+            disServiceHandler = DisServiceHandler()
+            //disServiceHandler!!.addListener(this)
+            serviceHandlerManager?.addServiceHandler(disServiceHandler!!)
+        }
     }
 
     private fun initBASSServiceHandler() {
-        basServiceHandler = BasServiceHandler()
-        //disServiceHandler!!.addListener(this)
-        serviceHandlerManager?.addServiceHandler(basServiceHandler!!)
+        if (basServiceHandler == null) {
+            basServiceHandler = BasServiceHandler()
+            //disServiceHandler!!.addListener(this)
+            serviceHandlerManager?.addServiceHandler(basServiceHandler!!)
+        }
     }
 
     private fun initGHSServiceHandler() {
-        ghsServiceHandler = GenericHealthSensorServiceHandler()
-        ghsServiceHandler!!.addListener(this)
-        ghsServiceHandler!!.addListener(GHSDeviceInfoMap)
-        serviceHandlerManager?.addServiceHandler(ghsServiceHandler!!)
+        if (ghsServiceHandler == null) {
+            ghsServiceHandler = GenericHealthSensorServiceHandler()
+            ghsServiceHandler!!.addListener(this)
+            ghsServiceHandler!!.addListener(GHSDeviceInfoMap)
+            serviceHandlerManager?.addServiceHandler(ghsServiceHandler!!)
+        }
     }
 
     private fun initSTSServiceHandler() {
-        stsServiceHandler = SimpleTimeServiceHandler()
-//        stsServiceHandler!!.addListener(this)
-        serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
+        if (stsServiceHandler == null) {
+            stsServiceHandler = SimpleTimeServiceHandler()
+            serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
+        }
     }
 
     private fun initRCSServiceHandler() {
-        rcsServiceHandler = RCSServiceHandler()
-        serviceHandlerManager?.addServiceHandler(rcsServiceHandler!!)
+        if (rcsServiceHandler == null) {
+            rcsServiceHandler = RCSServiceHandler()
+            serviceHandlerManager?.addServiceHandler(rcsServiceHandler!!)
+        }
     }
 
 
     private fun initUDSServiceHandler() {
-        udsServiceHandler = UserDataServiceHandler()
-//        udsServiceHandler!!.addListener(this)
-        serviceHandlerManager?.addServiceHandler(udsServiceHandler!!)
+        if (udsServiceHandler == null) {
+            udsServiceHandler = UserDataServiceHandler()
+            serviceHandlerManager?.addServiceHandler(udsServiceHandler!!)
+        }
     }
 
     private fun checkPermissions() {
@@ -311,9 +321,8 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private fun permissionsGranted() {
         // Check if Location services are on because they are required to make scanning work
-        if (checkLocationServices()) {
-            initBluetoothHandler()
-        }
+        checkLocationServices()
+        initBluetoothHandler()
     }
 
     private fun areLocationServicesEnabled(): Boolean {

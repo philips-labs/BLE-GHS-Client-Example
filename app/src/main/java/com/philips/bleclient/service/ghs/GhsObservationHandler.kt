@@ -12,7 +12,7 @@ class GhsObservationHandler(val service: GenericHealthSensorServiceHandler, val 
     private val packetHandler = GenericHealthSensorPacketHandler(this, isStored)
 
     fun handleBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
-        Timber.i("Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
+        //Timber.i("Received Observation Bytes: <${value.asHexString()}> for peripheral: $peripheral")
         packetHandler.receiveBytes(peripheral.address, value)
     }
 
