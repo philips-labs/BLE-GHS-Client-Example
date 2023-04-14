@@ -7,16 +7,14 @@ package com.philips.bleclient.util
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.philips.bleclient.extensions.BitMask
-import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.observations.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
 import com.philips.bleclient.observations.Observation.Companion.MDC_SYSTEM_URN_STRING
-import com.philips.bleclient.observations.ObservationValue
-import com.philips.bleclient.observations.SampleArrayObservationValue
-import com.philips.bleclient.observations.SimpleNumericObservationValue
 import com.philips.bleclient.extensions.Flags
 import com.philips.bleclient.extensions.hasFlag
+import com.philips.bleclient.observations.*
 import com.philips.bleclient.toUINT8
 import com.welie.blessed.BluetoothBytesParser
+import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.serialization.json.*
@@ -68,8 +66,8 @@ fun Observation.asFhir(): String {
             putJsonArray("coding") {
                 addJsonObject {
                     put("system", MDC_SYSTEM_URN_STRING)
-                    put("code", "${unitCode.value}")
-                    put("display", unitCode.description)
+                    put("code", "${type.value}")
+                    put("display", type.toString())
                 }
             }
         }
@@ -83,6 +81,8 @@ fun ObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
     if (this is SimpleNumericObservationValue) {
         this.addToJsonBuilder(builder)
     } else if (this is SampleArrayObservationValue) {
+        this.addToJsonBuilder(builder)
+    } else if (this is CompoundObservationValue) {
         this.addToJsonBuilder(builder)
     }
 }
@@ -118,6 +118,29 @@ fun SampleArrayObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
         put("period", 1f / samples.size.toFloat())
         put("factor", 1)
         put("unit", unitCode.symbol)
+    }
+}
+
+fun CompoundObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
+    builder.putJsonArray("component") {
+        values.forEach { component ->
+            component.addToJsonBuilder(this)
+        }
+    }
+}
+
+private fun ObservationComponent.addToJsonBuilder(builder: JsonArrayBuilder) {
+    builder.addJsonObject {
+        putJsonObject("code") {
+            putJsonArray("coding") {
+                addJsonObject {
+                    put("system", MDC_SYSTEM_URN_STRING)
+                    put("code", type.value)
+                    put("display", type.toString())
+                }
+            }
+        }
+        value.addToJsonBuilder(this)
     }
 }
 

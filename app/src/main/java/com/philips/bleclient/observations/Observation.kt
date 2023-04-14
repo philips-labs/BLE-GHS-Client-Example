@@ -45,7 +45,7 @@ open class Observation {
         valuePrecision: Int,
         unitCode: UnitCode,
         timestamp: LocalDateTime?,
-        patientId: Int?,
+        patientId: Int? = null,
         //supplementalInfo: List<Int>?
     ) {
         this.handle = id
@@ -86,7 +86,7 @@ open class Observation {
         value: ByteArray,
         unitCode: UnitCode,
         timestamp: LocalDateTime?,
-        patientId: Int?
+        patientId: Int? = null
     ) :
             this(
                 id,
