@@ -85,7 +85,7 @@ class SimpleTimeServiceHandler : ServiceHandler(),
 
     private fun handleTimeBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Time Bytes: <${value.asHexString()}> for peripheral: $peripheral")
-        peripheralSTSFlags.put(peripheral, value.first().asBitmask())
+        peripheralSTSFlags.put(peripheral, BitMask(value.first()))
         listeners.forEach { it.onReceivedStsBytes(peripheral.address, value) }
     }
 

@@ -35,7 +35,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
         readDeviceInformation(peripheral)
     }
 
-    enum class UDIFlags(override val bit: Long) : Flags {
+    enum class UDIFlags(override val bits: Long) : Flags {
         label((1 shl 0).toLong()),
         deviceIdentifier((1 shl 1).toLong()),
         issuer((1 shl 2).toLong()),
@@ -80,7 +80,7 @@ class DisServiceHandler : ServiceHandler(), ServiceHandlerManagerListener {
                     var udiString : String = ""
                     var index = 0
                     for( flag in UDIFlags.values()){
-                        if (flags and flag.bit != 0L) {
+                        if (flags and flag.bits != 0L) {
                             udiString = udiString + flag.name + ": " + udiElements[index] + " "
                             Timber.i(flag.name + ": " + udiElements[index])
                             index++

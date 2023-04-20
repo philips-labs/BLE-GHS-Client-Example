@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
-                android:text="Stored observation record queries:"
+                android:text="Stored observation # records queries:"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -81,6 +81,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -110,6 +111,49 @@
 
                 <TextView
                     android:id="@+id/txtObservationGEStoreCount"
+                    android:layout_width="96dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="right"
+                    android:layout_marginRight="32dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="Unknown"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/deleteLessRecordsButton"
+                    android:layout_width="96dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="8dp"
+                    android:onClick="deleteRecordsBelow"
+                    android:text="@string/deleteBelow"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/queryRecordsLEButton"
+                    android:layout_width="128dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:onClick="numberRecordsBelow"
+                    android:text="@string/belowRecords"
+                    android:textAllCaps="false" />
+
+                <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/txtObservationLEStoreCount"
                     android:layout_width="96dp"
                     android:layout_height="match_parent"
                     android:layout_gravity="right"
@@ -157,6 +201,55 @@
 
             </LinearLayout>
 
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/numberFirstRec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:onClick="numberOfRecordsFirst"
+                    android:text="# 1st"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/numberLastRec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:onClick="numberOfRecordsLast"
+                    android:text="# Last"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/deleteFirstRecordButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:onClick="deleteFirstRecord"
+                    android:text="Del 1st"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/deleteLastRecordButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:onClick="deleteLastRecord"
+                    android:text="Del Last"
+                    android:textAllCaps="false" />
+
+
+            </LinearLayout>
+
+
             <android.widget.Switch
                 android:id="@+id/useIndicateSwitch"
                 android:layout_width="wrap_content"
@@ -198,11 +291,41 @@
                     android:layout_height="0dp"
                     android:layout_weight="1" />
 
+
+                <Button
+                    android:id="@+id/getFirstButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:onClick="getFirstRecord"
+                    android:text="First"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/getLastButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:onClick="getLastRecord"
+                    android:text="Last"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/getRecordsBelow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:onClick="getRecordsBelow"
+                    android:text="@string/getRecordsBelow"
+                    android:textAllCaps="false" />
+
                 <Button
                     android:id="@+id/getRecordsAbove"
-                    android:layout_width="128dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:onClick="getRecordsAbove"
                     android:text="@string/getRecordsAbove"
                     android:textAllCaps="false" />

@@ -4,6 +4,7 @@
  */
 package com.philips.btserver.generichealthservice
 
+import com.philips.bleclient.toHexString
 import java.lang.IllegalArgumentException
 
 @Suppress("unused")
@@ -968,6 +969,10 @@ enum class ObservationType(val value: Int, var shadowValue: Int = value) {
 
     UNKNOWN(-0x1);
 
+    override fun toString(): String {
+        return super.toString() + "<${this.value.toHexString()}>"
+    }
+
     companion object {
         @Suppress("unused")
         fun fromValue(value: Int?): ObservationType {
@@ -989,5 +994,6 @@ enum class ObservationType(val value: Int, var shadowValue: Int = value) {
                 UNKNOWN
             }
         }
+
     }
 }

@@ -39,4 +39,5 @@ class GhsObservationHandler(val service: GenericHealthSensorServiceHandler, val 
     override fun onReceiveBytesOverflow(deviceAddress: String, byteArray: ByteArray) {
         Timber.e("Error BYTES OVERFLOW: $deviceAddress bytes: <${byteArray.asFormattedHexString()}>")
     }
+
 }

@@ -113,8 +113,10 @@ class UserDataServiceControlPointHandler(val service: UserDataServiceHandler) {
         logUserResult("User consent registered returned: ${value.asFormattedHexString()}")
         when(value.responseValue()) {
             RESPONSE_VALUE_SUCCESS -> logUserResult("User consent success")
+            RESPONSE_VALUE_OP_CODE_UNSUPPORTED -> logUserResult("User consent opcode unsupported")
             RESPONSE_VALUE_INVALID_PARAMETER -> logUserResult("ERROR: User consent invalid parameter")
             RESPONSE_VALUE_OPERATION_FAILED -> logUserResult("ERROR: User consent operation failed")
+            RESPONSE_VALUE_USER_UNAUTHORIZED -> logUserResult("ERROR: User consent unauthorizied")
         }
     }
 

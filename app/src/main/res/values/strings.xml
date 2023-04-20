@@ -45,12 +45,15 @@
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords"># Recs</string>
     <string name="aboveRecords"># Rec >= </string>
+    <string name="belowRecords"># Rec LE </string>
     <string name="deleteAll">Del All</string>
     <string name="deleteAbove">Del >= </string>
+    <string name="deleteBelow">Del LE </string>
     <string name="deleteFirst">Del First</string>
     <string name="deleteLast">Del Last </string>
     <string name="getAllRecords">All</string>
     <string name="getRecordsAbove">>= </string>
+    <string name="getRecordsBelow">LE </string>
     <string name="abort">Abort</string>
     <string name="use_indicate">Use Indicate</string>
     <string name="use_date">Date query</string>

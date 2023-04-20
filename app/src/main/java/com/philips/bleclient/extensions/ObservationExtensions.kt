@@ -4,8 +4,6 @@
  */
 package com.philips.bleclient.util
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.philips.bleclient.extensions.BitMask
 import com.philips.bleclient.observations.Observation
 import com.philips.bleclient.observations.Observation.Companion.CODE_SYSTEM_OBSERVATRION_CATEGORY_URL
@@ -25,16 +23,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun Observation.toPPGSampleArray(): ByteArray {
-    return this.value?.let {
-        val ppgData = this.value as SampleArrayObservationValue
-        ppgData.samples
-    } ?: byteArrayOf()
-}
-
-fun Observation.timestampAsDate(): Date {
-    return timestamp?.toJavaDate() ?: Date(0)
-}
+fun Observation.timestampAsDate(): Date = timestamp?.toJavaDate() ?: Date(0)
 
 fun LocalDateTime.toJavaDate(): Date {
     return Date.from(
@@ -44,10 +33,8 @@ fun LocalDateTime.toJavaDate(): Date {
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun Observation.asFhir(): String {
-    val zonedDateTime =
-        ZonedDateTime.ofInstant(timestampAsDate().toInstant(), ZoneId.systemDefault())
+    val zonedDateTime = ZonedDateTime.ofInstant(timestampAsDate().toInstant(), ZoneId.systemDefault())
     val dateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(zonedDateTime)
     val fhir = buildJsonObject {
         put("resourceType", "Observation")
@@ -68,8 +55,8 @@ fun Observation.asFhir(): String {
             putJsonArray("coding") {
                 addJsonObject {
                     put("system", MDC_SYSTEM_URN_STRING)
-                    put("code", "${unitCode.value}")
-                    put("display", unitCode.description)
+                    put("code", "${type.value}")
+                    put("display", type.toString())
                 }
             }
         }
@@ -121,7 +108,7 @@ fun SampleArrayObservationValue.addToJsonBuilder(builder: JsonObjectBuilder) {
     }
 }
 
-enum class ObservationHeaderFlags(override val bit: Long) : Flags {
+enum class ObservationHeaderFlags(override val bits: Long) : Flags {
     isObservationTypePresent(1 shl 0),
     isTimestampPresent(1 shl 1),
     isMeasurementDurationPresent(1 shl 2),
@@ -154,17 +141,7 @@ class ObservationFlagBitMask(value: Long) : BitMask(value) {
     }
 }
 
-//enum class TimestampFlags(override val bit: Long) : Flags {
-//    isTickCounter(1 shl 0),
-//    isUTC(1 shl 1),
-//    isMilliseconds(1 shl 2),
-//    isHundredsMicroseconds(1 shl 3),
-//    isTimezoneValid(1 shl 4),
-//    isDSTValid(1 shl 5),
-//    isCurrentTimeline(1 shl 6),
-//}
-
-enum class MeasurementStatusFlags(override val bit: Long) : Flags {
+enum class MeasurementStatusFlags(override val bits: Long) : Flags {
     invalid(1 shl 0),
     questionable(1 shl 1),
     notAvailable(1 shl 2),
@@ -184,12 +161,10 @@ enum class ObservationClass(val value: UByte) {
     CompoundState(0x06.toUByte()),
     CompoundObservation(0x07.toUByte()),
     TLVEncoded(0x08.toUByte()),
-    ObservationBundle(0xFF.toUByte()),  // 0xFF
+    ObservationBundle(0xFF.toUByte()),
     Unknown(0xF0.toUByte());
 
     companion object {
-        fun fromValue(value: UByte): ObservationClass {
-            return values().find { it.value == value } ?: Unknown
-        }
+        fun fromValue(value: UByte): ObservationClass = values().find { it.value == value } ?: Unknown
     }
 }

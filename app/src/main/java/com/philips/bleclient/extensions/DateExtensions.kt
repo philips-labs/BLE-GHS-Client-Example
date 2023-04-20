@@ -1,12 +1,13 @@
+/*
+ * Copyright (c) Koninklijke Philips N.V. 2023.
+ * All rights reserved.
+ */
 package com.philips.bleclient.extensions
 
-
 import android.os.SystemClock
-import com.philips.bleclient.asBitmask
 import com.philips.bleclient.asHexString
 import com.philips.bleclient.merge
 import com.welie.blessed.BluetoothBytesParser
-import com.welie.blessed.GattStatus
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
@@ -19,7 +20,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-enum class TimestampFlags(override val bit: Long) : Flags {
+enum class TimestampFlags(override val bits: Long) : Flags {
     zero((0 shl 0).toLong()),
     isTickCounter((1 shl 0).toLong()),
     isUTC((1 shl 1).toLong()),
@@ -30,12 +31,9 @@ enum class TimestampFlags(override val bit: Long) : Flags {
     reserved_1((1 shl 6).toLong()),
     reserved_2((1 shl 7).toLong());
 
-    companion object {
-        // This "global" holds the flags used to send out observations
-//        var currentFlags: BitMask = BitMask(TimestampFlags.isMilliseconds.bit)
-//            .plus(TimestampFlags.isTZPresent)
-//            .plus(TimestampFlags.isCurrentTimeline)
 
+
+    companion object {
         var currentFlags: BitMask = BitMask(0)
 
         fun setLocalFlags() {
@@ -169,7 +167,7 @@ fun Long.asGHSTimeValue(): ByteArray {
 }
 
 fun Long.asGHSTicks(flags: BitMask): ByteArray {
-    val newFlags = BitMask(TimestampFlags.isTickCounter.bit)
+    val newFlags = BitMask(TimestampFlags.isTickCounter.bits)
     if (flags hasFlag TimestampFlags.isMilliseconds) newFlags.set(TimestampFlags.isMilliseconds)
     if (flags hasFlag TimestampFlags.isHundredthsMilliseconds) newFlags.set(TimestampFlags.isHundredthsMilliseconds)
     return listOf(
@@ -180,9 +178,7 @@ fun Long.asGHSTicks(flags: BitMask): ByteArray {
 
 }
 
-fun ByteArray.etsFlags(): BitMask {
-    return this[0].asBitmask()
-}
+fun ByteArray.etsFlags(): BitMask = BitMask(this[0])
 
 fun ByteArray.etsTicksValue(): Long {
     return this[1].toUByte().toLong() +
@@ -206,7 +202,6 @@ fun ByteArray.parseETSDate(): Date? {
         null
     } else {
         val scaledTicks = etsFlags().convertY2KScaledToUTCEpochMillis(etsTicksValue())
-        //val tzOffset = etsTimezoneOffset()
         Date(scaledTicks)
     }
 }
@@ -246,13 +241,15 @@ fun BitMask.convertY2KScaledToUTCEpochMillis(value: Long): Long {
 }
 
 // TODO: Cleanup now that flags have changed
-fun BitMask.getTimeResolutionScaledValue(millis: Long): Long {
+fun BitMask.timeResolutionScaledValue(millis: Long): Long {
     return if (isSeconds()) millis / 1000L
     else if (isMilliseconds()) millis
     else if (isHundredMilliseconds()) millis / 10L
     else if (isHundredthsMicroseconds()) millis * 10L
     else millis
 }
+
+fun Long.scaleUsingETSFlags(flags: BitMask): Long = flags.timeResolutionScaledValue(this)
 
 fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
 
@@ -273,7 +270,7 @@ fun Date.asGHSBytes(timestampFlags: BitMask): ByteArray {
     // Write the flags byte
     Timber.i("Add Flag: ${timestampFlags.asTimestampFlagsString()}")
 
-    val scaledTicks = timestampFlags.getTimeResolutionScaledValue(millis)
+    val scaledTicks = millis.scaleUsingETSFlags(timestampFlags)
     Timber.i("Scaled ticks: $scaledTicks")
 
     var offsetUnits = 0
@@ -344,6 +341,14 @@ fun Long.asKotlinLocalDateTime(
         }
         return result
     }
+}
+
+fun Long.millisAsLocalDateTime(): kotlinx.datetime.LocalDateTime {
+    return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.currentSystemDefault())
+}
+
+fun Long.millisAsUTCDateTime(): kotlinx.datetime.LocalDateTime {
+    return Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC)
 }
 
 fun kotlinx.datetime.LocalDateTime.asDisplayString(): String {

@@ -29,6 +29,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     private val ghsServiceHandler get() = ServiceHandlerManager.instance?.getGhsServiceHandler()
 
     private var isGetRecordsAll = false
+    private var isLEOperator = false
     private var useIndications = false
 
     private var queryByDate = false
@@ -59,8 +60,8 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         }
         ObservationSyncer.addListener(this)
         setupRecordEntryField()
-        findViewById<Switch>(R.id.useDateSwitch).visibility = View.INVISIBLE
-        setupDatePicker()
+        // findViewById<Switch>(R.id.useDateSwitch).visibility = View.INVISIBLE
+        // setupDatePicker()
         // Make the observation log scrollable
         racpLogView.setMovementMethod(ScrollingMovementMethod())
     }
@@ -108,6 +109,8 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
     lateinit var timeEdt: EditText
 
     private fun setupDatePicker() {
+        return
+        /*
         val dv = findViewById<EditText>(R.id.txtDate)
         val sr = findViewById<EditText>(R.id.txtStartRecord)
         dateEdt = dv
@@ -122,7 +125,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
                     queryCalendar.set(Calendar.MONTH, monthOfYear)
                     queryCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
                     val dat = (dayOfMonth.toString() + "-" + (monthOfYear + 1) + "-" + newYear)
-                    dateEdt?.setText(dat)
+                    dateEdt.setText(dat)
                 },
                 year,
                 month,
@@ -148,16 +151,20 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
             )
             timePickerDialog.show()
         }
+         */
     }
 
     private fun updateQueryButtons() {
         findViewById<Button>(R.id.queryRecordsButton).text = "${getString(R.string.aboveRecords)} $startRecordNumber"
         findViewById<Button>(R.id.getRecordsAbove).text = "${getString(R.string.getRecordsAbove)} $startRecordNumber"
+        findViewById<Button>(R.id.getRecordsBelow).text = "${getString(R.string.getRecordsBelow)} $startRecordNumber"
+        findViewById<Button>(R.id.queryRecordsLEButton).text = "${getString(R.string.belowRecords)} $startRecordNumber"
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun numberOfRecords(view: View) {
         isGetRecordsAll = true
+        isLEOperator = false
 //        ghsServiceHandlerManager?.getNumberOfRecords()
         ObservationSyncer.getNumberOfRecords()
 //        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
@@ -165,37 +172,80 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
 
 
     @Suppress("UNUSED_PARAMETER")
+    fun numberOfRecordsFirst(view: View) {
+        isGetRecordsAll = false
+        isLEOperator = false
+//        ghsServiceHandlerManager?.getNumberOfRecords()
+        ObservationSyncer.getNumberOfRecordsFirst()
+//        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun numberOfRecordsLast(view: View) {
+        isGetRecordsAll = false
+        isLEOperator = false
+//        ghsServiceHandlerManager?.getNumberOfRecords()
+        ObservationSyncer.getNumberOfRecordsLast()
+//        ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+    @Suppress("UNUSED_PARAMETER")
     fun deleteAllRecords(view: View) {
         isGetRecordsAll = true
+        isLEOperator = false
         ObservationSyncer.deleteAllRecords()
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun deleteRecordsAbove(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
         ObservationSyncer.deleteNumberOfRecordsGreaterThanId(startRecordNumber)
+    }
+
+
+    @Suppress("UNUSED_PARAMETER")
+    fun deleteRecordsBelow(view: View) {
+        isGetRecordsAll = false
+        isLEOperator = true
+        ObservationSyncer.deleteNumberOfRecordsLessThanId(startRecordNumber)
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun deleteFirstRecord(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
         ObservationSyncer.deleteFirstRecord()
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun deleteLastRecord(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
         ObservationSyncer.deleteLastRecord()
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun numberRecordsAbove(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
 //        ghsServiceHandlerManager?.getNumberOfRecordsGreaterThan(startRecordNumber)
         if (queryByDate) {
             ObservationSyncer.getNumberOfRecordsGreaterThanDate(queryCalendar.time)
         } else {
             ObservationSyncer.getNumberOfRecordsGreaterThanId(startRecordNumber)
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun numberRecordsBelow(view: View) {
+        isGetRecordsAll = false
+        isLEOperator = true
+//        ghsServiceHandlerManager?.getNumberOfRecordsGreaterThan(startRecordNumber)
+        if (queryByDate) {
+            ObservationSyncer.getNumberOfRecordsLessThanDate(queryCalendar.time)
+        } else {
+            ObservationSyncer.getNumberOfRecordsLessThanId(startRecordNumber)
         }
     }
 
@@ -227,30 +277,43 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
         val recNumVisibility = if (queryByDate) View.INVISIBLE else View.VISIBLE
         findViewById<TextView>(R.id.lblQueryStartRecord).visibility = recNumVisibility
         findViewById<EditText>(R.id.txtStartRecord).visibility = recNumVisibility
-        findViewById<EditText>(R.id.txtDate).visibility = dateVisibility
-        findViewById<EditText>(R.id.txtTime).visibility = dateVisibility
+//        findViewById<EditText>(R.id.txtDate).visibility = dateVisibility
+//        findViewById<EditText>(R.id.txtTime).visibility = dateVisibility
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun getAllRecords(view: View) {
         isGetRecordsAll = true
+        isLEOperator = false
         ObservationSyncer.retrieveStoredObservations()
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun getFirstRecord(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
         ObservationSyncer.retrieveFirstStoredObservation()
     }
 
     fun getLastRecord(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
         ObservationSyncer.retrieveLastStoredObservation()
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun getRecordsAbove(view: View) {
         isGetRecordsAll = false
+        isLEOperator = false
+//        ghsServiceHandlerManager?.getRecordsAbove(startRecordNumber)
+        ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
+//        ObservationSyncer.retrieveStoredObservations()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun getRecordsBelow(view: View) {
+        isGetRecordsAll = false
+        isLEOperator = true
 //        ghsServiceHandlerManager?.getRecordsAbove(startRecordNumber)
         ObservationSyncer.retrieveStoredObservationsAboveId(startRecordNumber)
 //        ObservationSyncer.retrieveStoredObservations()
@@ -269,7 +332,7 @@ class RacpActivity : AppCompatActivity(), ObservationSyncerListener {
      */
 
     override fun onNumberOfStoredRecordsReceived(deviceAddress: String, numberOfRecords: Int) {
-        val viewId = if (isGetRecordsAll) R.id.txtObservationStoreCount else R.id.txtObservationGEStoreCount
+        val viewId = if (isGetRecordsAll) R.id.txtObservationStoreCount else if(isLEOperator) R.id.txtObservationLEStoreCount else R.id.txtObservationGEStoreCount
         findViewById<TextView>(viewId).text = numberOfRecords.toString()
         RacpLog.log("# Stored Records Response: $numberOfRecords")
     }

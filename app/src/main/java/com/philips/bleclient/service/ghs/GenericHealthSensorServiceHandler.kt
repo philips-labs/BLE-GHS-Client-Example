@@ -110,14 +110,35 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         racpHandler.getNumberOfRecords()
     }
 
+    fun getNumberOfRecordsFirst() {
+        ObservationLog.log("RACP: Get number of records first (1 or 0) sent")
+        racpHandler.getNumberOfRecordsFirst()
+    }
+
+    fun getNumberOfRecordsLast() {
+        ObservationLog.log("RACP: Get number of records last (1 or 0) sent")
+        racpHandler.getNumberOfRecordsLast()
+    }
+
     fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
         ObservationLog.log("RACP: Get number of records greater than $recordNumber sent")
         racpHandler.getNumberOfRecordsGreaterThan(recordNumber)
     }
 
+    fun getNumberOfRecordsLessThan(recordNumber: Int) {
+        ObservationLog.log("RACP: Get number of records less than $recordNumber sent")
+        racpHandler.getNumberOfRecordsLessThan(recordNumber)
+    }
+
     fun getNumberOfRecordsGreaterThan(date: Date) {
         ObservationLog.log("RACP: Get number of records greater than date $date sent")
         racpHandler.getNumberOfRecordsGreaterThan(date)
+    }
+
+
+    fun getNumberOfRecordsLessThan(date: Date) {
+        ObservationLog.log("RACP: Get number of records less than date $date sent")
+        racpHandler.getNumberOfRecordsLessThan(date)
     }
 
     fun getAllRecords() {
@@ -138,6 +159,11 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     fun getRecordsAbove(recordNumber: Int) {
         racpHandler.getRecordsAbove(recordNumber)
         ObservationLog.log("RACP: Get all records greater than $recordNumber sent")
+    }
+
+    fun getRecordsBelow(recordNumber: Int) {
+        racpHandler.getRecordsBelow(recordNumber)
+        ObservationLog.log("RACP: Get all records less than $recordNumber sent")
     }
 
     fun abortGetRecords() {
@@ -163,6 +189,11 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
     fun deleteRecordsAbove(recordNumber: Int) {
         racpHandler.deleteRecordsAbove(recordNumber)
         ObservationLog.log("RACP: Delete all records greater than $recordNumber sent")
+    }
+
+    fun deleteRecordsBelow(recordNumber: Int) {
+        racpHandler.deleteRecordsBelow(recordNumber)
+        ObservationLog.log("RACP: Delete all records less than $recordNumber sent")
     }
 
     /*
