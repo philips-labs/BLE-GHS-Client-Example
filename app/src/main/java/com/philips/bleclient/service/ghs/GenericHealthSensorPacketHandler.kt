@@ -1,6 +1,7 @@
 package com.philips.bleclient.service.ghs
 
 import com.philips.bleclient.asFormattedHexString
+import com.philips.bleclient.asHexString
 import com.philips.bleclient.merge
 import okhttp3.internal.and
 import timber.log.Timber
@@ -14,6 +15,8 @@ class GenericHealthSensorPacketHandler(val listener: GenericHealthSensorPacketLi
         appendBLESegment(byteArray, deviceAddress)
         if (byteArray.isLastBLESegment()) {
             handlePacketsBytesComplete(deviceAddress)
+        } else {
+            Timber.i("Received bytes: ${byteArray.asHexString()}")
         }
     }
 

@@ -16,10 +16,12 @@ import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
+import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisInfoMap
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.rcs.RCSServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
+import com.philips.bleclient.service.user.UserDataServiceHandler
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
 import kotlinx.coroutines.delay
@@ -67,6 +69,10 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 
     }
 
+    override fun onResume() {
+        getPeripheral()?.let {updateDeviceInfoMap(it)}
+        super.onResume()
+    }
     private fun setupTimeValueType() {
         setupSpinner(R.id.stsDateType, arrayOf("Local Time", "UTC only", "UTC + Offset", "Ticks", "Local with DST"), timeValueTypeListener())
     }
@@ -157,7 +163,15 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     private fun setupPeripheral(periph: BluetoothPeripheral) {
         findViewById<TextView>(R.id.peripheralMacAddress).text = "Device address: ${periph.address}"
         findViewById<TextView>(R.id.supportedObservationTypes).text = "Supported Observations: ${GHSDeviceInfoMap.getSupportedObservationTypes(periph.address)}\nDevice Specializations: ${GHSDeviceInfoMap.getSupportedSpecializations(periph.address)}"
+        updateDeviceInfoMap(periph)
+    }
+
+    private fun updateDeviceInfoMap(periph: BluetoothPeripheral) {
         findViewById<TextView>(R.id.disInfoView).text = DisInfoMap.getInfo(periph.address)
+    }
+
+    private fun getPeripheral(): BluetoothPeripheral? {
+        return UserDataServiceHandler.instance?.getCurrentCentrals()?.first()
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -167,12 +181,17 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 //                ServiceHandlerManager.getInstance(applicationContext).unbond(it)
 //            }
 //            it.cancelConnection()
-//        }
-//        if (peripheral !=null) {
-//            rcsServiceHandler?.enableDisconnect(peripheral!!)
+//            rcsServiceHandler?.enableDisconnect(it)
 //        }
         peripheral?.cancelConnection()
         goBack()
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun enableDisconnect(view: View) {
+        peripheral?.let {
+            rcsServiceHandler?.enableDisconnect((it))
+        }
     }
 
     @Suppress("UNUSED_PARAMETER")

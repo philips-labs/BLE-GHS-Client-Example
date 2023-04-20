@@ -47,6 +47,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         enableAllNotifications(peripheral, characteristics)
         // Do not enable live observations on connect! So we can do manually
         // enableLiveObservations(peripheral)
+
         readFeatures(peripheral)
         parseObservationScheduleDescriptors(peripheral)
     }
@@ -364,7 +365,7 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
      * ServiceHandlerManagerListener methods
      */
     override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
-        Timber.i("GHS Service Handler - parsing advertising & scan response data:")
+        Timber.i("Parsing advertising & scan response data:")
         scanResult.scanRecord?.let { handleScanRecord(it) } ?: Timber.i("No scan record found....")
     }
 
@@ -387,8 +388,8 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
         var advLogMessage = ""
         val serviceDataCollection = serviceRecord.getServiceData()
         if (serviceDataCollection != null){
-            Timber.i("Service Data:")
-            advLogMessage += "AD:"
+            //Timber.i("Service Data:")
+            //advLogMessage += "Service Data:"
             for(pu in serviceDataCollection.keys) {
                 val serviceName = ServiceHandlerManager.getInstance()?.serviceUUIDtoString(pu.uuid)
                 Timber.i(serviceName + " advertisement data:" + serviceDataCollection.get(pu)?.toHex())
@@ -414,19 +415,23 @@ class GenericHealthSensorServiceHandler : ServiceHandler(), ServiceHandlerManage
                                 advLogMessage += userList
                             } else {
                                 Timber.i("No users with new data.")
+                                advLogMessage += "No users with new data."
                             }
                         } else {
                             Timber.i("UDS not supported.")
+                            advLogMessage += "UDS not supported."
                         }
                     } else {
                         Timber.i(serviceName + "Oops - empty GHSS Service AD Data")
+                        advLogMessage += "Oops - empty GHSS Service AD Data"
                     }
                 }
             }
         } else {
             Timber.i("No Service AD present.")
+            advLogMessage += "No Service AD present."
         }
-        ObservationLog.log(advLogMessage)
+        AppLog.log(advLogMessage)
     }
 
     override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {

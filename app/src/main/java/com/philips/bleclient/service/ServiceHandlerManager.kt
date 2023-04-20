@@ -11,11 +11,14 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisServiceHandler
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
+import com.philips.bleclient.service.rcs.RCSServiceHandler
 import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandlerListener
+import com.philips.bleclient.ui.AppLog
 import com.philips.bleclient.ui.ObservationLog.log
 import com.philips.bleclient.ui.RacpLog
 import com.philips.bleclient.ui.isBonded
@@ -39,17 +42,17 @@ class ServiceHandlerManager private constructor(context: Context) {
 
     private val  GATT_UUID = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb")
     private val GAP_UUID = UUID.fromString("00001801-0000-1000-8000-00805f9b34fb")
-    private val RCS_UUID = UUID.fromString("00001829-0000-1000-8000-00805f9b34fb")
 
     public fun serviceUUIDtoString(uuid: UUID) : String {
         return when(uuid){
             GenericHealthSensorServiceHandler.SERVICE_UUID -> "GHSS"
             SimpleTimeServiceHandler.SERVICE_UUID -> "ETS"
             UserDataServiceHandler.SERVICE_UUID -> "UDS"
+            BasServiceHandler.SERVICE_UUID -> "BAS"
+            DisServiceHandler.SERVICE_UUID -> "DIS"
+            RCSServiceHandler.RCS_SERVICE_UUID -> "RCS"
             GATT_UUID -> "GATT"
             GAP_UUID -> "GAP"
-            DisServiceHandler.SERVICE_UUID -> "DIS"
-            RCS_UUID -> "RCS"
             else -> uuid.toString()
         }
     }
@@ -65,7 +68,7 @@ class ServiceHandlerManager private constructor(context: Context) {
             override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
                 peripheral.services.forEach {
                         service ->
-                    racpLog("Service found: " + serviceUUIDtoString(service.uuid))
+                    AppLog.log("Service found: " + serviceUUIDtoString(service.uuid))
                     serviceHandlers[service.uuid]?.onCharacteristicsDiscovered(
                         peripheral,
                         service.characteristics

@@ -1,5 +1,6 @@
 package com.philips.bleclient.service.dis
 
+import com.philips.bleclient.service.bas.BasServiceHandler
 import java.util.*
 
 enum class DisInfoItem(val value : UUID) {
@@ -11,7 +12,8 @@ enum class DisInfoItem(val value : UUID) {
     SOFTWARE_REVISION(  UUID.fromString("000002A28-0000-1000-8000-00805f9b34fb")),
     SYSTEM_ID(UUID.fromString("000002A23-0000-1000-8000-00805f9b34fb")),
     PNP_ID(UUID.fromString("000002A50-0000-1000-8000-00805f9b34fb")),
-    UDI(UUID.fromString("000007F3A-0000-1000-8000-00805f9b34fb"))
+    UDI(UUID.fromString("000007F3A-0000-1000-8000-00805f9b34fb")),
+    BATTERY_LEVEL(BasServiceHandler.BATTERY_LEVEL_CHARACTERISTIC_UUID)
 
 //    fun getUuid(): UUID {
 //        return value

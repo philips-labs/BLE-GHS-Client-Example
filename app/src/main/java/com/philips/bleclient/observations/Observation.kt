@@ -76,7 +76,7 @@ open class Observation {
         value: ByteArray,
         unitCode: UnitCode,
         timestamp: LocalDateTime?,
-        patientId: Int?
+        patientId: Int? = null
     ) :
             this(
                 id,
