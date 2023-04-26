@@ -35,14 +35,42 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         )
     }
 
+    fun getNumberOfRecordsFirst() {
+        racpLog("getNumberOfRecordsFirst...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_FIRST_RECORD)
+        )
+    }
+
+    fun getNumberOfRecordsLast() {
+        racpLog("getNumberOfRecordsLast...")
+        service.write(
+            GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID,
+            byteArrayOf(OP_CODE_NUMBER_STORED_RECORDS, OP_LAST_RECORD)
+        )
+    }
+
     fun getNumberOfRecordsGreaterThan(recordNumber: Int) {
-        racpLog("getAllRecords > $recordNumber")
+        racpLog("getNumberOfRecordsGreaterThan > $recordNumber")
         val parser = BluetoothBytesParser()
         parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
         val sendBytes = listOf(
             byteArrayOf(
                 OP_CODE_NUMBER_STORED_RECORDS,
                 OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
+    fun getNumberOfRecordsLessThan(recordNumber: Int) {
+        racpLog("getNumberOfRecordsLessThan > $recordNumber")
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_NUMBER_STORED_RECORDS,
+                OP_LESS_THAN_OR_EQUAL,
                 OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }
@@ -55,6 +83,18 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
             byteArrayOf(
                 OP_CODE_NUMBER_STORED_RECORDS,
                 OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
+    fun getNumberOfRecordsLessThan(date: Date) {
+        racpLog("getAllRecords after $date")
+        val parser = BluetoothBytesParser()
+//        parser.setIntValue(date.asGHSBytes(), BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_NUMBER_STORED_RECORDS,
+                OP_LESS_THAN_OR_EQUAL,
                 OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }
@@ -119,6 +159,18 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }
 
+    fun deleteRecordsBelow(recordNumber: Int) {
+        racpLog("deleteRecordsAbove $recordNumber...")
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_DELETE_STORED_RECORDS,
+                OP_LESS_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
     fun getRecordsAbove(recordNumber: Int) {
         racpLog("getRecordsAbove $recordNumber...")
         val parser = BluetoothBytesParser()
@@ -127,6 +179,18 @@ class GhsRacpHandler(val service: GenericHealthSensorServiceHandler) {
             byteArrayOf(
                 OP_CODE_COMBINED_REPORT,
                 OP_GREATER_THAN_OR_EQUAL,
+                OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
+        service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
+    }
+
+    fun getRecordsBelow(recordNumber: Int) {
+        racpLog("getRecordsAbove $recordNumber...")
+        val parser = BluetoothBytesParser()
+        parser.setIntValue(recordNumber, BluetoothBytesParser.FORMAT_UINT32)
+        val sendBytes = listOf(
+            byteArrayOf(
+                OP_CODE_COMBINED_REPORT,
+                OP_LESS_THAN_OR_EQUAL,
                 OP_FILTER_TYPE_VALUE_REC_NUM), parser.value).merge()
         service.write(GenericHealthSensorServiceHandler.RACP_CHARACTERISTIC_UUID, sendBytes)
     }

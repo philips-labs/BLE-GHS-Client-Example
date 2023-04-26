@@ -84,7 +84,7 @@ class ElapsedTimeServiceHandler : ServiceHandler(),
 
     private fun handleTimeBytes(peripheral: BluetoothPeripheral, value: ByteArray) {
         Timber.i("Time Bytes: <${value.asHexString()}> for peripheral: $peripheral")
-        peripheralETSFlags.put(peripheral, value.first().asBitmask())
+        peripheralETSFlags.put(peripheral, BitMask(value.first()))
         listeners.forEach { it.onReceivedEtsBytes(peripheral.address, value) }
     }
 

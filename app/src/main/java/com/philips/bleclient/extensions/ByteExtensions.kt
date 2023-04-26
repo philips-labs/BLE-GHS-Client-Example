@@ -6,7 +6,6 @@
 
 package com.philips.bleclient
 
-import com.philips.bleclient.extensions.BitMask
 import java.util.*
 
 
@@ -64,8 +63,12 @@ fun Byte.toUINT8(): Int {
     return this.toInt() and 0xFF
 }
 
-fun Byte.asBitmask(): BitMask {
-    return BitMask(toLong())
+fun Int.toHexString(): String {
+    return Integer.toHexString(this)
+}
+
+fun Long.toHexString(): String {
+    return java.lang.Long.toHexString(this)
 }
 
 /*

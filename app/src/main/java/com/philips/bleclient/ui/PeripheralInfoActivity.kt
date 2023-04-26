@@ -174,12 +174,13 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
 
     @Suppress("UNUSED_PARAMETER")
     fun disconnectPeripheral(view: View) {
-        peripheral?.let {
-            if(it.isBonded()) {
-                ServiceHandlerManager.getInstance(applicationContext).unbond(it)
-            }
-            it.cancelConnection()
-        }
+//        peripheral?.let {
+//            if(it.isBonded()) {
+//                ServiceHandlerManager.getInstance(applicationContext).unbond(it)
+//            }
+//            it.cancelConnection()
+//            rcsServiceHandler?.enableDisconnect(it)
+//        }
         peripheral?.cancelConnection()
         goBack()
     }

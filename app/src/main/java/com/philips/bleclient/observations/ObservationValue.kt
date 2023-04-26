@@ -5,6 +5,7 @@
 package com.philips.bleclient.observations
 
 import com.philips.bleclient.asFormattedHexString
+import com.philips.bleclient.extensions.tlvObservationValue
 import com.philips.bleclient.util.ObservationClass
 import com.philips.btserver.generichealthservice.ObservationType
 import com.philips.btserver.generichealthservice.UnitCode
@@ -17,7 +18,7 @@ abstract class ObservationValue {
     companion object {
         fun from(clazz: ObservationClass, bytesParser: BluetoothBytesParser): ObservationValue {
             return when (clazz) {
-                ObservationClass.TLVEncoded -> getTLVObservationValue(bytesParser)
+                ObservationClass.TLVEncoded -> tlvObservationValue(bytesParser)
                 ObservationClass.CompoundDiscreteEvent -> getCompoundDiscreteValue(bytesParser)
                 ObservationClass.String -> getStringValue(bytesParser)
                 ObservationClass.CompoundState -> getCompoundStateValue(bytesParser)
@@ -70,19 +71,7 @@ abstract class ObservationValue {
             return CompoundStateObservationValue(supportedMaskBits, stateOrEventMaskBits, bits)
         }
 
-        private fun getTLVObservationValue(bytesParser: BluetoothBytesParser): TLVObservationValue {
-            val numValues = bytesParser.getUInt8()
-            val list = mutableListOf<Pair<Int, Long>>()
-            repeat(numValues) {
-                val type = bytesParser.getUInt32()
-                val length = bytesParser.getUInt16()
-                val formatType = bytesParser.getUInt8()
-                val bytes = bytesParser.getByteArray(length)
-                val value = getBluetoothValue(formatType, bytes)
-                list.add(Pair(type, value))
-            }
-            return TLVObservationValue(list)
-        }
+        private fun tlvObservationValue(bytesParser: BluetoothBytesParser): TLVObservationValue = bytesParser.tlvObservationValue()
 
         private fun getCompoundObservationValue(parser: BluetoothBytesParser): CompoundObservationValue {
             val values = mutableListOf<ObservationComponent>()
@@ -138,14 +127,20 @@ abstract class ObservationValue {
             }
         }
 
-        private fun getBluetoothValue(formatType: Int, bytes: ByteArray): Long {
+        private fun getBluetoothValue(formatType: Int, bytes: ByteArray): Any {
             val parser = BluetoothBytesParser(bytes)
             return when (formatType) {
-                4 -> parser.getUInt8().toLong()
-                6 -> parser.getUInt16().toLong()
-                8 -> parser.getUInt32().toLong()
-                9 -> parser.getUInt48()
-                10 -> parser.getUInt64()
+                4 -> parser.uInt8.toLong()
+                6 -> parser.uInt16.toLong()
+                7 -> parser.uInt24.toLong()
+                8 -> parser.uInt32.toLong()
+                9 -> parser.uInt48
+                0xA -> parser.uInt64
+                0xC -> parser.sInt8.toLong()
+                0xE -> parser.sInt16.toLong()
+                0xF -> parser.sInt24.toLong()
+                0x10 -> parser.sInt32.toLong()
+                0x19 -> parser.getStringValue()
                 else -> -1.toLong()
             }
         }

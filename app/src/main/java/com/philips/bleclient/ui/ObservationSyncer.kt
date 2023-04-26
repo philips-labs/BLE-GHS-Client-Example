@@ -64,9 +64,24 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
         ghsServiceHandler?.deleteRecordsAbove(startRecordNumber)
     }
 
+    fun deleteNumberOfRecordsLessThanId(startRecordNumber: Int) {
+        isRetrieving = false
+        ghsServiceHandler?.deleteRecordsBelow(startRecordNumber)
+    }
+
     fun getNumberOfRecords() {
         isRetrieving = false
         ghsServiceHandler?.getNumberOfRecords()
+    }
+
+    fun getNumberOfRecordsFirst() {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsFirst()
+    }
+
+    fun getNumberOfRecordsLast() {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsLast()
     }
 
     fun getNumberOfRecordsGreaterThanId(startRecordNumber: Int) {
@@ -75,12 +90,29 @@ object ObservationSyncer: GenericHealthSensorHandlerRacpListener {
     }
 
 
+    fun getNumberOfRecordsLessThanId(startRecordNumber: Int) {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsLessThan(startRecordNumber)
+    }
+
     fun getNumberOfRecordsGreaterThanDate(date: Date) {
         isRetrieving = false
         ghsServiceHandler?.getNumberOfRecordsGreaterThan(date)
     }
 
+
+    fun getNumberOfRecordsLessThanDate(date: Date) {
+        isRetrieving = false
+        ghsServiceHandler?.getNumberOfRecordsGreaterThan(date)
+    }
+
     fun retrieveStoredObservationsAboveId(recordId: Int) {
+        isRetrieving = true
+        // Kick off by requesting number of records, then continue in response
+        ghsServiceHandler?.getRecordsAbove(recordId)
+    }
+
+    fun retrieveStoredObservationsBelowId(recordId: Int) {
         isRetrieving = true
         // Kick off by requesting number of records, then continue in response
         ghsServiceHandler?.getRecordsAbove(recordId)

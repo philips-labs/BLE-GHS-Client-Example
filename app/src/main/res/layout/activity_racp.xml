@@ -23,10 +23,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginEnd="16dp"
             android:fontFamily="sans-serif-medium"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:text="Stored observation record queries:" />
 
         <LinearLayout
@@ -35,23 +35,24 @@
             android:orientation="horizontal">
             <Button
                 android:id="@+id/deleteAllRecordsButton"
-                android:layout_width="96dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="@string/deleteAll"
+                android:textSize="10sp"
                 android:layout_gravity="center_vertical"
                 android:textAllCaps="false"
                 android:onClick="deleteAllRecords" />
             <Button
                 android:id="@+id/numRecordsButton"
-                android:layout_width="128dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/totalRecords"
+                android:textSize="10sp"
                 android:layout_gravity="center_vertical"
                 android:textAllCaps="false"
                 android:onClick="numberOfRecords" />
 
-            <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -80,6 +81,7 @@
                 android:layout_width="96dp"
                 android:layout_marginEnd="8dp"
                 android:text="@string/deleteAbove"
+                android:textSize="10sp"
                 android:layout_gravity="center"
                 android:textAllCaps="false"
                 android:onClick="deleteRecordsAbove" />
@@ -109,6 +111,48 @@
                 android:layout_gravity="right"
                 android:gravity="center"
                 android:text="Unknown" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/deleteLessRecordsButton"
+                android:layout_width="96dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:layout_marginEnd="8dp"
+                android:onClick="deleteRecordsBelow"
+                android:text="@string/deleteBelow"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/queryRecordsLEButton"
+                android:layout_width="128dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:onClick="numberRecordsBelow"
+                android:text="@string/belowRecords"
+                android:textAllCaps="false" />
+
+            <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/txtObservationLEStoreCount"
+                android:layout_width="96dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:layout_marginRight="32dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:text="Unknown"
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -167,54 +211,25 @@
                 tools:ignore="TouchTargetSizeCheck" />
 
             <EditText
-                android:id="@+id/txtDate"
+                android:id="@+id/txtEndRecord"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
                 android:inputType="number"
-                android:text="5"
+                android:text="9"
                 android:textAlignment="textEnd"
                 android:textSize="16sp"
                 tools:ignore="TouchTargetSizeCheck" />
 
-            <EditText
-                android:id="@+id/txtTime"
-                android:visibility="gone"
-                android:layout_width="96dp"
-                android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:hint="Enter time" />
-
             <android.widget.Switch
-                android:id="@+id/useDateSwitch"
+                android:id="@+id/useIndicateSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:onClick="toggleDateQuery"
-                android:text="@string/use_date"
+                android:onClick="toggleIndications"
+                android:text="@string/use_indicate"
                 tools:ignore="TouchTargetSizeCheck" />
 
         </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-
-        <android.widget.Switch
-            android:id="@+id/useIndicateSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="toggleIndications"
-            android:text="@string/use_indicate"
-            tools:ignore="TouchTargetSizeCheck" />
-
-    </LinearLayout>
 
         <View
             android:layout_width="match_parent"
@@ -241,38 +256,59 @@
 
         <Button
             android:id="@+id/getAllRecordsButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginEnd="4dp"
+            android:textSize="10sp"
             android:onClick="getAllRecords"
             android:text="@string/getAllRecords"
             android:textAllCaps="false" />
 
         <Button
             android:id="@+id/getFirstButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:textSize="10sp"
             android:onClick="getFirstRecord"
             android:text="First"
             android:textAllCaps="false" />
 
         <Button
             android:id="@+id/getLastButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:textSize="10sp"
             android:onClick="getLastRecord"
             android:text="Last"
             android:textAllCaps="false" />
 
         <Button
-            android:id="@+id/getRecordsAbove"
-            android:layout_width="wrap_content"
+            android:id="@+id/getRecordsBelow"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginEnd="4dp"
+            android:textSize="10sp"
+            android:onClick="getRecordsBelow"
+            android:text="@string/getRecordsBelow"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/getRecordsAbove"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="10sp"
             android:onClick="getRecordsAbove"
             android:text="@string/getRecordsAbove"
             android:textAllCaps="false" />
@@ -288,15 +324,12 @@
         <ProgressBar
             android:id="@+id/obsSyncProgress"
             style="@android:style/Widget.ProgressBar.Horizontal"
-            android:layout_width="204dp"
+            android:layout_width="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
             android:layout_gravity="center_vertical"
             android:layout_height="wrap_content"
             android:progress="0"/>
-        <!-- SPACER VIEW FOR RIGHT ALIGNED CLEAR BUTTON -->
-        <View
-            android:layout_width="16dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
         <Button
             android:id="@+id/abort"
@@ -319,76 +352,6 @@
             android:textColor="@color/white"
             android:layout_marginBottom="16dp" />
 
-        <!--
-        <TextView
-            android:id="@+id/foundPeripheralLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/found_devices_not_scanning"
-            android:layout_marginBottom="16dp" />
-        <ListView
-            android:id="@+id/foundPeripheralList"
-            android:layout_width="match_parent"
-            android:layout_weight="0.2"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:layout_marginBottom="16dp"
-            android:layout_height="0dp"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/connected_devices"
-            android:layout_marginBottom="16dp" />
-        <ListView
-            android:id="@+id/connectedPeripheralList"
-            android:layout_width="match_parent"
-            android:layout_weight="0.2"
-            android:layout_height="0dp"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:layout_marginBottom="16dp" />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/white"
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/tempObservation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_temp_observation"
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/hrObservation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_hr_observation"
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/spo2Observation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_spo2_observation"
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/bpObservation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_bp_observation"
-            android:layout_marginBottom="16dp" />
-        <TextView
-            android:id="@+id/ppgObservationTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_ppg_observation"
-            android:layout_marginBottom="16dp"/>
-        <com.philips.bleclient.ui.WaveformView
-            android:id="@+id/ppgObservation"
-            style="@style/Widget.Theme.Btclient.WaveformView"
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            app:lineWidth="1.5dp"/>
-        -->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
