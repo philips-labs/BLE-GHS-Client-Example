@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.StsActivity">
+    tools:context=".ui.EtsActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,12 +18,12 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp">
         <Button
-            android:id="@+id/btnGetStsBytes"
+            android:id="@+id/btnGetEtsBytes"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:text="@string/sts_bytes"
+            android:text="@string/ets_bytes"
             android:textAllCaps="false"
-            android:onClick="getStsBytes" />
+            android:onClick="getEtsBytes" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

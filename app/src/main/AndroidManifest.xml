@@ -18,7 +18,7 @@
         android:theme="@style/Theme.Btclient"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.StsActivity"
+            android:name=".ui.EtsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.RacpActivity"

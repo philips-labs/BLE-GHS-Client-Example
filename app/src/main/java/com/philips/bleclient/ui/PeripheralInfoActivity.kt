@@ -30,7 +30,7 @@ import kotlin.random.Random
 class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerListener {
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
-    private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
+    private var etsServiceHandler = ServiceHandlerManager.getInstance(this).getEtsServiceHandler()
     private var rcsServiceHandler = ServiceHandlerManager.getInstance(this).getRcsServiceHandler()
     private var useIndicationsForLiveData = false
 
@@ -60,7 +60,7 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        stsServiceHandler?.addListener(this)
+        etsServiceHandler?.addListener(this)
 
         setupTimeValueType()
         setupTimeSource()
@@ -72,11 +72,11 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
         super.onResume()
     }
     private fun setupTimeValueType() {
-        setupSpinner(R.id.stsDateType, arrayOf("Local Time", "UTC only", "UTC + Offset", "Ticks", "Local with DST"), timeValueTypeListener())
+        setupSpinner(R.id.etsDateType, arrayOf("Local Time", "UTC only", "UTC + Offset", "Ticks", "Local with DST"), timeValueTypeListener())
     }
 
     private fun setupTimeSource() {
-        setupSpinner(R.id.stsTimeSource, arrayOf("Manual", "Cellular Network", "GPS"), timeSourceListener())
+        setupSpinner(R.id.etsTimeSource, arrayOf("Manual", "Cellular Network", "GPS"), timeSourceListener())
     }
 
     private fun timeValueTypeListener(): OnItemSelectedListener {
@@ -208,13 +208,13 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun getStsBytes(view: View) {
-        peripheral?.let { stsServiceHandler?.getETSBytes(it) }
+    fun getEtsBytes(view: View) {
+        peripheral?.let { etsServiceHandler?.getETSBytes(it) }
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun setStsClockBytes(view: View) {
-        peripheral?.let { stsServiceHandler?.setETSBytes(it) }
+    fun setEtsClockBytes(view: View) {
+        peripheral?.let { etsServiceHandler?.setETSBytes(it) }
     }
 
     @Suppress("UNUSED_PARAMETER")

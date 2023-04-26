@@ -15,7 +15,7 @@
     <string name="scroll_obs_log">Scroll Obs</string>
     <string name="parseTestObservation">Parse test observation</string>
     <string name="fhir_server">FHIR</string>
-    <string name="sts">STS</string>
+    <string name="ets">ETS</string>
     <string name="post_observations_to_servier">Post observations to server</string>
     <string name="use_public_hapi_fhir_server">Use hapi.fhir.org server</string>
     <string name="connect_devices_with_bonding">Bond with devices</string>
@@ -41,8 +41,8 @@
     <string name="write_observation_schedule">Write Obs Schedule</string>
     <string name="private_hapi_server_url_label">Private HAPI Server URL:</string>
     <string name="save_url">Save URL</string>
-    <string name="sts_bytes">Log ETS</string>
-    <string name="set_sts_bytes">Set ETS</string>
+    <string name="ets_bytes">Log ETS</string>
+    <string name="set_ets_bytes">Set ETS</string>
     <string name="reset_tick_counter">Reset tick counter</string>
     <string name="revert_url">Revert URL</string>
     <string name="totalRecords"># Recs</string>

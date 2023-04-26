@@ -8,13 +8,13 @@ import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.service.ets.ElapsedTimeServiceHandler
 import com.welie.blessed.BluetoothPeripheral
 
-class StsActivity : AppCompatActivity() {
+class EtsActivity : AppCompatActivity() {
     private var peripheral: BluetoothPeripheral? = null
-    private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
+    private var etsServiceHandler = ServiceHandlerManager.getInstance(this).getEtsServiceHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sts)
+        setContentView(R.layout.activity_ets)
         val deviceAddress = intent.getStringExtra("DEVICE_ADDRESS")
         deviceAddress?.let { addr ->
             peripheral = ServiceHandlerManager.getInstance(this).getConnectedPeripheral(addr)
@@ -27,11 +27,11 @@ class StsActivity : AppCompatActivity() {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun getStsBytes(view: View) {
+    fun getEtsBytes(view: View) {
     }
 
 }
 
-fun ServiceHandlerManager.getStsServiceHandler(): ElapsedTimeServiceHandler? {
+fun ServiceHandlerManager.getEtsServiceHandler(): ElapsedTimeServiceHandler? {
     return serviceHandlerForUUID(ElapsedTimeServiceHandler.SERVICE_UUID)?.let {it as ElapsedTimeServiceHandler }
 }

@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
-    private var stsServiceHandler: ElapsedTimeServiceHandler? = null
+    private var etsServiceHandler: ElapsedTimeServiceHandler? = null
     private var udsServiceHandler: UserDataServiceHandler? = null
     private var disServiceHandler: DisServiceHandler? = null
     private var basServiceHandler: BasServiceHandler? = null
@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     private fun initBluetoothHandler() {
         serviceHandlerManager = ServiceHandlerManager.getInstance(applicationContext)
         initGHSServiceHandler()
-        initSTSServiceHandler()
+        initETSServiceHandler()
         initUDSServiceHandler()
         initDISServiceHandler()
         initRCSServiceHandler()
@@ -264,10 +264,10 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
         }
     }
 
-    private fun initSTSServiceHandler() {
-        if (stsServiceHandler == null) {
-            stsServiceHandler = ElapsedTimeServiceHandler()
-            serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
+    private fun initETSServiceHandler() {
+        if (etsServiceHandler == null) {
+            etsServiceHandler = ElapsedTimeServiceHandler()
+            serviceHandlerManager?.addServiceHandler(etsServiceHandler!!)
         }
     }
 

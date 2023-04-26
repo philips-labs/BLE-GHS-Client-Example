@@ -48,23 +48,23 @@
                     android:orientation="horizontal">
 
                     <Button
-                        android:id="@+id/btnGetStsBytes"
+                        android:id="@+id/btnGetEtsBytes"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        android:onClick="getStsBytes"
-                        android:text="@string/sts_bytes"
+                        android:onClick="getEtsBytes"
+                        android:text="@string/ets_bytes"
                         android:textAllCaps="false"
                         android:textSize="10sp" />
 
                     <Button
-                        android:id="@+id/btnSetStsBytes"
+                        android:id="@+id/btnSetEtsBytes"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:onClick="setStsClockBytes"
-                        android:text="@string/set_sts_bytes"
+                        android:onClick="setEtsClockBytes"
+                        android:text="@string/set_ets_bytes"
                         android:textAllCaps="false"
                         android:textSize="10sp" />
 
@@ -79,7 +79,7 @@
                     android:orientation="horizontal">
 
                     <Spinner
-                        android:id="@+id/stsDateType"
+                        android:id="@+id/etsDateType"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_marginEnd="8dp"
@@ -87,7 +87,7 @@
                         tools:ignore="SpeakableTextPresentCheck" />
 
                     <Spinner
-                        android:id="@+id/stsTimeSource"
+                        android:id="@+id/etsTimeSource"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
