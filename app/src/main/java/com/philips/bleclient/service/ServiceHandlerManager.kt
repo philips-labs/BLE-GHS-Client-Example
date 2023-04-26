@@ -15,11 +15,9 @@ import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisServiceHandler
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.rcs.RCSServiceHandler
-import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.ets.ElapsedTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
-import com.philips.bleclient.service.user.UserDataServiceHandlerListener
 import com.philips.bleclient.ui.AppLog
-import com.philips.bleclient.ui.ObservationLog.log
 import com.philips.bleclient.ui.RacpLog
 import com.philips.bleclient.ui.isBonded
 import com.welie.blessed.*
@@ -46,7 +44,7 @@ class ServiceHandlerManager private constructor(context: Context) {
     public fun serviceUUIDtoString(uuid: UUID) : String {
         return when(uuid){
             GenericHealthSensorServiceHandler.SERVICE_UUID -> "GHSS"
-            SimpleTimeServiceHandler.SERVICE_UUID -> "ETS"
+            ElapsedTimeServiceHandler.SERVICE_UUID -> "ETS"
             UserDataServiceHandler.SERVICE_UUID -> "UDS"
             BasServiceHandler.SERVICE_UUID -> "BAS"
             DisServiceHandler.SERVICE_UUID -> "DIS"

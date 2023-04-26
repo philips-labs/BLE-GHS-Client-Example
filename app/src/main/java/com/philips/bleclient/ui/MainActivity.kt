@@ -36,10 +36,9 @@ import com.philips.bleclient.observations.*
 import com.philips.bleclient.extensions.asDisplayString
 import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisServiceHandler
-import com.philips.bleclient.service.dis.DisServiceListener
 import com.philips.bleclient.service.ghs.DeviceSpecialization
 import com.philips.bleclient.service.rcs.RCSServiceHandler
-import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.ets.ElapsedTimeServiceHandler
 import com.philips.bleclient.service.user.UserDataServiceHandler
 
 @Suppress("UNUSED_ANONYMOUS_PARAMETER")
@@ -53,7 +52,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
     var connectedPeripheralArrayAdapter: PeripheralArrayAdapter? = null
 
     private var ghsServiceHandler: GenericHealthSensorServiceHandler? = null
-    private var stsServiceHandler: SimpleTimeServiceHandler? = null
+    private var stsServiceHandler: ElapsedTimeServiceHandler? = null
     private var udsServiceHandler: UserDataServiceHandler? = null
     private var disServiceHandler: DisServiceHandler? = null
     private var basServiceHandler: BasServiceHandler? = null
@@ -267,7 +266,7 @@ class MainActivity : AppCompatActivity(), ServiceHandlerManagerListener,
 
     private fun initSTSServiceHandler() {
         if (stsServiceHandler == null) {
-            stsServiceHandler = SimpleTimeServiceHandler()
+            stsServiceHandler = ElapsedTimeServiceHandler()
             serviceHandlerManager?.addServiceHandler(stsServiceHandler!!)
         }
     }

@@ -16,20 +16,18 @@ import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
-import com.philips.bleclient.service.bas.BasServiceHandler
 import com.philips.bleclient.service.dis.DisInfoMap
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.rcs.RCSServiceHandler
-import com.philips.bleclient.service.sts.SimpleTimeServiceHandlerListener
+import com.philips.bleclient.service.ets.ElapsedTimeServiceHandlerListener
 import com.philips.bleclient.service.user.UserDataServiceHandler
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
-import kotlinx.coroutines.delay
 import timber.log.Timber
 import kotlin.random.Random
 
 
-class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerListener {
+class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerListener {
     private var peripheral: BluetoothPeripheral? = null
     private var ghsServiceHandler = ServiceHandlerManager.getInstance(this).getGhsServiceHandler()
     private var stsServiceHandler = ServiceHandlerManager.getInstance(this).getStsServiceHandler()
@@ -210,12 +208,12 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
 
     @Suppress("UNUSED_PARAMETER")
     fun getStsBytes(view: View) {
-        peripheral?.let { stsServiceHandler?.getSTSBytes(it) }
+        peripheral?.let { stsServiceHandler?.getETSBytes(it) }
     }
 
     @Suppress("UNUSED_PARAMETER")
     fun setStsClockBytes(view: View) {
-        peripheral?.let { stsServiceHandler?.setSTSBytes(it) }
+        peripheral?.let { stsServiceHandler?.setETSBytes(it) }
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -260,7 +258,7 @@ class PeripheralInfoActivity : AppCompatActivity(), SimpleTimeServiceHandlerList
     /*
      * ElapsedTimeServiceHandlerListener methods
      */
-    override fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {
+    override fun onReceivedEtsBytes(deviceAddress: String, bytes: ByteArray) {
         var logString = "Received ETS Bytes: ${bytes.asFormattedHexString()}\n"
         logString += bytes.etsDateInfoString()
         Timber.i(logString)

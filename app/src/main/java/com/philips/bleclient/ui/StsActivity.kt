@@ -1,16 +1,12 @@
 package com.philips.bleclient.ui
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.philips.bleclient.R
 import com.philips.bleclient.ServiceHandlerManager
-import com.philips.bleclient.asFormattedHexString
-import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
-import com.philips.bleclient.service.sts.SimpleTimeServiceHandler
+import com.philips.bleclient.service.ets.ElapsedTimeServiceHandler
 import com.welie.blessed.BluetoothPeripheral
-import timber.log.Timber
 
 class StsActivity : AppCompatActivity() {
     private var peripheral: BluetoothPeripheral? = null
@@ -36,6 +32,6 @@ class StsActivity : AppCompatActivity() {
 
 }
 
-fun ServiceHandlerManager.getStsServiceHandler(): SimpleTimeServiceHandler? {
-    return serviceHandlerForUUID(SimpleTimeServiceHandler.SERVICE_UUID)?.let {it as SimpleTimeServiceHandler }
+fun ServiceHandlerManager.getStsServiceHandler(): ElapsedTimeServiceHandler? {
+    return serviceHandlerForUUID(ElapsedTimeServiceHandler.SERVICE_UUID)?.let {it as ElapsedTimeServiceHandler }
 }

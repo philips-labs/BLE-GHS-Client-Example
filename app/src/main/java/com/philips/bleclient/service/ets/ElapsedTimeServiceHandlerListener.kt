@@ -1,11 +1,11 @@
-package com.philips.bleclient.service.sts
+package com.philips.bleclient.service.ets
 
 import java.util.*
 
-interface SimpleTimeServiceHandlerListener {
+interface ElapsedTimeServiceHandlerListener {
 
     /**
-     * Called when a time is received from the SimpleTimeService
+     * Called when a time is received from the ElapsedTimeService
      *
      * @param deviceAddress Address of the device.
      * @param date The date received
@@ -14,7 +14,7 @@ interface SimpleTimeServiceHandlerListener {
      */
     fun onReceivedTime(deviceAddress: String, time: Date) {}
 
-    fun onReceivedStsBytes(deviceAddress: String, bytes: ByteArray) {}
+    fun onReceivedEtsBytes(deviceAddress: String, bytes: ByteArray) {}
 
 
 }
