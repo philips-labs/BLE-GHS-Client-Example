@@ -138,7 +138,8 @@ open class Observation {
     }
 
     override fun toString(): String {
-        return "Observation: ${type.name} patient: $patientId val: $value unit: $unitCode time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
+        //return "Observation: ${type.name} patient: $patientId val: $value unit: $unitCode time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
+        return "Observation: ${type.name} patient: $patientId val: $value time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
     }
 
     companion object {
