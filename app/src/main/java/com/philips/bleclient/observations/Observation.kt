@@ -24,7 +24,7 @@ open class Observation {
     var timestamp: LocalDateTime? = null
     var timeCounter: Long? = null
     open var value: ObservationValue? = null
-    var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
+//    var unitCode: UnitCode = UnitCode.UNKNOWN_CODE
 
     /*
      * The following are defined in ACOM but currently not used/set in the current example...
@@ -47,27 +47,25 @@ open class Observation {
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
-            this(id, type, SimpleNumericObservationValue(floatValue, unitCode, valuePrecision), unitCode, timestamp, patientId)
+            this(id, type, SimpleNumericObservationValue(floatValue, unitCode, valuePrecision), timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         value: String,
-        unitCode: UnitCode,
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
-            this(id, type, StringObservationValue(value), unitCode, timestamp, patientId)
+            this(id, type, StringObservationValue(value), timestamp, patientId)
 
     constructor(
         id: Int,
         type: ObservationType,
         value: Int,
-        unitCode: UnitCode,
         timestamp: LocalDateTime?,
         patientId: Int?
     ) :
-            this(id, type, DiscreteObservationValue(value), unitCode, timestamp, patientId)
+            this(id, type, DiscreteObservationValue(value), timestamp, patientId)
 
 
     constructor(
@@ -82,7 +80,6 @@ open class Observation {
                 id,
                 type,
                 SampleArrayObservationValue(value, unitCode),
-                unitCode,
                 timestamp,
                 patientId
             )
@@ -98,7 +95,6 @@ open class Observation {
                 id,
                 type,
                 BundledObservationValue(observations),
-                UnitCode.UNKNOWN_CODE,
                 timestamp,
                 patientId
             )
@@ -106,39 +102,18 @@ open class Observation {
     constructor(
         id: Int,
         type: ObservationType,
-        compoundValue: CompoundObservationValue,
-        timestamp: LocalDateTime?,
-        patientId: Int?
-    ) :
-            this(id, type, compoundValue, UnitCode.UNKNOWN_CODE, timestamp, patientId)
-
-    constructor(
-        id: Int,
-        type: ObservationType,
-        sampleArrayValue: SampleArrayObservationValue,
-        timestamp: LocalDateTime?,
-        patientId: Int?
-    ) :
-            this(id, type, sampleArrayValue, UnitCode.UNKNOWN_CODE, timestamp, patientId)
-
-    constructor(
-        id: Int,
-        type: ObservationType,
         value: ObservationValue,
-        unitCode: UnitCode,
         timestamp: LocalDateTime?,
         patientId: Int?
     ) {
         this.handle = id
         this.type = type
         value.also { this.value = it }
-        this.unitCode = unitCode
         this.timestamp = timestamp
         this.patientId = patientId
     }
 
     override fun toString(): String {
-        //return "Observation: ${type.name} patient: $patientId val: $value unit: $unitCode time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
         return "Observation: ${type.name} patient: $patientId val: $value time: $timestamp isCurrentTimeLine: $isCurrentTimeline"
     }
 
@@ -240,7 +215,6 @@ open class Observation {
                 objectId ?: 0,
                 observationType,
                 observationValue,
-                unitCode = UnitCode.UNKNOWN_CODE,
                 timestamp,
                 patientId
             )

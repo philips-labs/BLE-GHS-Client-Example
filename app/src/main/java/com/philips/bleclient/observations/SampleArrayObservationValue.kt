@@ -28,11 +28,9 @@ class SampleArrayObservationValue(
         1,
         samples.size,
         unitCode
-    ) {
-
-    }
+    )
 
     override fun toString(): String {
-        return "SampleArrayObservationValue length: ${samples.size}  bytes: [${samples.asFormattedHexString()}]"
+        return "SampleArrayObservationValue length: ${samples.size} unitCode: ${this.unitCode}  bytes: [${samples.asFormattedHexString()}]"
     }
 }
