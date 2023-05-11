@@ -205,22 +205,41 @@ fun ByteArray.parseETSDate(): Date? {
     }
 }
 
+fun ByteArray.isTickCounter(): Boolean {
+    return etsFlags().hasFlag(TimestampFlags.isTickCounter)
+}
 
 fun ByteArray.etsDateInfoString(): String {
     val etsFlags = etsFlags()
     return if (etsFlags.hasFlag(TimestampFlags.isTickCounter)) {
         "Bytes are for a tick counter parsed ETS Date (should be null): ${parseETSDate()}"
     } else {
-        var infoString = ""
+        var infoString = "Flags:"
+        if (etsFlags.hasFlag(TimestampFlags.isUTC)) {
+            infoString += " UTC time,"
+        } else {
+            infoString += " local time,"
+        }
+        if (etsFlags.hasFlag(TimestampFlags.isTZPresent)) {
+            infoString += " with TZ/DST offset,"
+        } else {
+            infoString += " no TZ/DST offset,"
+        }
+        if (etsFlags.hasFlag(TimestampFlags.isCurrentTimeline)) {
+            infoString += " current"
+        } else {
+            infoString += " not current"
+        }
+        infoString += ".\n"
         val ticks = etsTicksValue()
-        infoString += "Epoch millis Value: Unix: ${ticks + UTC_TO_UNIX_EPOCH_MILLIS} Y2K: $ticks\n"
+        //infoString += "Epoch millis Value: Unix: ${ticks + UTC_TO_UNIX_EPOCH_MILLIS}\nY2K: $ticks\n"
         val timeSource = etsTimesourceValue()
         val offset = etsTimezoneOffset()
-        infoString += "Timesource: $timeSource offset (15min): ${this[8]} time counter is ${etsFlags.timescaleString()}\n"
+        infoString += "Timesource: $timeSource\ntime counter is ${etsFlags.timescaleString()}\n"
         val scaledTicks = etsFlags.convertY2KScaledToUTCEpochMillis(ticks)
-        infoString += "UTC Epoch Millis:$scaledTicks Offset: $offset\n"
+        infoString += "UTC Epoch Millis:$scaledTicks\nOffset (msec): $offset\n"
         infoString += "ETS Date: ${parseETSDate()}\n"
-        infoString += "ETS TimeZone 15min offset: ${etsTimezoneOffset() / MILLIS_IN_15_MINUTES}"
+        infoString += "ETS offset (15min): ${etsTimezoneOffset() / MILLIS_IN_15_MINUTES}"
         infoString
     }
 }

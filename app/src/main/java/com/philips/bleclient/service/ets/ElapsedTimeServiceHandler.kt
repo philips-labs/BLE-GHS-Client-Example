@@ -128,6 +128,16 @@ class ElapsedTimeServiceHandler : ServiceHandler(),
         }
     }
 
+    fun getClientTimeAsGHSBytes(peripheral: BluetoothPeripheral?) : ByteArray {
+        var flags = peripheralETSFlags.get(peripheral)
+        if (flags != null) {
+            return Date().asGHSBytes(flags)
+        } else {
+            return Date().asGHSBytes()
+        }
+    }
+
+
     fun resetETSTicks(peripheral: BluetoothPeripheral) {
         peripheralETSFlags.get(peripheral)?.let {
             write(peripheral, ELAPSED_TIME_CHARACTERISTIC_UUID, 0L.asGHSTicks(it))

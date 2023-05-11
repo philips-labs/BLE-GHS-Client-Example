@@ -17,6 +17,7 @@ import com.philips.bleclient.ServiceHandlerManager
 import com.philips.bleclient.asFormattedHexString
 import com.philips.bleclient.extensions.*
 import com.philips.bleclient.service.dis.DisInfoMap
+import com.philips.bleclient.service.ets.ElapsedTimeServiceHandler
 import com.philips.bleclient.service.ghs.GenericHealthSensorServiceHandler
 import com.philips.bleclient.service.rcs.RCSServiceHandler
 import com.philips.bleclient.service.ets.ElapsedTimeServiceHandlerListener
@@ -24,6 +25,7 @@ import com.philips.bleclient.service.user.UserDataServiceHandler
 import com.welie.blessed.BluetoothPeripheral
 import com.welie.blessed.BondState
 import timber.log.Timber
+import java.util.*
 import kotlin.random.Random
 
 
@@ -212,8 +214,23 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
         peripheral?.let { etsServiceHandler?.getETSBytes(it) }
     }
 
+    private val logView get() = findViewById<TextView>(R.id.deviceInfoLog)
+
     @Suppress("UNUSED_PARAMETER")
     fun setEtsClockBytes(view: View) {
+        if (etsServiceHandler != null) {
+            val bytes = etsServiceHandler?.getClientTimeAsGHSBytes(peripheral)
+            var logString = "Setting ETS to: "
+            if (bytes != null) {
+                logString += bytes.asFormattedHexString()
+                logString += "\n"
+                logString += bytes.etsDateInfoString()
+            } else {
+                logString += "null??"
+            }
+            Timber.i(logString)
+            logView.text = "$logString\n"
+        }
         peripheral?.let { etsServiceHandler?.setETSBytes(it) }
     }
 
@@ -254,16 +271,15 @@ class PeripheralInfoActivity : AppCompatActivity(), ElapsedTimeServiceHandlerLis
 
     }
 
-    private val logView get() = findViewById<TextView>(R.id.deviceInfoLog)
 
     /*
      * ElapsedTimeServiceHandlerListener methods
      */
     override fun onReceivedEtsBytes(deviceAddress: String, bytes: ByteArray) {
-        var logString = "Received ETS Bytes: ${bytes.asFormattedHexString()}\n"
+        var logString = "ETS Bytes: ${bytes.asFormattedHexString()}\n"
         logString += bytes.etsDateInfoString()
         Timber.i(logString)
-        logView.text = "${logView.text} + $logString\n"
+        logView.text = "$logString\n"
     }
 
 }
