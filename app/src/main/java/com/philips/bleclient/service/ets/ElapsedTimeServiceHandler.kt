@@ -151,10 +151,10 @@ class ElapsedTimeServiceHandler : ServiceHandler(),
     }
 
     companion object {
-        val SERVICE_UUID = UUID.fromString("00007f3E-0000-1000-8000-00805f9b34fb")
+        val SERVICE_UUID = UUID.fromString("0000183f-0000-1000-8000-00805f9b34fb")
 
         val ELAPSED_TIME_CHARACTERISTIC_UUID =
-            UUID.fromString("00007f3d-0000-1000-8000-00805f9b34fb")
+            UUID.fromString("00002bf2-0000-1000-8000-00805f9b34fb")
 
     }
 }
