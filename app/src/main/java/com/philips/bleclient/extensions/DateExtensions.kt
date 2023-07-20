@@ -192,6 +192,15 @@ fun ByteArray.etsTimesourceValue(): Timesource {
     return Timesource.value(this[7].toInt())
 }
 
+fun ByteArray.etsClockNeedsToBeSet(): Boolean {
+    //Timber.i("ETS Clock status: ${this[9].toInt()}\n")
+    return (this[9].toInt().equals(0x01))
+}
+
+fun ByteArray.etsClockCapabilities(): Byte {
+    return this[10]
+}
+
 fun ByteArray.etsTimezoneOffset(): Int {
     return this[8] * MILLIS_IN_15_MINUTES
 }
@@ -235,11 +244,13 @@ fun ByteArray.etsDateInfoString(): String {
         //infoString += "Epoch millis Value: Unix: ${ticks + UTC_TO_UNIX_EPOCH_MILLIS}\nY2K: $ticks\n"
         val timeSource = etsTimesourceValue()
         val offset = etsTimezoneOffset()
+        val clockNeedstoBeSet = etsClockNeedsToBeSet()
         infoString += "Timesource: $timeSource\ntime counter is ${etsFlags.timescaleString()}\n"
         val scaledTicks = etsFlags.convertY2KScaledToUTCEpochMillis(ticks)
         infoString += "UTC Epoch Millis:$scaledTicks\nOffset (msec): $offset\n"
         infoString += "ETS Date: ${parseETSDate()}\n"
-        infoString += "ETS offset (15min): ${etsTimezoneOffset() / MILLIS_IN_15_MINUTES}"
+        infoString += "ETS offset (15min): ${etsTimezoneOffset() / MILLIS_IN_15_MINUTES}\n"
+        infoString += "Clock needs to be set: ${clockNeedstoBeSet}"
         infoString
     }
 }

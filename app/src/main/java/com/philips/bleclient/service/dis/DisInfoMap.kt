@@ -20,7 +20,7 @@ object DisInfoMap : DisServiceListener, BasServiceListener {
 
     fun getDeviceInfoValue(deviceAddress: String, item: DisInfoItem): String {
         val div : String = formatLine(item, deviceInfoMap.get(deviceAddress)?.get(item)?.let { it as String } ?: "")
-        Timber.i("InfoMap: ${item.name } - $div")
+        //Timber.i("InfoMap: ${item.name } - $div")
         return div
     }
 
